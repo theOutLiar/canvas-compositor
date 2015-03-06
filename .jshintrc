@@ -1,0 +1,3 @@
+{
+    "predef": ["__dirname", "__filename", "module", "require", "define", "setTimeout", "clearTimeout", "window", "document"]
+}
