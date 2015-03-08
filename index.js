@@ -1,4 +1,4 @@
-define(['lodash', 'canvas-model', 'style', 'path', 'rectangle'], function (_, CanvasModel, Style, Path, Rectangle) {
+define(['lodash', 'canvas-model', 'style', 'vector-path', 'rectangle'], function (_, CanvasModel, Style, Path, Rectangle) {
     'use strict';
 
     var _modelDefaults = {

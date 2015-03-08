@@ -1,3 +1,5 @@
+//would name the file 'path', but damn near everything
+//relies on the filesystem 'path' module
 define(['lodash', 'style'], function (_, Style) {
     'use strict';
 

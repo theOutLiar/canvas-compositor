@@ -1,0 +1,30 @@
+{
+  "name": "canvas-compositor",
+  "main": "index.js",
+  "version": "0.0.1",
+  "authors": [
+    "Christopher J Gore"
+  ],
+  "description": "a light canvas compositing engine",
+  "moduleType": [
+    "amd"
+  ],
+  "keywords": [
+    "2d",
+    "canvas",
+    "compositing"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "lodash": "~3.4.0",
+    "almond": "~0.3.1"
+  },
+  "devDependencies": {}
+}
