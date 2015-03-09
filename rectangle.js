@@ -1,6 +1,7 @@
-define(['lodash', 'style'], function(_, Style){
+define(['lodash', 'canvas-object', 'style'], function(_, CanvasObject, Style){
     'use strict';
     function Rectangle(x, y, width, height, context, style){
+        CanvasObject.call(this x, y, context, style);
         this.x = x;
         this.y = y;
         this.width = width;
@@ -8,6 +9,8 @@ define(['lodash', 'style'], function(_, Style){
         this.context = context;
         this.style = style;
     }
+
+    _.assign(Rectangle.prototype, CanvasObject.prototype);
 
     Rectangle.prototype.draw = function _drawSelf(){
         Rectangle.draw(this.x, this.y, this.width, this.height, this.context, this.style);
@@ -19,5 +22,6 @@ define(['lodash', 'style'], function(_, Style){
         context.fill();
         context.stroke();
     };
+
     return Rectangle;
 });

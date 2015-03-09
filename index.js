@@ -1,4 +1,4 @@
-define(['lodash', 'canvas-model', 'style', 'vector-path', 'rectangle'], function (_, CanvasModel, Style, Path, Rectangle) {
+define(['lodash', 'style', 'vector-path', 'rectangle', 'ellipse', 'image', 'sprite', 'container'], function (_, Style, Path, Rectangle, Ellipse, Image, Sprite, Container) {
     'use strict';
 
     var _modelDefaults = {
@@ -10,7 +10,6 @@ define(['lodash', 'canvas-model', 'style', 'vector-path', 'rectangle'], function
     function CanvasCompositor(canvas, options) {
         this._canvas = canvas;
         this._context = this._canvas.getContext('2d');
-        this._canvasModel = new CanvasModel();
         this._style = new Style(options);
 
         //hrm, should maybe find method to filter
@@ -44,14 +43,24 @@ define(['lodash', 'canvas-model', 'style', 'vector-path', 'rectangle'], function
         }
     };
 
+    //expose primitive canvas functions at high level
     CanvasCompositor.prototype.drawPath = function _drawPath(vertices, style){
         Path.Draw(vertices, this._context, style);
     };
 
-    //TODO: drawEllipse
-
+    //expose primitive canvas functions at high level
     CanvasCompositor.prototype.drawRectangle = function _drawRectangle(x, y, width, height, style){
         Rectangle.draw(x, y, width, height, this._context, style);
+    };
+
+    //expose primitive canvas functions at high level
+    CanvasCompositor.prototype.drawEllipse = function _drawEllipse(x, y, width, height, style){
+        Ellipse.draw(x, y, width, height, this._context, style);
+    };
+
+    //expose primitive canvas functions at high level
+    CanvasCompositor.prototype.drawImage = function _drawImage(x, y, image, style){
+        Image.draw(x, y, image, this._context, style);
     };
 
     CanvasCompositor.prototype.draw = function _draw(canvasObject){
@@ -60,6 +69,13 @@ define(['lodash', 'canvas-model', 'style', 'vector-path', 'rectangle'], function
             return;
         }
     };
+
+    CanvasCompositor.Path = Path;
+    CanvasCompositor.Rectangle = Rectangle;
+    CanvasCompositor.Ellipse = Ellipse;
+    CanvasCompositor.Image = Image;
+    CanvasCompositor.Sprite = Sprite;
+    CanvasCompositor.Container = Container;
 
     return CanvasCompositor;
 });

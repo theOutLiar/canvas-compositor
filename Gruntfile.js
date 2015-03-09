@@ -9,7 +9,7 @@ module.exports = function(grunt){
                     mainConfigFile: 'config.js',
                     name: 'bower_components/almond/almond',
                     preserveLicenseComments: true,
-                    include: ['index2'],
+                    include: ['index'],
                     out: 'canvas-compositor.js'
                 }
             }

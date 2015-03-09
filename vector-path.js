@@ -1,13 +1,14 @@
 //would name the file 'path', but damn near everything
 //relies on the filesystem 'path' module
-define(['lodash', 'style'], function (_, Style) {
+define(['lodash', 'canvas-object', 'style'], function (_, CanvasObject, Style) {
     'use strict';
 
     function Path(vertices, context, style) {
+        CanvasObject.call(this, vertices[0].x, vertices[0].x, context, style);
         this.vertices = vertices || [];
-        this.context = context;
-        this.style = style;
     }
+
+    _.assign(Path.prototype, CanvasObject.prototype);
 
     Path.prototype.draw = function _drawSelf() {
         Path.Draw(this.context, this.vertices, this.style);

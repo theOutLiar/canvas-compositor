@@ -11988,6 +11988,162 @@ define("bower_components/almond/almond", function(){});
   }
 }.call(this));
 
-define('index2',['lodash'], function(_){
+define('style',['lodash'], function (_) {
+    
+
+    function Style(options) {
+        _.assign(this.CurrentStyle, Style.DEFAULTS, options || {});
+    }
+
+    Style.DEFAULTS = {
+        strokeStyle: 'black',
+        fillStyle: 'black',
+        lineCap: 'butt',
+        lineWidth: 1.0,
+        lineJoin: 'miter',
+        miterLimit: 10
+    };
+
+    Style.prototype.CurrentStyle = Style.DEFAULTS;
+
+    return Style;
+});
+//would name the file 'path', but damn near everything
+//relies on the filesystem 'path' module
+define('vector-path',['lodash', 'style'], function (_, Style) {
+    
+
+    function Path(vertices, context, style) {
+        this.vertices = vertices || [];
+        this.context = context;
+        this.style = style;
+    }
+
+    Path.prototype.draw = function _drawSelf() {
+        Path.Draw(this.context, this.vertices, this.style);
+    };
+
+    Path.Draw = function _draw(vertices, context, style) {
+        _.assign(context, style || Style.CurrentStyle);
+        var started = false;
+        var x = 0;
+        var y = 0;
+        for (var v in vertices) {
+            x = vertices[v].x;
+            y = vertices[v].y;
+            if (!started) {
+                context.beginPath();
+                context.moveTo(x, y);
+                started = true;
+            } else {
+                context.lineTo(x, y);
+            }
+        }
+
+        context.stroke();
+    };
+
+    return Path;
+});
+define('canvas-object',[],function(){
+    function CanvasObject(){}
+
+    CanvasObject.prototype.x = 0;
+    CanvasObject.prototype.y = 0;
+    CanvasObject.prototype.scale = 1;
+    //CanvasObject.prototype.
+
+    return CanvasObject;
+});
+define('rectangle',['lodash', 'canvas-object', 'style'], function(_, CanvasObject, Style){
+    
+    function Rectangle(x, y, width, height, context, style){
+        CanvasObject.call(this);
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.context = context;
+        this.style = style;
+    }
+
+    _.assign(Rectangle.prototype, CanvasObject.prototype);
+
+    Rectangle.prototype.draw = function _drawSelf(){
+        Rectangle.draw(this.x, this.y, this.width, this.height, this.context, this.style);
+    };
+
+    Rectangle.Draw = function _draw(x, y, width, height, context, style){
+        _.assign(context, style || Style.CurrentStyle);
+        context.rect(x, y, width, height);
+        context.fill();
+        context.stroke();
+    };
+
+    return Rectangle;
+});
+define('index',['lodash', 'style', 'vector-path', 'rectangle'], function (_, Style, Path, Rectangle) {
+    
+
+    var _modelDefaults = {
+        CanvasObjects: [],
+        CurrentObject: null,
+        NeedsUpdate: false
+    };
+
+    function CanvasCompositor(canvas, options) {
+        this._canvas = canvas;
+        this._context = this._canvas.getContext('2d');
+        this._style = new Style(options);
+
+        //hrm, should maybe find method to filter
+        //out options that should be private
+        _.assign(this, _modelDefaults);
+        _.assign(this._context, Style.CurrentStyle);
+
+        this._updateThreshhold = 1000 / 60; //amount of time that must pass before rendering
+        this._lastRenderTime = 0; //set to 0 to make sure first render happens right away
+        this._currentTime = 0;
+
+        this._animationLoop();
+    }
+
+    CanvasCompositor.prototype._animationLoop = function _animationLoop() {
+        window.requestAnimationFrame(this._animationLoop);
+        this._currentTime = +new Date();
+        //set maximum of 60 fps and only redraw if necessary
+        if (this._currentTime - this._lastRenderTime >= this._updateThreshhold && this._canvasModel.NeedsUpdate) {
+
+            //TODO: clear canvas
+
+            _.each(this.CanvasObjects, function(cObj){
+                cObj.draw(this._canvas);
+            });
+
+            if (this._canvasModel.CurrentObject) {
+                this._canvasModel.CurrentObject.Draw(this._canvas);
+            }
+            this._lastRenderTime = +new Date();
+        }
+    };
+
+    CanvasCompositor.prototype.drawPath = function _drawPath(vertices, style){
+        Path.Draw(vertices, this._context, style);
+    };
+
+    //TODO: drawEllipse
+
+    CanvasCompositor.prototype.drawRectangle = function _drawRectangle(x, y, width, height, style){
+        Rectangle.draw(x, y, width, height, this._context, style);
+    };
+
+    CanvasCompositor.prototype.draw = function _draw(canvasObject){
+        if(canvasObject){
+            canvasObject.draw();
+            return;
+        }
+    };
+
+    return CanvasCompositor;
 });
 
