@@ -1,13 +1,12 @@
-define(['lodash', 'style'], function(_, Style){
+define(['lodash', 'canvas-object', 'style'], function(_, CanvasObject, Style){
     'use strict';
     function Ellipse(x, y, width, height, context, style){
-        this.x = x;
-        this.y = y;
+        CanvasObject.call(this, x, y, context, style);
         this.width = width;
         this.height = height;
-        this.context = context;
-        this.style = style;
     }
+
+    _.assign(Ellipse.prototype, CanvasObject.prototype);
 
     Ellipse.prototype.draw = function _drawSelf(){
         Ellipse.draw(this.x, this.y, this.width, this.height, this.context, this.style);
