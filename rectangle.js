@@ -1,26 +1,32 @@
-define(['lodash', 'canvas-object', 'style'], function(_, CanvasObject, Style){
+define(['lodash', 'canvas-object'], function(_, CanvasObject){
     'use strict';
-    function Rectangle(x, y, width, height, context, style){
-        CanvasObject.call(this x, y, context, style);
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
-        this.context = context;
-        this.style = style;
+    function Rectangle(options){
+        CanvasObject.call(this, options);
+        this.width = options.width || 0;
+        this.height = options.height || 0;
     }
 
     _.assign(Rectangle.prototype, CanvasObject.prototype);
 
-    Rectangle.prototype.draw = function _drawSelf(){
-        Rectangle.draw(this.x, this.y, this.width, this.height, this.context, this.style);
+    Rectangle.prototype.render = function _render(){
+        var x = this.x + this.translation.x;
+        var y = this.y + this.translation.y;
+        CanvasObject.Renderer.drawRectangle(x, y, this.width, this.height, this.style);
     };
 
-    Rectangle.Draw = function _draw(x, y, width, height, context, style){
-        _.assign(context, style || Style.CurrentStyle);
-        context.rect(x, y, width, height);
-        context.fill();
-        context.stroke();
+    Rectangle.prototype.PointIsInObject = function (x, y) {
+        var lowerBoundX = this.x + this.translation.x,
+            lowerBoundY = this.y + this.translation.y,
+            upperBoundX = this.x + this.translation.x + this.width,
+            upperBoundY = this.y + this.translation.y + this.height;
+
+        var isIn = (
+            x > lowerBoundX &&
+            y > lowerBoundY &&
+            x < upperBoundX &&
+            y < upperBoundY
+        );
+        return isIn;
     };
 
     return Rectangle;

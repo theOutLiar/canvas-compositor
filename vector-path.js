@@ -1,37 +1,28 @@
 //would name the file 'path', but damn near everything
 //relies on the filesystem 'path' module
-define(['lodash', 'canvas-object', 'style'], function (_, CanvasObject, Style) {
+define(['lodash', 'canvas-object'], function (_, CanvasObject) {
     'use strict';
 
-    function Path(vertices, context, style) {
-        CanvasObject.call(this, vertices[0].x, vertices[0].x, context, style);
-        this.vertices = vertices || [];
+    function Path(options) {
+        options.x = options.x || options.vertices[0].x;
+        options.y = options.y || options.vertices[0].y;
+        CanvasObject.call(this, options);
+        this.vertices = options.vertices || [];
     }
 
     _.assign(Path.prototype, CanvasObject.prototype);
 
-    Path.prototype.draw = function _drawSelf() {
-        Path.Draw(this.context, this.vertices, this.style);
-    };
-
-    Path.Draw = function _draw(vertices, context, style) {
-        _.assign(context, style || Style.CurrentStyle);
-        var started = false;
-        var x = 0;
-        var y = 0;
-        for (var v in vertices) {
-            x = vertices[v].x;
-            y = vertices[v].y;
-            if (!started) {
-                context.beginPath();
-                context.moveTo(x, y);
-                started = true;
-            } else {
-                context.lineTo(x, y);
-            }
+    Path.prototype.render = function _render() {
+        var mappedVertices = this.vertices;
+        if (this.translation.x !== 0 && this.transation.y !== 0) {
+            mappedVertices = _.map(this.vertices, function (vertex) {
+                return {
+                    x: vertex.x + this.translation.x,
+                    y: vertex.y + this.translation.y
+                };
+            });
         }
-
-        context.stroke();
+        CanvasObject.Renderer.drawPath(this.context, mappedVertices, this.style);
     };
 
     return Path;

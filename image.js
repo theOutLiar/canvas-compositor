@@ -1,15 +1,15 @@
-require(['lodash', 'canvas-object', 'style'], function (_, CanvasObject, Style) {
-    function Image(x, y, image, context, style) {
-        CanvasObject.call(this, x, y, context, style);
-        this.image = image;
+require(['lodash', 'canvas-object'], function (_, CanvasObject) {
+    function Image(options) {
+        CanvasObject.call(this, options);
+        this.image = options.image;
     }
+
     _.assign(Image.prototype, CanvasObject.prototype);
 
-    Image.prototype.draw = function _drawSelf() {};
-
-    Image.Draw = function _draw(x, y, image, context, style) {
-        _.assign(context, style || Style.CurrentStyle);
-        context.drawImage(image, x, y);
+    Image.prototype.draw = function _drawSelf() {
+        var x = this.x + this.translation.x;
+        var y = this.y + this.translation.y;
+        CanvasObject.Renderer.drawImage(this.image, x, y, this.style);
     };
 
     return Image;

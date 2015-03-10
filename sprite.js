@@ -1,15 +1,12 @@
 require(['lodash', 'canvas-object', 'style'], function (_, CanvasObject, Style) {
-    function Sprite(x, y, image, context, style) {
-        CanvasObject.call(this, x, y, context, style);
-        this.image = image;
+    function Sprite(options) {
+        CanvasObject.call(this, options);
+        this.image = options.image;
     }
     _.assign(Sprite.prototype, CanvasObject.prototype);
 
-    Sprite.prototype.draw = function _drawSelf() {};
-
-    Sprite.Draw = function _draw(x, y, image, context, style) {
-        _.assign(context, style || Style.CurrentStyle);
-        context.drawImage(image, x, y);
+    Sprite.prototype.render = function _render() {
+        CanvasObject.Renderer.drawSprite(this.image, this.x, this.y, this.style);
     };
 
     return Sprite;

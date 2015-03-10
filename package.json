@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "test",
-    "prestart": "npm install && bower install && grunt build",
-    "start": ""
+    "prestart": "npm install && bower install",
+    "start": "grunt dev | rainbowify"
   },
   "keywords": [
     "2d",
@@ -21,6 +21,8 @@
     "grunt-cli": "^0.1.13",
     "grunt-contrib-clean": "^0.6.0",
     "grunt-contrib-requirejs": "^0.4.4",
+    "grunt-contrib-watch": "^0.6.1",
+    "rainbowify": "^1.0.1",
     "time-grunt": "^1.1.0"
   }
 }
