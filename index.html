@@ -4,11 +4,43 @@
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
 
     <title>Canvas Compositor</title>
-    <script src="canvas-compositor.js" type="text/javascript" charset="utf-8"></script>
+    <script src="dist/canvas-compositor.js" type="text/javascript" charset="utf-8"></script>
 </head>
 <body>
-    <canvas width="800" height="600"></canvas>
+    <canvas id="test-canvas" width="800" height="600"></canvas>
     <script>
+        var _canvas = document.getElementById('test-canvas');
+        var cc = CanvasCompositor;
+        var _cc = new CanvasCompositor(_canvas);
+        _cc.Scene.addChild(new cc.Rectangle(
+            {
+                x:100,
+                y:100,
+                width: 200,
+                height: 200,
+                draggable: true,
+                style: {
+                    strokeStyle: '#000000',
+                    fillStyle: 'red',
+                    lineWidth: 10
+                }
+            }
+        ));
+
+        _cc.Scene.addChild(new cc.Ellipse(
+            {
+                x:400,
+                y:400,
+                width: 50,
+                height: 50,
+                draggable: true,
+                style: {
+                    strokeStyle: '#000000',
+                    fillStyle: 'blue',
+                    lineWidth: 10
+                }
+            }
+        ));
     </script>
 </body>
 </html>
