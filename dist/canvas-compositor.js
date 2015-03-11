@@ -12447,6 +12447,13 @@ define('index',['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle
         CurrentObject: null
     };
 
+    var _events = {
+        PRESS_UP: 'onpressup',
+        PRESS_DOWN: 'onpressdown',
+        PRESS_END: 'onpressend',
+        PRESS_CANCEL: 'onpresscancel'
+    };
+
     function CanvasCompositor(canvas, options) {
         this._canvas = canvas;
         this._context = this._canvas.getContext('2d');
@@ -12467,9 +12474,30 @@ define('index',['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle
 
         this._bindEvents();
         this._animationLoop();
+        this._eventRegistry = {
+            onpressup: [],
+            onpressdown: [],
+            onpressend: [],
+            onpresscancel: []
+        };
     }
 
-    CanvasCompositor.prototype._bindEvents= function(){
+    CanvasCompositor.prototype.registerEvent = function _registerEvent(eventType, callback){
+        if(this._eventRegistry[eventType]){
+            this._eventRegistry[eventType].push(callback);
+        }
+    };
+
+    CanvasCompositor.prototype.removeEvent = function _removeEvent(eventType, callback){
+        if(this._eventRegistry[eventType]){
+            var index = this._eventRegistry[eventType].indexOf(callback);
+            if(index >= 0){
+                return this._eventRegistry[eventType].splice(index, 1);
+            }
+        }
+    };
+
+    CanvasCompositor.prototype._bindEvents = function(){
         this._canvas.addEventListener('mousedown', _.bind(this._handlePressDown, this));
         this._canvas.addEventListener('touchstart', _.bind(this._handlePressDown, this));
         this._canvas.addEventListener('mouseup', _.bind(this._handlePressUp, this));
@@ -12484,9 +12512,14 @@ define('index',['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle
         var x = e.offsetX;
         var y = e.offsetY;
         var clickedObject = this.Scene.ChildAt(x, y);
+
         if(clickedObject && clickedObject.onpressdown) {
             clickedObject.onpressdown(e);
         }
+
+        _.each(this._eventRegistry[_events.PRESS_DOWN], function(callback){
+            callback(e);
+        });
     };
 
     CanvasCompositor.prototype._handlePressUp = function(e){
@@ -12495,12 +12528,18 @@ define('index',['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle
                 c.onpressup(e);
             }
         });
+
         var x = e.offsetX;
         var y = e.offsetY;
         var clickedObject = this.Scene.ChildAt(x, y);
+
         if(clickedObject && clickedObject.onpressup) {
             clickedObject.onpressup(e);
         }
+
+        _.each(this._eventRegistry[_events.PRESS_UP], function(callback){
+            callback(e);
+        });
     };
 
     CanvasCompositor.prototype._handlePressMove = function(e){
@@ -12508,19 +12547,28 @@ define('index',['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle
             // `!!` is a quick hack to convert to a bool
             return !!(c.onpressmove);
         });
+
         _.each(objects, function(o){
             o.onpressmove(e);
+        });
+
+        _.each(this._eventRegistry[_events.PRESS_MOVE], function(callback){
+            callback(e);
         });
     };
 
     CanvasCompositor.prototype._handlePressCancel = function(e){
-
         var objects = _.filter(this.Scene.children, function(c){
             // `!!` is a quick hack to convert to a bool
             return !!(c.onpresscancel);
         });
+
         _.each(objects, function(o){
             o.onpresscancel(e);
+        });
+
+        _.each(this._eventRegistry[_events.PRESS_CANCEL], function(callback){
+            callback(e);
         });
     };
 
@@ -12579,6 +12627,8 @@ define('index',['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle
     CanvasCompositor.Image = Image;
     CanvasCompositor.Sprite = Sprite;
     CanvasCompositor.Container = Container;
+
+    CanvasCompositor.Events = _events;
 
     CanvasCompositor.prototype.Scene = null;
 
