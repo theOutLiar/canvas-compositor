@@ -1,6 +1,7 @@
-define(['lodash', 'style'], function(_, Style){
-    function Renderer(context){
+define(['lodash'], function(_){
+    function Renderer(context, styleInstace){
         this._context = context;
+        this._style = styleInstace;
     }
 
     Renderer.prototype.clearRect = function _clearRect(x, y, width, height){
@@ -8,7 +9,7 @@ define(['lodash', 'style'], function(_, Style){
     };
 
     Renderer.prototype.drawPath = function _draw(vertices, style) {
-        _.assign(this._context, style || Style.CurrentStyle);
+        _.assign(this._context, style || this._style.CurrentStyle);
         this._context.beginPath();
         var started = false;
         var x = 0;
@@ -28,7 +29,7 @@ define(['lodash', 'style'], function(_, Style){
     };
 
     Renderer.prototype.drawRectangle = function _draw(x, y, width, height, style){
-        _.assign(this._context, style || Style.CurrentStyle);
+        _.assign(this._context, style || this._style.CurrentStyle);
         this._context.beginPath();
         this._context.rect(x, y, width, height);
         this._context.fill();
@@ -37,7 +38,7 @@ define(['lodash', 'style'], function(_, Style){
     };
 
     Renderer.prototype.drawEllipse = function _draw(x, y, radius, minorRadius, style){
-        _.assign(this._context, style || Style.CurrentStyle);
+        _.assign(this._context, style || this._style.CurrentStyle);
         this._context.beginPath();
         this._context.ellipse(x, y, radius, minorRadius, 0, 0, 2 * Math.PI);
         this._context.fill();
@@ -46,7 +47,7 @@ define(['lodash', 'style'], function(_, Style){
     };
 
     Renderer.prototype.drawText = function _draw(x, y, text, style){
-        _.assign(this._context, style || Style.CurrentStyle);
+        _.assign(this._context, style || this._style.CurrentStyle);
         this._context.beginPath();
         this._context.fillText(text, x, y);
         this._context.strokeText(text, x, y);
@@ -54,12 +55,12 @@ define(['lodash', 'style'], function(_, Style){
     };
 
     Renderer.prototype.measureText = function _measureText(text, style){
-        _.assign(this._context, style || Style.CurrentStyle);
+        _.assign(this._context, style || this._style.CurrentStyle);
         return this._context.measureText(text);
     };
 
     Renderer.prototype.drawImage = function _draw(x, y, image, style) {
-        _.assign(this.context, style || Style.CurrentStyle);
+        _.assign(this.context, style || this._style.CurrentStyle);
         this._context.drawImage(image, x, y);
     };
 
