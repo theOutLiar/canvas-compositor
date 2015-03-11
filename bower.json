@@ -1,11 +1,15 @@
 {
   "name": "canvas-compositor",
   "main": "index.js",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "authors": [
     "Christopher J Gore"
   ],
-  "description": "a light canvas compositing engine",
+  "repository" : {
+    "type" : "git",
+    "url" : "git@github.com:theOutLiar/canvas-compositor.git"
+  },
+  "description": "a light and performant canvas compositing engine",
   "moduleType": [
     "amd"
   ],
