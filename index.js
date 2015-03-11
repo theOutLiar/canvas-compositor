@@ -21,7 +21,7 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
         this._lastRenderTime = 0; //set to 0 to make sure first render happens right away
         this._currentTime = 0;
 
-        CanvasObject.Renderer = new Renderer(this._context);
+        CanvasObject.Renderer = new Renderer(this._context, this._style);
 
         this.Scene = new Container({ x: 0, y: 0 });
 
