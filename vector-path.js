@@ -22,7 +22,7 @@ define(['lodash', 'canvas-object'], function (_, CanvasObject) {
                 };
             });
         }
-        CanvasObject.Renderer.drawPath(this.context, mappedVertices, this.style);
+        CanvasObject.Renderer.drawPath(mappedVertices, this.style);
     };
 
     return Path;
