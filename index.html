@@ -31,13 +31,27 @@
             {
                 x:400,
                 y:400,
-                width: 50,
-                height: 50,
+                radius: 50,
                 draggable: true,
                 style: {
                     strokeStyle: '#000000',
                     fillStyle: 'blue',
                     lineWidth: 10
+                }
+            }
+        ));
+
+        _cc.Scene.addChild(new cc.Text(
+            {
+                x:100,
+                y:400,
+                text: 'blah blah blah',
+                fontSize: '20px',
+                draggable: true,
+                style: {
+                    strokeStyle: 'green',
+                    fillStyle: 'green',
+                    lineWidth: 1
                 }
             }
         ));

@@ -16,7 +16,8 @@ define(['lodash', 'canvas-object'], function (_, CanvasObject) {
     };
 
     Container.prototype.ChildAt = function _childAt(x, y) {
-        for (var c in this.children) {
+        //loop over the children in reverse because drawing order
+        for (var c = this.children.length - 1; c >= 0; c--) {
             if (this.children[c].PointIsInObject(x, y)) {
                 return this.children[c];
             }

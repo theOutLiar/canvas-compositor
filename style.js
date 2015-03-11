@@ -6,12 +6,17 @@ define(['lodash'], function (_) {
     }
 
     Style.DEFAULTS = {
-        strokeStyle: 'black',
+        //direction: 'inherit',
         fillStyle: 'black',
+        //filter: 'none',
+        strokeStyle: 'black',
         lineCap: 'butt',
         lineWidth: 1.0,
         lineJoin: 'miter',
-        miterLimit: 10
+        miterLimit: 10,
+        font: '10px sans-serif',
+        textAlign: 'start',
+        textBaseline: 'alphabetic'
     };
 
     Style.prototype.CurrentStyle = Style.DEFAULTS;
