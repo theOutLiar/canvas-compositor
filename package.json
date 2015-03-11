@@ -1,7 +1,7 @@
 {
   "name": "canvas-compositor",
-  "version": "0.0.1",
-  "description": "a light canvas compositing engine",
+  "version": "0.0.2",
+  "description": "a light and performant canvas compositing engine",
   "main": "index.js",
   "scripts": {
     "test": "test",
@@ -14,6 +14,10 @@
     "compositing"
   ],
   "author": "Christopher J Gore",
+  "repository" : {
+    "type" : "git",
+    "url" : "git@github.com:theOutLiar/canvas-compositor.git"
+  },
   "license": "MIT",
   "dependencies": {},
   "devDependencies": {
