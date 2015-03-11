@@ -20,13 +20,12 @@ define(['lodash', 'canvas-object'], function(_, CanvasObject){
             upperBoundX = this.x + this.translation.x + this.width,
             upperBoundY = this.y + this.translation.y + this.height;
 
-        var isIn = (
+        return (
             x > lowerBoundX &&
             y > lowerBoundY &&
             x < upperBoundX &&
             y < upperBoundY
         );
-        return isIn;
     };
 
     return Rectangle;

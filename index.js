@@ -1,4 +1,4 @@
-define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'ellipse', 'image', 'sprite', 'container', 'style'], function (_, Renderer, CanvasObject, Path, Rectangle, Ellipse, Image, Sprite, Container, Style) {
+define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'ellipse', 'text', 'image', 'sprite', 'container', 'style'], function (_, Renderer, CanvasObject, Path, Rectangle, Ellipse, Text, Image, Sprite, Container, Style) {
     'use strict';
 
     var _modelDefaults = {
@@ -104,8 +104,18 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
     };
 
     //expose primitive canvas functions at high level
-    CanvasCompositor.prototype.drawEllipse = function _drawEllipse(x, y, width, height){
-        CanvasObject.Renderer.drawEllipse(x, y, width, height);
+    CanvasCompositor.prototype.drawEllipse = function _drawEllipse(x, y, radius, minorRadius){
+        CanvasObject.Renderer.drawEllipse(x, y, radius, (minorRadius || radius));
+    };
+
+    //expose primitive canvas functions at high level
+    CanvasCompositor.prototype.drawText = function _drawText(x, y, text){
+        CanvasObject.Renderer.drawText(x, y, text);
+    };
+
+    //expose primitive canvas functions at high level
+    CanvasCompositor.prototype.measureText = function _measureText(text){
+        CanvasObject.Renderer.measureText(text);
     };
 
     //expose primitive canvas functions at high level
@@ -123,6 +133,7 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
     CanvasCompositor.Path = Path;
     CanvasCompositor.Rectangle = Rectangle;
     CanvasCompositor.Ellipse = Ellipse;
+    CanvasCompositor.Text = Text;
     CanvasCompositor.Image = Image;
     CanvasCompositor.Sprite = Sprite;
     CanvasCompositor.Container = Container;
@@ -132,4 +143,4 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
     return CanvasCompositor;
 });
 
-CanvasCompositor = require('index');
+window.CanvasCompositor = require('index');
