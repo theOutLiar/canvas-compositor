@@ -1,14 +1,10 @@
 define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'ellipse', 'text', 'image', 'sprite', 'container', 'style'], function (_, Renderer, CanvasObject, Path, Rectangle, Ellipse, Text, Image, Sprite, Container, Style) {
     'use strict';
 
-    var _modelDefaults = {
-        CurrentObject: null
-    };
-
     var _events = {
         PRESS_UP: 'onpressup',
         PRESS_DOWN: 'onpressdown',
-        PRESS_END: 'onpressend',
+        PRESS_MOVE: 'onpressmove',
         PRESS_CANCEL: 'onpresscancel'
     };
 
@@ -19,7 +15,6 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
 
         //hrm, should maybe find method to filter
         //out options that should be private
-        _.assign(this, _modelDefaults);
         _.assign(this._context, Style.CurrentStyle);
 
         this._updateThreshhold = 1000 / 60; //amount of time that must pass before rendering
@@ -35,7 +30,7 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
         this._eventRegistry = {
             onpressup: [],
             onpressdown: [],
-            onpressend: [],
+            onpressmove: [],
             onpresscancel: []
         };
     }
