@@ -6,20 +6,20 @@ module.exports = function(grunt){
             build: {
                 options: {
                     optimize: 'none',
-                    mainConfigFile: 'config.js',
                     name: 'bower_components/almond/almond',
+                    mainConfigFile: 'config.js',
                     preserveLicenseComments: true,
-                    include: ['index'],
+                    include: ['canvas-compositor'],
                     out: 'dist/canvas-compositor.js'
                 }
             },
             minify: {
                 options: {
                     optimize: 'uglify2',
-                    mainConfigFile: 'config.js',
                     name: 'bower_components/almond/almond',
+                    mainConfigFile: 'config.js',
                     preserveLicenseComments: true,
-                    include: ['index'],
+                    include: ['canvas-compositor'],
                     out: 'dist/canvas-compositor.min.js'
                 }
             }
