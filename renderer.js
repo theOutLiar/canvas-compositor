@@ -68,7 +68,7 @@ define(['lodash'], function(_){
         //TODO: does it make sense to `strokeText`
         //at all?! wtf are the implications of
         //lineWidth to the text measurements?
-        this._context.strokeText(text, x, y);
+        //this._context.strokeText(text, x, y);
         this._context.closePath();
     };
 
