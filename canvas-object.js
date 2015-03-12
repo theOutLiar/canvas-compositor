@@ -2,8 +2,7 @@ define(['lodash', 'renderer'], function (_, Renderer) {
     function CanvasObject(options) {
         this.x = options.x || 0;
         this.y = options.y || 0;
-        this.style = {};
-        _.assign(this.style, options.style);
+        this.style = _.assign({}, options.style);
         this.draggable = options.draggable || false;
         this._needsUpdate = false;
         if (this.draggable) {
