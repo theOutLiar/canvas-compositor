@@ -12045,6 +12045,7 @@ define('renderer',['lodash'], function(_){
     Renderer.prototype.drawEllipse = function _draw(x, y, radius, minorRadius, style){
         this.setStyle(style);
         this._context.beginPath();
+        //TODO: 2015-03-12 this is currently only supported by chrome & opera
         this._context.ellipse(x, y, radius, minorRadius, 0, 0, 2 * Math.PI);
         this._context.fill();
         this._context.stroke();
@@ -12438,6 +12439,27 @@ define('canvas-compositor',['lodash', 'renderer', 'canvas-object', 'vector-path'
         PRESS_CANCEL: 'onpresscancel'
     };
 
+	var _lastKnownTouchLocation;
+
+    function _getOffset( element )
+    {
+        var offset = { left: 0, top: 0 };
+            do {
+                var style = window.getComputedStyle(element);
+                if ( !isNaN( element.offsetLeft ) && !isNaN(element.offsetTop) )
+                {
+                    offset.left += element.offsetLeft +
+                                   parseFloat(style.getPropertyValue('border-left')) +
+                                   parseFloat(style.getPropertyValue('padding-left'));
+
+                    offset.top += element.offsetTop +
+                                   parseFloat(style.getPropertyValue('border-top')) +
+                                   parseFloat(style.getPropertyValue('padding-top'));
+                }
+            } while( (element = element.offsetParent) );
+        return offset;
+    }
+
     function CanvasCompositor(canvas, options) {
         this._canvas = canvas;
         this._context = this._canvas.getContext('2d');
@@ -12482,18 +12504,62 @@ define('canvas-compositor',['lodash', 'renderer', 'canvas-object', 'vector-path'
 
     CanvasCompositor.prototype._bindEvents = function(){
         this._canvas.addEventListener('mousedown', _.bind(this._handlePressDown, this));
-        this._canvas.addEventListener('touchstart', _.bind(this._handlePressDown, this));
         this._canvas.addEventListener('mouseup', _.bind(this._handlePressUp, this));
-        this._canvas.addEventListener('touchend', _.bind(this._handlePressUp, this));
         this._canvas.addEventListener('mousemove', _.bind(this._handlePressMove, this));
-        this._canvas.addEventListener('touchmove', _.bind(this._handlePressMove, this));
         this._canvas.addEventListener('mouseout', _.bind(this._handlePressCancel, this));
-        this._canvas.addEventListener('touchcancel', _.bind(this._handlePressCancel, this));
+
+        this._canvas.addEventListener('touchstart', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            _translateTouchEvent('mousedown', e);
+        });
+        this._canvas.addEventListener('touchend', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            _translateTouchEvent('mouseup', e);
+        });
+        this._canvas.addEventListener('touchmove', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            _translateTouchEvent('mousemove', e);
+        });
+        this._canvas.addEventListener('touchcancel', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            _translateTouchEvent('mouseout', e);
+        });
     };
 
+    function _translateTouchEvent(type, e){
+		var mouseEventInit;
+		if(e.touches.length){
+			mouseEventInit = {
+				screenX: e.touches[0].screenX,
+				screenY: e.touches[0].screenY,
+				clientX: e.touches[0].clientX,
+				clientY: e.touches[0].clientY,
+				button: 0
+        	};
+		} else {
+			mouseEventInit = _lastKnownTouchLocation;
+		}
+		_lastKnownTouchLocation = mouseEventInit;
+        var evt = new window.MouseEvent(type, mouseEventInit);
+        e.target.dispatchEvent(evt);
+    }
+
     CanvasCompositor.prototype._handlePressDown = function(e){
-        var x = e.offsetX;
-        var y = e.offsetY;
+        e.preventDefault();
+
+        var style = window.getComputedStyle(this._canvas);
+        var leftPadding = parseFloat(style.getPropertyValue('border-left')) +
+            parseFloat(style.getPropertyValue('padding-left'));
+        var topPadding = parseFloat(style.getPropertyValue('border-top')) +
+            parseFloat(style.getPropertyValue('padding-top'));
+
+        var x = e.offsetX - leftPadding;
+        var y = e.offsetY - topPadding;
+
         var clickedObject = this.Scene.ChildAt(x, y);
 
         if(clickedObject && clickedObject.onpressdown) {
@@ -12506,14 +12572,22 @@ define('canvas-compositor',['lodash', 'renderer', 'canvas-object', 'vector-path'
     };
 
     CanvasCompositor.prototype._handlePressUp = function(e){
+        e.preventDefault();
+
+        var style = window.getComputedStyle(this._canvas);
+        var leftPadding = parseFloat(style.getPropertyValue('border-left')) +
+            parseFloat(style.getPropertyValue('padding-left'));
+        var topPadding = parseFloat(style.getPropertyValue('border-top')) +
+            parseFloat(style.getPropertyValue('padding-top'));
+
         _.each(this.Scene.children, function(c){
             if(c.draggable && c.onpressup){
                 c.onpressup(e);
             }
         });
-
-        var x = e.offsetX;
-        var y = e.offsetY;
+        var x = e.offsetX - leftPadding;
+        var y = e.offsetY - topPadding;
+        console.log(x, y);
         var clickedObject = this.Scene.ChildAt(x, y);
 
         if(clickedObject && clickedObject.onpressup) {
@@ -12526,6 +12600,8 @@ define('canvas-compositor',['lodash', 'renderer', 'canvas-object', 'vector-path'
     };
 
     CanvasCompositor.prototype._handlePressMove = function(e){
+        e.preventDefault();
+
         var objects = _.filter(this.Scene.children, function(c){
             // `!!` is a quick hack to convert to a bool
             return !!(c.onpressmove);
@@ -12541,6 +12617,8 @@ define('canvas-compositor',['lodash', 'renderer', 'canvas-object', 'vector-path'
     };
 
     CanvasCompositor.prototype._handlePressCancel = function(e){
+        e.preventDefault();
+
         var objects = _.filter(this.Scene.children, function(c){
             // `!!` is a quick hack to convert to a bool
             return !!(c.onpresscancel);

@@ -55,6 +55,7 @@ define(['lodash'], function(_){
     Renderer.prototype.drawEllipse = function _draw(x, y, radius, minorRadius, style){
         this.setStyle(style);
         this._context.beginPath();
+        //TODO: 2015-03-12 this is currently only supported by chrome & opera
         this._context.ellipse(x, y, radius, minorRadius, 0, 0, 2 * Math.PI);
         this._context.fill();
         this._context.stroke();
