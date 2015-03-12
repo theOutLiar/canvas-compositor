@@ -1,8 +1,9 @@
-define(['style'], function (Style) {
+define(['lodash', 'renderer'], function (_, Renderer) {
     function CanvasObject(options) {
         this.x = options.x || 0;
         this.y = options.y || 0;
-        this.style = options.style || Style.DEFAULTS;
+        this.style = {};
+        _.assign(this.style, Renderer.DEFAULTS, options.style);
         this.draggable = options.draggable || false;
         this._needsUpdate = false;
         if (this.draggable) {
@@ -59,7 +60,7 @@ define(['style'], function (Style) {
     CanvasObject.prototype.y = 0;
     CanvasObject.prototype.draggable = false;
     CanvasObject.prototype.context = null;
-    CanvasObject.prototype.style = Style.DEFAULTS;
+    CanvasObject.prototype.style = null;
     CanvasObject.prototype.scale = 1;
     CanvasObject.prototype.translation = {
         x: 0,

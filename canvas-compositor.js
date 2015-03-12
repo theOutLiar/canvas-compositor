@@ -1,4 +1,4 @@
-define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'ellipse', 'text', 'image', 'sprite', 'container', 'style'], function (_, Renderer, CanvasObject, Path, Rectangle, Ellipse, Text, Image, Sprite, Container, Style) {
+define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'ellipse', 'text', 'image', 'container'], function (_, Renderer, CanvasObject, Path, Rectangle, Ellipse, Text, Image, Container) {
     'use strict';
 
     var _events = {
@@ -11,17 +11,17 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
     function CanvasCompositor(canvas, options) {
         this._canvas = canvas;
         this._context = this._canvas.getContext('2d');
-        this._style = new Style(options);
-
-        //hrm, should maybe find method to filter
-        //out options that should be private
-        _.assign(this._context, Style.CurrentStyle);
 
         this._updateThreshhold = 1000 / 60; //amount of time that must pass before rendering
         this._lastRenderTime = 0; //set to 0 to make sure first render happens right away
         this._currentTime = 0;
 
-        CanvasObject.Renderer = new Renderer(this._context, this._style);
+        //TODO:
+        //this is **intended** to be a kind of scoping trick,
+        //and only apply within this instance - needs testing
+        //although may not even be relevant after this point
+        //in processing...
+        CanvasObject.Renderer = new Renderer(this._context, options);
 
         this.Scene = new Container({ x: 0, y: 0 });
 
@@ -143,7 +143,7 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
 
     //expose primitive canvas functions at high level
     CanvasCompositor.prototype.drawRectangle = function _drawRectangle(x, y, width, height){
-        CanvasObject.Renderer.drawRectangle(x, y, width, height);
+        CanvasObject.Renderer.drawRectangle(x, y, width, height || width);
     };
 
     //expose primitive canvas functions at high level
@@ -173,12 +173,15 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
         }
     };
 
+    CanvasCompositor.prototype.setStyle  = function _setStyle(style){
+        CanvasObject.Renderer.setStyle(style);
+    };
+
     CanvasCompositor.Path = Path;
     CanvasCompositor.Rectangle = Rectangle;
     CanvasCompositor.Ellipse = Ellipse;
     CanvasCompositor.Text = Text;
     CanvasCompositor.Image = Image;
-    CanvasCompositor.Sprite = Sprite;
     CanvasCompositor.Container = Container;
 
     CanvasCompositor.Events = _events;
