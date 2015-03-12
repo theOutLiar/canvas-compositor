@@ -13,7 +13,7 @@ define(['lodash', 'canvas-object'], function (_, CanvasObject) {
     _.assign(Path.prototype, CanvasObject.prototype);
 
     Path.prototype.render = function _render() {
-        var mappedVertices = this.vertices;
+        var translatedVertices = this.vertices;
         if (this.translation.x !== 0 && this.transation.y !== 0) {
             translatedVertices = _.map(this.vertices, function (vertex) {
                 return {
