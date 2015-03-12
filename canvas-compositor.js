@@ -188,4 +188,4 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
     return CanvasCompositor;
 });
 
-window.CanvasCompositor = require('index');
+window.CanvasCompositor = require('canvas-compositor');

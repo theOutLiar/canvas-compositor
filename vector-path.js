@@ -15,14 +15,14 @@ define(['lodash', 'canvas-object'], function (_, CanvasObject) {
     Path.prototype.render = function _render() {
         var mappedVertices = this.vertices;
         if (this.translation.x !== 0 && this.transation.y !== 0) {
-            mappedVertices = _.map(this.vertices, function (vertex) {
+            translatedVertices = _.map(this.vertices, function (vertex) {
                 return {
                     x: vertex.x + this.translation.x,
                     y: vertex.y + this.translation.y
                 };
             });
         }
-        CanvasObject.Renderer.drawPath(mappedVertices, this.style);
+        CanvasObject.Renderer.drawPath(translatedVertices, this.style);
     };
 
     return Path;

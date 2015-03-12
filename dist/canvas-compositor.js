@@ -12202,14 +12202,14 @@ define('vector-path',['lodash', 'canvas-object'], function (_, CanvasObject) {
     Path.prototype.render = function _render() {
         var mappedVertices = this.vertices;
         if (this.translation.x !== 0 && this.transation.y !== 0) {
-            mappedVertices = _.map(this.vertices, function (vertex) {
+            translatedVertices = _.map(this.vertices, function (vertex) {
                 return {
                     x: vertex.x + this.translation.x,
                     y: vertex.y + this.translation.y
                 };
             });
         }
-        CanvasObject.Renderer.drawPath(mappedVertices, this.style);
+        CanvasObject.Renderer.drawPath(translatedVertices, this.style);
     };
 
     return Path;
@@ -12441,7 +12441,7 @@ define('container',['lodash', 'canvas-object'], function (_, CanvasObject) {
 
     return Container;
 });
-define('index',['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'ellipse', 'text', 'image', 'sprite', 'container', 'style'], function (_, Renderer, CanvasObject, Path, Rectangle, Ellipse, Text, Image, Sprite, Container, Style) {
+define('canvas-compositor',['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'ellipse', 'text', 'image', 'sprite', 'container', 'style'], function (_, Renderer, CanvasObject, Path, Rectangle, Ellipse, Text, Image, Sprite, Container, Style) {
     
 
     var _events = {
@@ -12631,4 +12631,4 @@ define('index',['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle
     return CanvasCompositor;
 });
 
-window.CanvasCompositor = require('index');
+window.CanvasCompositor = require('canvas-compositor');
