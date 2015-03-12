@@ -11991,7 +11991,7 @@ define("bower_components/almond/almond", function(){});
 define('renderer',['lodash'], function(_){
     function Renderer(context, options){
         this._context = context;
-        this.setStyle(_.assign(Renderer.DEFAULTS, options));
+        this.setStyle(_.assign({}, Renderer.DEFAULTS, options));
     }
 
     Renderer.DEFAULTS = {
@@ -11999,7 +11999,7 @@ define('renderer',['lodash'], function(_){
         fillStyle: 'black',
         //filter: 'none',
         strokeStyle: 'black',
-        lineCap: 'butt',
+        lineCap: 'round',
         lineWidth: 1.0,
         lineJoin: 'miter',
         miterLimit: 10,
@@ -12054,8 +12054,9 @@ define('renderer',['lodash'], function(_){
         this.setStyle(style);
         this._context.beginPath();
         this._context.fillText(text, x, y);
-        //does it make sense to `strokeText` at all?!
-        //wtf are the implications to the text measurement?
+        //TODO: does it make sense to `strokeText`
+        //at all?! wtf are the implications of
+        //lineWidth to the text measurements?
         this._context.strokeText(text, x, y);
         this._context.closePath();
     };
@@ -12080,8 +12081,7 @@ define('canvas-object',['lodash', 'renderer'], function (_, Renderer) {
     function CanvasObject(options) {
         this.x = options.x || 0;
         this.y = options.y || 0;
-        this.style = {};
-        _.assign(this.style, options.style);
+        this.style = _.assign({}, options.style);
         this.draggable = options.draggable || false;
         this._needsUpdate = false;
         if (this.draggable) {

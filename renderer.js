@@ -1,7 +1,7 @@
 define(['lodash'], function(_){
     function Renderer(context, options){
         this._context = context;
-        this.setStyle(_.assign(Renderer.DEFAULTS, options));
+        this.setStyle(_.assign({}, Renderer.DEFAULTS, options));
     }
 
     Renderer.DEFAULTS = {
@@ -9,7 +9,7 @@ define(['lodash'], function(_){
         fillStyle: 'black',
         //filter: 'none',
         strokeStyle: 'black',
-        lineCap: 'butt',
+        lineCap: 'round',
         lineWidth: 1.0,
         lineJoin: 'miter',
         miterLimit: 10,
@@ -64,8 +64,9 @@ define(['lodash'], function(_){
         this.setStyle(style);
         this._context.beginPath();
         this._context.fillText(text, x, y);
-        //does it make sense to `strokeText` at all?!
-        //wtf are the implications to the text measurement?
+        //TODO: does it make sense to `strokeText`
+        //at all?! wtf are the implications of
+        //lineWidth to the text measurements?
         this._context.strokeText(text, x, y);
         this._context.closePath();
     };
