@@ -12441,25 +12441,6 @@ define('canvas-compositor',['lodash', 'renderer', 'canvas-object', 'vector-path'
 
 	var _lastKnownTouchLocation;
 
-    function _getOffset( element )
-    {
-        var offset = { left: 0, top: 0 };
-            do {
-                var style = window.getComputedStyle(element);
-                if ( !isNaN( element.offsetLeft ) && !isNaN(element.offsetTop) )
-                {
-                    offset.left += element.offsetLeft +
-                                   parseFloat(style.getPropertyValue('border-left')) +
-                                   parseFloat(style.getPropertyValue('padding-left'));
-
-                    offset.top += element.offsetTop +
-                                   parseFloat(style.getPropertyValue('border-top')) +
-                                   parseFloat(style.getPropertyValue('padding-top'));
-                }
-            } while( (element = element.offsetParent) );
-        return offset;
-    }
-
     function CanvasCompositor(canvas, options) {
         this._canvas = canvas;
         this._context = this._canvas.getContext('2d');
@@ -12587,7 +12568,7 @@ define('canvas-compositor',['lodash', 'renderer', 'canvas-object', 'vector-path'
         });
         var x = e.offsetX - leftPadding;
         var y = e.offsetY - topPadding;
-        console.log(x, y);
+
         var clickedObject = this.Scene.ChildAt(x, y);
 
         if(clickedObject && clickedObject.onpressup) {
