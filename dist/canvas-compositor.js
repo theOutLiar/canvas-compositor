@@ -12081,7 +12081,7 @@ define('canvas-object',['lodash', 'renderer'], function (_, Renderer) {
         this.x = options.x || 0;
         this.y = options.y || 0;
         this.style = {};
-        _.assign(this.style, Renderer.DEFAULTS, options.style);
+        _.assign(this.style, options.style);
         this.draggable = options.draggable || false;
         this._needsUpdate = false;
         if (this.draggable) {
