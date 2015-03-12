@@ -173,8 +173,13 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
         }
     };
 
-    CanvasCompositor.prototype.setStyle  = function _setStyle(style){
+    CanvasCompositor.prototype.setStyle = function _setStyle(style){
         CanvasObject.Renderer.setStyle(style);
+    };
+
+    //get the context for direct drawing to the canvas
+    CanvasCompositor.prototype.getContext = function _getContext(){
+        return this._context;
     };
 
     CanvasCompositor.Path = Path;
