@@ -12002,7 +12002,7 @@ define('renderer',['lodash'], function(_){
         strokeStyle: 'black',
         lineCap: 'round',
         lineWidth: 1.0,
-        lineJoin: 'miter',
+        lineJoin: 'round',
         miterLimit: 10,
         font: '10px sans-serif',
         textAlign: 'start',
