@@ -6,7 +6,9 @@
   "scripts": {
     "test": "test",
     "prestart": "npm install && bower install",
-    "start": "grunt dev | rainbowify"
+    "start": "grunt dev | rainbowify",
+    "prebuild": "npm install && bower install",
+    "build": "grunt build | rainbowify"
   },
   "keywords": [
     "2d",

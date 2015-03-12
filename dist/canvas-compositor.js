@@ -11989,17 +11989,31 @@ define("bower_components/almond/almond", function(){});
 }.call(this));
 
 define('renderer',['lodash'], function(_){
-    function Renderer(context, styleInstace){
+    function Renderer(context, options){
         this._context = context;
-        this._style = styleInstace;
+        this.setStyle(_.assign(Renderer.DEFAULTS, options));
     }
+
+    Renderer.DEFAULTS = {
+        //direction: 'inherit',
+        fillStyle: 'black',
+        //filter: 'none',
+        strokeStyle: 'black',
+        lineCap: 'butt',
+        lineWidth: 1.0,
+        lineJoin: 'miter',
+        miterLimit: 10,
+        font: '10px sans-serif',
+        textAlign: 'start',
+        textBaseline: 'alphabetic'
+    };
 
     Renderer.prototype.clearRect = function _clearRect(x, y, width, height){
         this._context.clearRect(x, y, width, height);
     };
 
     Renderer.prototype.drawPath = function _draw(vertices, style) {
-        _.assign(this._context, style || this._style.CurrentStyle);
+        this.setStyle(style);
         this._context.beginPath();
         var started = false;
         var x = 0;
@@ -12019,7 +12033,7 @@ define('renderer',['lodash'], function(_){
     };
 
     Renderer.prototype.drawRectangle = function _draw(x, y, width, height, style){
-        _.assign(this._context, style || this._style.CurrentStyle);
+        this.setStyle(style);
         this._context.beginPath();
         this._context.rect(x, y, width, height);
         this._context.fill();
@@ -12028,7 +12042,7 @@ define('renderer',['lodash'], function(_){
     };
 
     Renderer.prototype.drawEllipse = function _draw(x, y, radius, minorRadius, style){
-        _.assign(this._context, style || this._style.CurrentStyle);
+        this.setStyle(style);
         this._context.beginPath();
         this._context.ellipse(x, y, radius, minorRadius, 0, 0, 2 * Math.PI);
         this._context.fill();
@@ -12037,55 +12051,37 @@ define('renderer',['lodash'], function(_){
     };
 
     Renderer.prototype.drawText = function _draw(x, y, text, style){
-        _.assign(this._context, style || this._style.CurrentStyle);
+        this.setStyle(style);
         this._context.beginPath();
         this._context.fillText(text, x, y);
+        //does it make sense to `strokeText` at all?!
+        //wtf are the implications to the text measurement?
         this._context.strokeText(text, x, y);
         this._context.closePath();
     };
 
     Renderer.prototype.measureText = function _measureText(text, style){
-        _.assign(this._context, style || this._style.CurrentStyle);
+        this.setStyle(style);
         return this._context.measureText(text);
     };
 
     Renderer.prototype.drawImage = function _draw(x, y, image, style) {
-        _.assign(this.context, style || this._style.CurrentStyle);
+        this.setStyle(style);
         this._context.drawImage(image, x, y);
+    };
+
+    Renderer.prototype.setStyle = function _setStyle(style){
+        _.assign(this._context, style || {});
     };
 
     return Renderer;
 });
-define('style',['lodash'], function (_) {
-    
-
-    function Style(options) {
-        _.assign(this.CurrentStyle, Style.DEFAULTS, options || {});
-    }
-
-    Style.DEFAULTS = {
-        //direction: 'inherit',
-        fillStyle: 'black',
-        //filter: 'none',
-        strokeStyle: 'black',
-        lineCap: 'butt',
-        lineWidth: 1.0,
-        lineJoin: 'miter',
-        miterLimit: 10,
-        font: '10px sans-serif',
-        textAlign: 'start',
-        textBaseline: 'alphabetic'
-    };
-
-    Style.prototype.CurrentStyle = Style.DEFAULTS;
-
-    return Style;
-});
-define('canvas-object',['style'], function (Style) {
+define('canvas-object',['lodash', 'renderer'], function (_, Renderer) {
     function CanvasObject(options) {
         this.x = options.x || 0;
         this.y = options.y || 0;
-        this.style = options.style || Style.DEFAULTS;
+        this.style = {};
+        _.assign(this.style, Renderer.DEFAULTS, options.style);
         this.draggable = options.draggable || false;
         this._needsUpdate = false;
         if (this.draggable) {
@@ -12142,7 +12138,7 @@ define('canvas-object',['style'], function (Style) {
     CanvasObject.prototype.y = 0;
     CanvasObject.prototype.draggable = false;
     CanvasObject.prototype.context = null;
-    CanvasObject.prototype.style = Style.DEFAULTS;
+    CanvasObject.prototype.style = null;
     CanvasObject.prototype.scale = 1;
     CanvasObject.prototype.translation = {
         x: 0,
@@ -12361,21 +12357,6 @@ require(['lodash', 'canvas-object'], function (_, CanvasObject) {
 });
 define("image", function(){});
 
-require(['lodash', 'canvas-object', 'style'], function (_, CanvasObject, Style) {
-    function Sprite(options) {
-        CanvasObject.call(this, options);
-        this.image = options.image;
-    }
-    _.assign(Sprite.prototype, CanvasObject.prototype);
-
-    Sprite.prototype.render = function _render() {
-        CanvasObject.Renderer.drawSprite(this.image, this.x, this.y, this.style);
-    };
-
-    return Sprite;
-});
-define("sprite", function(){});
-
 define('container',['lodash', 'canvas-object'], function (_, CanvasObject) {
     
 
@@ -12441,7 +12422,7 @@ define('container',['lodash', 'canvas-object'], function (_, CanvasObject) {
 
     return Container;
 });
-define('canvas-compositor',['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'ellipse', 'text', 'image', 'sprite', 'container', 'style'], function (_, Renderer, CanvasObject, Path, Rectangle, Ellipse, Text, Image, Sprite, Container, Style) {
+define('canvas-compositor',['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'ellipse', 'text', 'image', 'container'], function (_, Renderer, CanvasObject, Path, Rectangle, Ellipse, Text, Image, Container) {
     
 
     var _events = {
@@ -12454,17 +12435,17 @@ define('canvas-compositor',['lodash', 'renderer', 'canvas-object', 'vector-path'
     function CanvasCompositor(canvas, options) {
         this._canvas = canvas;
         this._context = this._canvas.getContext('2d');
-        this._style = new Style(options);
-
-        //hrm, should maybe find method to filter
-        //out options that should be private
-        _.assign(this._context, Style.CurrentStyle);
 
         this._updateThreshhold = 1000 / 60; //amount of time that must pass before rendering
         this._lastRenderTime = 0; //set to 0 to make sure first render happens right away
         this._currentTime = 0;
 
-        CanvasObject.Renderer = new Renderer(this._context, this._style);
+        //TODO:
+        //this is **intended** to be a kind of scoping trick,
+        //and only apply within this instance - needs testing
+        //although may not even be relevant after this point
+        //in processing...
+        CanvasObject.Renderer = new Renderer(this._context, options);
 
         this.Scene = new Container({ x: 0, y: 0 });
 
@@ -12586,7 +12567,7 @@ define('canvas-compositor',['lodash', 'renderer', 'canvas-object', 'vector-path'
 
     //expose primitive canvas functions at high level
     CanvasCompositor.prototype.drawRectangle = function _drawRectangle(x, y, width, height){
-        CanvasObject.Renderer.drawRectangle(x, y, width, height);
+        CanvasObject.Renderer.drawRectangle(x, y, width, height || width);
     };
 
     //expose primitive canvas functions at high level
@@ -12616,12 +12597,15 @@ define('canvas-compositor',['lodash', 'renderer', 'canvas-object', 'vector-path'
         }
     };
 
+    CanvasCompositor.prototype.setStyle  = function _setStyle(style){
+        CanvasObject.Renderer.setStyle(style);
+    };
+
     CanvasCompositor.Path = Path;
     CanvasCompositor.Rectangle = Rectangle;
     CanvasCompositor.Ellipse = Ellipse;
     CanvasCompositor.Text = Text;
     CanvasCompositor.Image = Image;
-    CanvasCompositor.Sprite = Sprite;
     CanvasCompositor.Container = Container;
 
     CanvasCompositor.Events = _events;
