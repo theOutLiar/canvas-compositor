@@ -1,6 +1,7 @@
 define(['lodash'], function(_){
     function Renderer(context, options){
         this._context = context;
+        this.style = {};
         this.setStyle(_.assign({}, Renderer.DEFAULTS, options));
     }
 
@@ -82,7 +83,12 @@ define(['lodash'], function(_){
     };
 
     Renderer.prototype.setStyle = function _setStyle(style){
-        _.assign(this._context, style || {});
+        _.assign(this.style, style || {});
+        _.assign(this._context, this.style);
+    };
+
+    Renderer.prototype.getStyle = function _getStyle(){
+        return this.style;
     };
 
     return Renderer;

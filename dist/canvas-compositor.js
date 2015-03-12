@@ -11991,6 +11991,7 @@ define("bower_components/almond/almond", function(){});
 define('renderer',['lodash'], function(_){
     function Renderer(context, options){
         this._context = context;
+        this.style = {};
         this.setStyle(_.assign({}, Renderer.DEFAULTS, options));
     }
 
@@ -12072,7 +12073,12 @@ define('renderer',['lodash'], function(_){
     };
 
     Renderer.prototype.setStyle = function _setStyle(style){
-        _.assign(this._context, style || {});
+        _.assign(this.style, style || {});
+        _.assign(this._context, this.style);
+    };
+
+    Renderer.prototype.getStyle = function _getStyle(){
+        return this.style;
     };
 
     return Renderer;
@@ -12599,6 +12605,10 @@ define('canvas-compositor',['lodash', 'renderer', 'canvas-object', 'vector-path'
 
     CanvasCompositor.prototype.setStyle = function _setStyle(style){
         CanvasObject.Renderer.setStyle(style);
+    };
+
+    CanvasCompositor.prototype.getStyle = function _getStyle(){
+        return CanvasObject.Renderer.getStyle();
     };
 
     //get the context for direct drawing to the canvas
