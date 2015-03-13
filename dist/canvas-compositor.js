@@ -12288,7 +12288,7 @@ define('text',['lodash', 'canvas-object'], function (_, CanvasObject) {
         this.textAlign = options.textAlign || Text.DEFAULTS.textAlign;
         this.textBaseline = options.textBaseline || Text.DEFAULTS.textBaseline;
 
-        _.assign(this.style, {
+        _.assign(this.style, options.style,  {
             font: Text.FormatFontString(
                 this.fontStyle,
                 this.fontVariant,
@@ -12298,7 +12298,7 @@ define('text',['lodash', 'canvas-object'], function (_, CanvasObject) {
                 this.fontFamily),
             textAlign: this.textAlign,
             textBaseline: this.textBaseline
-        }, options.style);
+        });
 
         this.textMetrics = CanvasObject.Renderer.measureText(this.text, this.style);
         this.textMetrics.height = parseFloat(this.fontSize);
