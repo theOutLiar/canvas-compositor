@@ -31,6 +31,8 @@ define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Rende
 	}
 
 	Text.prototype.updateBoundingRectangle = function _updateBoundingRectangle(){
+		this.textMetrics = Renderer.measureText(this._prerenderingContext, this.text, this.style);
+		this.textMetrics.height = parseFloat(this.fontSize);
 		this.boundingRectangle = {
 			top: this.y + this.translation.y,
 			left: this.x + this.translation.x,
