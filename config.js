@@ -1,5 +1,5 @@
 require.config({
-    paths: {
-        'lodash': 'bower_components/lodash/lodash'
-    }
+	paths: {
+		'lodash': 'bower_components/lodash/lodash'
+	}
 });
