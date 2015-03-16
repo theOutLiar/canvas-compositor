@@ -1,6 +1,6 @@
 //would name the file 'path', but damn near everything
 //relies on the filesystem 'path' module
-define(['lodash', 'canvas-object', 'vector', 'line'], function (_, CanvasObject, Vector, Line) {
+define(['lodash', 'canvas-object', 'renderer', 'vector', 'line'], function (_, CanvasObject, Renderer, Vector, Line) {
 	'use strict';
 
 	function Path(options) {
@@ -10,20 +10,44 @@ define(['lodash', 'canvas-object', 'vector', 'line'], function (_, CanvasObject,
 		this.vertices = _.map(options.vertices || [], function (v) {
 			return new Vector([v.x, v.y]);
 		});
+		this.updateBoundingRectangle();
 	}
 
 	_.assign(Path.prototype, CanvasObject.prototype);
 
-	Path.prototype.render = function _render() {
-		var translatedVertices = this.vertices;
-		if (this.translation.x !== 0 && this.translation.y !== 0) {
-			var translatedX = this.translation.x;
-			var translatedY = this.translation.y;
-			translatedVertices = _.map(this.vertices, function (vertex) {
-				return new Vector([vertex.x, vertex.y]).add(new Vector([translatedX, translatedY]));
-			});
+	Path.prototype.updateBoundingRectangle = function _updateBoundingRectangle(){
+		var top = null,
+			left = null,
+			bottom = null,
+			right = null;
+
+		for(var v in this.vertices){
+			top = top !== null && top < this.vertices[v].y ? top : this.vertices[v].y;
+			left = left !== null && left < this.vertices[v].x ? left : this.vertices[v].x;
+			bottom = bottom !== null && bottom > this.vertices[v].y ? bottom : this.vertices[v].y;
+			right = right !== null && right > this.vertices[v].x ? right : this.vertices[v].x;
 		}
-		return CanvasObject.Renderer.drawPath(translatedVertices, this.style);
+
+		this.boundingRectangle = {
+			top: top + this.translation.y - this.style.lineWidth/2.0,
+			left: left + this.translation.x - this.style.lineWidth/2.0,
+			bottom: bottom + this.translation.y + this.style.lineWidth,
+			right: right + this.translation.x + this.style.lineWidth
+		};
+	};
+
+	Path.prototype.render = function _render() {
+		var boundingRectangle = this.boundingRectangle;
+		var lineWidth = this.style.lineWidth;
+		var translation = this.translation;
+		//need to revisit these mathematics - shouldn't need to account
+		//for translation here, should be part of the bounding rectangle
+		var translatedVertices = _.map(this.vertices, function (vertex) {
+			var x = vertex.x + (lineWidth/2.0) - boundingRectangle.left + translation.x;
+			var y = vertex.y + (lineWidth/2.0) - boundingRectangle.top + translation.y;
+			return new Vector([x,y]);
+		});
+		Renderer.drawPath(this._prerenderingContext, translatedVertices, this.style);
 	};
 
 	Path.prototype.PointIsInObject = function (x, y) {

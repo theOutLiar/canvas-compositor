@@ -12,13 +12,29 @@
         var _canvas = document.getElementById('test-canvas');
         var cc = CanvasCompositor;
         var _cc = new CanvasCompositor(_canvas);
-        _cc.Scene.addChild(new cc.Rectangle(
+
+		var rectContainer = new cc.Container({
+			draggable: true
+		});
+
+		var textContainer = new cc.Container({
+			draggable: true
+		});
+
+		var pathContainer = new cc.Container({
+			draggable: true
+		});
+
+        _cc.Scene.addChild(rectContainer);
+		_cc.Scene.addChild(textContainer);
+		_cc.Scene.addChild(pathContainer);
+
+		rectContainer.addChild(new cc.Rectangle(
             {
                 x:100,
                 y:100,
                 width: 200,
                 height: 200,
-                draggable: true,
                 style: {
                     strokeStyle: '#000000',
                     fillStyle: 'red',
@@ -41,13 +57,12 @@
             }
         ));*/
 
-        _cc.Scene.addChild(new cc.Text(
+        textContainer.addChild(new cc.Text(
             {
                 x:100,
                 y:400,
                 text: 'blah blah blah',
                 fontSize: '20px',
-                draggable: true,
                 style: {
                     strokeStyle: 'green',
                     fillStyle: 'green',
@@ -56,7 +71,7 @@
             }
         ));
 
-		/*_cc.Scene.addChild(new cc.Path(
+		pathContainer.addChild(new cc.Path(
 			{
 				vertices: [
 					{x:200, y:100},
@@ -64,13 +79,13 @@
 					{x:400, y:200},
 					{x:800, y:200}
 				],
-				draggable: true,
 				style: {
 					strokeStyle: 'orange',
 					lineWidth: 4.0
 				}
 			}
-		));*/
+		));
+
     </script>
 </body>
 </html>
