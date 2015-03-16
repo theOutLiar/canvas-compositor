@@ -1,4 +1,4 @@
-define(['lodash', 'canvas-object'], function (_, CanvasObject) {
+define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Renderer) {
 	'use strict';
 
 	function Ellipse(options) {
@@ -12,7 +12,7 @@ define(['lodash', 'canvas-object'], function (_, CanvasObject) {
 	Ellipse.prototype.render = function _render() {
 		var x = this.x + this.translation.x;
 		var y = this.y + this.translation.y;
-		CanvasObject.Renderer.drawEllipse(x, y, this.radius, this.minorRadius, this.style);
+		Renderer.drawEllipse(x, y, this.radius, this.minorRadius, this.style);
 	};
 
 	Ellipse.prototype.PointIsInObject = function (x, y) {

@@ -1,4 +1,4 @@
-define(['lodash', 'canvas-object'], function (_, CanvasObject) {
+define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Renderer) {
 	'use strict';
 
 	function Text(options) {
@@ -25,8 +25,14 @@ define(['lodash', 'canvas-object'], function (_, CanvasObject) {
 			textBaseline: this.textBaseline
 		});
 
-		this.textMetrics = CanvasObject.Renderer.measureText(this.text, this.style);
+		this.textMetrics = Renderer.measureText(this._prerenderingContext, this.text, this.style);
 		this.textMetrics.height = parseFloat(this.fontSize);
+		this.boundingRectangle = {
+			top: this.y + this.translation.y,
+			left: this.x + this.translation.x,
+			bottom: this.y + this.translation.y + this.textMetrics.height,
+			right: this.x  + this.translation.x + this.textMetrics.width
+		};
 	}
 
 	Text.FormatFontString = function _formatFontString(style, variant, weight, size, lineheight, family) {
@@ -50,9 +56,7 @@ define(['lodash', 'canvas-object'], function (_, CanvasObject) {
 	_.assign(Text.prototype, CanvasObject.prototype);
 
 	Text.prototype.render = function _render() {
-		var x = this.x + this.translation.x;
-		var y = this.y + this.translation.y;
-		CanvasObject.Renderer.drawText(x, y, this.text, this.style);
+		Renderer.drawText(this._prerenderingContext, 0, 0, this.text, this.style);
 	};
 
 	Text.prototype.PointIsInObject = function (x, y) {

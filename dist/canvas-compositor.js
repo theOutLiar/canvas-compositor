@@ -11989,97 +11989,80 @@ define("bower_components/almond/almond", function(){});
 }.call(this));
 
 define('renderer',['lodash'], function (_) {
-	function Renderer(context, options) {
-		this._context = context;
-		this.style = {};
-		this.setStyle(_.assign({}, Renderer.DEFAULTS, options));
-	}
+	
 
-	Renderer.DEFAULTS = {
-		//direction: 'inherit',
-		fillStyle: 'black',
-		//filter: 'none',
-		strokeStyle: 'black',
-		lineCap: 'round',
-		lineWidth: 1.0,
-		lineJoin: 'round',
-		miterLimit: 10,
-		font: '10px sans-serif',
-		textAlign: 'start',
-		textBaseline: 'alphabetic'
-	};
-
-	Renderer.prototype.clearRect = function _clearRect(x, y, width, height) {
-		this._context.clearRect(x, y, width, height);
-	};
-
-	Renderer.prototype.drawPath = function _draw(vertices, style) {
-		this.setStyle(style);
-		this._context.beginPath();
-		var started = false;
-		var x = 0;
-		var y = 0;
-		for (var v in vertices) {
-			x = vertices[v].x;
-			y = vertices[v].y;
-			if (!started) {
-				this._context.moveTo(x, y);
-				started = true;
-			} else {
-				this._context.lineTo(x, y);
+	var Renderer = {
+		DEFAULTS: {
+			//direction: 'inherit',
+			fillStyle: 'black',
+			//filter: 'none',
+			strokeStyle: 'black',
+			lineCap: 'round',
+			lineWidth: 1.0,
+			lineJoin: 'round',
+			miterLimit: 10,
+			font: '10px sans-serif',
+			textAlign: 'start',
+			textBaseline: 'alphabetic'
+		},
+		mask: false,
+		clearRect: function _clearRect(context, x, y, width, height) {
+			context.clearRect(x, y, width, height);
+		},
+		drawPath: function _draw(context, vertices, style) {
+			_.assign(context, style);
+			context.beginPath();
+			var started = false;
+			var x = 0;
+			var y = 0;
+			for (var v in vertices) {
+				x = vertices[v].x;
+				y = vertices[v].y;
+				if (!started) {
+					context.moveTo(x, y);
+					started = true;
+				} else {
+					context.lineTo(x, y);
+				}
 			}
+			context.stroke();
+			context.closePath();
+		},
+		drawRectangle: function _draw(context, x, y, width, height, style) {
+			_.assign(context, style);
+			context.beginPath();
+			context.rect(x, y, width, height);
+			context.fill();
+			context.stroke();
+			context.closePath();
+		},
+		drawEllipse: function _draw(context, x, y, radius, minorRadius, style) {
+			_.assign(context, style);
+			context.beginPath();
+			//TODO: 2015-03-12 this is currently only supported by chrome & opera
+			context.ellipse(x, y, radius, minorRadius, 0, 0, 2 * Math.PI);
+			context.fill();
+			context.stroke();
+			context.closePath();
+		},
+		drawText: function _draw(context, x, y, text, style) {
+			_.assign(context, style);
+			context.beginPath();
+			context.fillText(text, x, y);
+			//TODO: does it make sense to `strokeText`
+			//at all?! wtf are the implications of
+			//lineWidth to the text measurements?
+			//this._context.strokeText(text, x, y);
+			context.closePath();
+		},
+		measureText: function _measureText(context, text, style) {
+			_.assign(context, style);
+			return context.measureText(text);
+		},
+		drawImage: function _draw(context, x, y, image, style) {
+			_.assign(context, style);
+			context.drawImage(image, x, y);
 		}
-		this._context.stroke();
-		this._context.closePath();
-	};
-
-	Renderer.prototype.drawRectangle = function _draw(x, y, width, height, style) {
-		this.setStyle(style);
-		this._context.beginPath();
-		this._context.rect(x, y, width, height);
-		this._context.fill();
-		this._context.stroke();
-		this._context.closePath();
-	};
-
-	Renderer.prototype.drawEllipse = function _draw(x, y, radius, minorRadius, style) {
-		this.setStyle(style);
-		this._context.beginPath();
-		//TODO: 2015-03-12 this is currently only supported by chrome & opera
-		this._context.ellipse(x, y, radius, minorRadius, 0, 0, 2 * Math.PI);
-		this._context.fill();
-		this._context.stroke();
-		this._context.closePath();
-	};
-
-	Renderer.prototype.drawText = function _draw(x, y, text, style) {
-		this.setStyle(style);
-		this._context.beginPath();
-		this._context.fillText(text, x, y);
-		//TODO: does it make sense to `strokeText`
-		//at all?! wtf are the implications of
-		//lineWidth to the text measurements?
-		//this._context.strokeText(text, x, y);
-		this._context.closePath();
-	};
-
-	Renderer.prototype.measureText = function _measureText(text, style) {
-		this.setStyle(style);
-		return this._context.measureText(text);
-	};
-
-	Renderer.prototype.drawImage = function _draw(x, y, image, style) {
-		this.setStyle(style);
-		this._context.drawImage(image, x, y);
-	};
-
-	Renderer.prototype.setStyle = function _setStyle(style) {
-		_.assign(this.style, style || {});
-		_.assign(this._context, this.style);
-	};
-
-	Renderer.prototype.getStyle = function _getStyle() {
-		return this.style;
 	};
 
 	return Renderer;
@@ -12191,13 +12174,19 @@ define('vector',['lodash'], function (_) {
 	Vector.prototype.coordinates = [];
 	return Vector;
 });
-define('canvas-object',['lodash', 'vector'], function (_, Vector) {
+define('canvas-object',['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
+	
+
 	function CanvasObject(options) {
 		this.x = options.x || 0;
 		this.y = options.y || 0;
 		this.style = _.assign({}, options.style);
 		this.draggable = options.draggable || false;
 		this._needsUpdate = false;
+		this._needsRedraw = true;
+		this._prerenderedImage = document.createElement('canvas');
+		this._prerenderingContext = this._prerenderedImage.getContext('2d');
+		this.parent = options.parent || null;
 		if (this.draggable) {
 			this.enableDragging();
 		}
@@ -12295,11 +12284,21 @@ define('canvas-object',['lodash', 'vector'], function (_, Vector) {
 		y: 0
 	};
 
-	CanvasObject.prototype.draw = function _draw() {
+	CanvasObject.prototype.draw = function _draw(context, contextOffset) {
 		this.NeedsUpdate = false;
-		if (this.render) {
+		if (this._needsRedraw && this.render) {
+			delete this._prerenderedImage;
+			delete this._prerenderingContext;
+			this._prerenderedImage = document.createElement('canvas');
+			this._prerenderedImage.width = this.boundingRectangle.right - this.boundingRectangle.left;
+			this._prerenderedImage.height = this.boundingRectangle.bottom - this.boundingRectangle.top;
+			this._prerenderingContext = this._prerenderedImage.getContext('2d');
 			this.render();
+			this._needsRedraw = false;
 		}
+		var x = this.x + this.translation.x - (contextOffset && contextOffset.left ? contextOffset.left : 0);;
+		var y =this.y + this.translation.y - (contextOffset && contextOffset.top ? contextOffset.top : 0);
+		Renderer.drawImage(context, x, y, this._prerenderedImage);
 	};
 
 	CanvasObject.prototype.render = function _render() {}; //should be overridden by implementors
@@ -12312,8 +12311,6 @@ define('canvas-object',['lodash', 'vector'], function (_, Vector) {
 	CanvasObject.prototype.onpressup = null;
 	CanvasObject.prototype.onpressmove = null;
 	CanvasObject.prototype.onpresscancel = null;
-
-
 
 	return CanvasObject;
 });
@@ -12379,7 +12376,7 @@ define('vector-path',['lodash', 'canvas-object', 'vector', 'line'], function (_,
 				return new Vector([vertex.x, vertex.y]).add(new Vector([translatedX, translatedY]));
 			});
 		}
-		CanvasObject.Renderer.drawPath(translatedVertices, this.style);
+		return CanvasObject.Renderer.drawPath(translatedVertices, this.style);
 	};
 
 	Path.prototype.PointIsInObject = function (x, y) {
@@ -12437,21 +12434,25 @@ define('vector-path',['lodash', 'canvas-object', 'vector', 'line'], function (_,
 
 	return Path;
 });
-define('rectangle',['lodash', 'canvas-object'], function (_, CanvasObject) {
+define('rectangle',['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Renderer) {
 	
 
 	function Rectangle(options) {
 		CanvasObject.call(this, options);
 		this.width = options.width || 0;
 		this.height = options.height || 0;
+		this.boundingRectangle = {
+			top: this.y + this.translation.y,
+			left: this.x + this.translation.x,
+			bottom: this.y + this.translation.y + this.height,
+			right: this.x  + this.translation.x + this.width
+		};
 	}
 
 	_.assign(Rectangle.prototype, CanvasObject.prototype);
 
 	Rectangle.prototype.render = function _render() {
-		var x = this.x + this.translation.x;
-		var y = this.y + this.translation.y;
-		CanvasObject.Renderer.drawRectangle(x, y, this.width, this.height, this.style);
+		Renderer.drawRectangle(this._prerenderingContext, 0, 0, this.width, this.height, this.style);
 	};
 
 	Rectangle.prototype.PointIsInObject = function (x, y) {
@@ -12470,7 +12471,7 @@ define('rectangle',['lodash', 'canvas-object'], function (_, CanvasObject) {
 
 	return Rectangle;
 });
-define('ellipse',['lodash', 'canvas-object'], function (_, CanvasObject) {
+define('ellipse',['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Renderer) {
 	
 
 	function Ellipse(options) {
@@ -12484,7 +12485,7 @@ define('ellipse',['lodash', 'canvas-object'], function (_, CanvasObject) {
 	Ellipse.prototype.render = function _render() {
 		var x = this.x + this.translation.x;
 		var y = this.y + this.translation.y;
-		CanvasObject.Renderer.drawEllipse(x, y, this.radius, this.minorRadius, this.style);
+		Renderer.drawEllipse(x, y, this.radius, this.minorRadius, this.style);
 	};
 
 	Ellipse.prototype.PointIsInObject = function (x, y) {
@@ -12494,7 +12495,7 @@ define('ellipse',['lodash', 'canvas-object'], function (_, CanvasObject) {
 
 	return Ellipse;
 });
-define('text',['lodash', 'canvas-object'], function (_, CanvasObject) {
+define('text',['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Renderer) {
 	
 
 	function Text(options) {
@@ -12521,8 +12522,14 @@ define('text',['lodash', 'canvas-object'], function (_, CanvasObject) {
 			textBaseline: this.textBaseline
 		});
 
-		this.textMetrics = CanvasObject.Renderer.measureText(this.text, this.style);
+		this.textMetrics = Renderer.measureText(this._prerenderingContext, this.text, this.style);
 		this.textMetrics.height = parseFloat(this.fontSize);
+		this.boundingRectangle = {
+			top: this.y + this.translation.y,
+			left: this.x + this.translation.x,
+			bottom: this.y + this.translation.y + this.textMetrics.height,
+			right: this.x  + this.translation.x + this.textMetrics.width
+		};
 	}
 
 	Text.FormatFontString = function _formatFontString(style, variant, weight, size, lineheight, family) {
@@ -12546,9 +12553,7 @@ define('text',['lodash', 'canvas-object'], function (_, CanvasObject) {
 	_.assign(Text.prototype, CanvasObject.prototype);
 
 	Text.prototype.render = function _render() {
-		var x = this.x + this.translation.x;
-		var y = this.y + this.translation.y;
-		CanvasObject.Renderer.drawText(x, y, this.text, this.style);
+		Renderer.drawText(this._prerenderingContext, 0, 0, this.text, this.style);
 	};
 
 	Text.prototype.PointIsInObject = function (x, y) {
@@ -12585,16 +12590,39 @@ require(['lodash', 'canvas-object'], function (_, CanvasObject) {
 });
 define("image", function(){});
 
-define('container',['lodash', 'canvas-object'], function (_, CanvasObject) {
+define('container',['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Renderer) {
 	
 
 	function Container(options) {
 		CanvasObject.call(this, options);
-		this.parent = options.parent || null;
+		this.updateBoundingRectangle();
 	}
 
 	_.assign(Container.prototype, CanvasObject.prototype);
 
+	Container.prototype.updateBoundingRectangle = function _getBoundingRectangle() {
+		var top = null,
+			left = null,
+			bottom = null,
+			right = null;
+
+		_.each(this.children, function(c){
+			top = top !== null && top < c.boundingRectangle.top ? top : c.boundingRectangle.top;
+			left = left !== null && left < c.boundingRectangle.left ? left : c.boundingRectangle.left;
+			bottom = bottom !== null && bottom > c.boundingRectangle.bottom ? bottom : c.boundingRectangle.bottom;
+			right = right !== null && right > c.boundingRectangle.right ? right : c.boundingRectangle.right;
+		});
+		this.x = left;
+		this.y = top;
+		this.boundingRectangle = {
+			top: top,
+			left: left,
+			bottom: bottom,
+			right: right
+		};
+	};
+
+	Container.prototype.masks = [];
 	Container.prototype.children = [];
 	Container.prototype.ChildrenAt = function _childrenAt(x, y) {
 		return _.filter(this.children, function (c) {
@@ -12624,14 +12652,22 @@ define('container',['lodash', 'canvas-object'], function (_, CanvasObject) {
 	Container.prototype.addChild = function _addChild(child) {
 		child.parent = this;
 		this.children.push(child);
+		this.updateBoundingRectangle();
 		this.NeedsUpdate = true;
+		this._needsRedraw = true;
 	};
 
 	Container.prototype.render = function _render() {
-		_.each(this.children, function (cObj) {
-			cObj.draw();
+		var renderContext = this._prerenderingContext;
+		var contextOffset = this.boundingRectangle;
+		_.each(this.children, function (c) {
+			c.draw(renderContext, contextOffset);
 		});
-		this.NeedsUpdate = false;
+		Renderer.mask = true;
+		_.each(this.masks, function (m){
+			m.draw(renderContext, contextOffset);
+		});
+		Renderer.mask = false;
 	}; //should be overridden by implementors
 
 	Container.prototype.parent = null;
@@ -12658,13 +12694,13 @@ define('canvas-compositor',['lodash', 'renderer', 'canvas-object', 'vector-path'
 		this._updateThreshhold = 1000 / 60; //amount of time that must pass before rendering
 		this._lastRenderTime = 0; //set to 0 to make sure first render happens right away
 		this._currentTime = 0;
+		this.style = _.extend({}, Renderer.DEFAULTS, options);
 
 		//TODO:
 		//this is **intended** to be a kind of scoping trick,
 		//and only apply within this instance - needs testing
 		//although may not even be relevant after this point
 		//in processing...
-		CanvasObject.Renderer = new Renderer(this._context, options);
 
 		this.Scene = new Container({
 			x: 0,
@@ -12833,39 +12869,39 @@ define('canvas-compositor',['lodash', 'renderer', 'canvas-object', 'vector-path'
 		//set maximum of 60 fps and only redraw if necessary
 		if (this._currentTime - this._lastRenderTime >= this._updateThreshhold && this.Scene.NeedsUpdate) {
 			this._lastRenderTime = +new Date();
-			CanvasObject.Renderer.clearRect(0, 0, this._canvas.width, this._canvas.height);
-			this.Scene.draw();
+			Renderer.clearRect(this._context, 0, 0, this._canvas.width, this._canvas.height);
+			this.Scene.draw(this._context);
 		}
 	};
 
 	//expose primitive canvas functions at high level
 	CanvasCompositor.prototype.drawPath = function _drawPath(vertices) {
-		CanvasObject.Renderer.drawPath(vertices);
+		Renderer.drawPath(this._context, vertices, this.style);
 	};
 
 	//expose primitive canvas functions at high level
 	CanvasCompositor.prototype.drawRectangle = function _drawRectangle(x, y, width, height) {
-		CanvasObject.Renderer.drawRectangle(x, y, width, height || width);
+		Renderer.drawRectangle(this._context, x, y, width, height || width, this.style);
 	};
 
 	//expose primitive canvas functions at high level
 	CanvasCompositor.prototype.drawEllipse = function _drawEllipse(x, y, radius, minorRadius) {
-		CanvasObject.Renderer.drawEllipse(x, y, radius, (minorRadius || radius));
+		Renderer.drawEllipse(this._context, x, y, radius, (minorRadius || radius), this.style);
 	};
 
 	//expose primitive canvas functions at high level
 	CanvasCompositor.prototype.drawText = function _drawText(x, y, text) {
-		CanvasObject.Renderer.drawText(x, y, text);
+		Renderer.drawText(this._context, x, y, text, this.style);
 	};
 
 	//expose primitive canvas functions at high level
 	CanvasCompositor.prototype.measureText = function _measureText(text) {
-		CanvasObject.Renderer.measureText(text);
+		Renderer.measureText(this._context, text, this.style);
 	};
 
 	//expose primitive canvas functions at high level
 	CanvasCompositor.prototype.drawImage = function _drawImage(x, y, image) {
-		CanvasObject.Renderer.drawImage(x, y, image);
+		Renderer.drawImage(this._context, x, y, image, this.style);
 	};
 
 	CanvasCompositor.prototype.draw = function _draw(canvasObject) {
@@ -12873,14 +12909,6 @@ define('canvas-compositor',['lodash', 'renderer', 'canvas-object', 'vector-path'
 			canvasObject.draw();
 			return;
 		}
-	};
-
-	CanvasCompositor.prototype.setStyle = function _setStyle(style) {
-		CanvasObject.Renderer.setStyle(style);
-	};
-
-	CanvasCompositor.prototype.getStyle = function _getStyle() {
-		return CanvasObject.Renderer.getStyle();
 	};
 
 	//get the context for direct drawing to the canvas

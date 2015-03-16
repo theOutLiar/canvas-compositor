@@ -1,13 +1,36 @@
-define(['lodash', 'canvas-object'], function (_, CanvasObject) {
+define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Renderer) {
 	'use strict';
 
 	function Container(options) {
 		CanvasObject.call(this, options);
-		this.parent = options.parent || null;
+		this.updateBoundingRectangle();
 	}
 
 	_.assign(Container.prototype, CanvasObject.prototype);
 
+	Container.prototype.updateBoundingRectangle = function _getBoundingRectangle() {
+		var top = null,
+			left = null,
+			bottom = null,
+			right = null;
+
+		_.each(this.children, function(c){
+			top = top !== null && top < c.boundingRectangle.top ? top : c.boundingRectangle.top;
+			left = left !== null && left < c.boundingRectangle.left ? left : c.boundingRectangle.left;
+			bottom = bottom !== null && bottom > c.boundingRectangle.bottom ? bottom : c.boundingRectangle.bottom;
+			right = right !== null && right > c.boundingRectangle.right ? right : c.boundingRectangle.right;
+		});
+		this.x = left;
+		this.y = top;
+		this.boundingRectangle = {
+			top: top,
+			left: left,
+			bottom: bottom,
+			right: right
+		};
+	};
+
+	Container.prototype.masks = [];
 	Container.prototype.children = [];
 	Container.prototype.ChildrenAt = function _childrenAt(x, y) {
 		return _.filter(this.children, function (c) {
@@ -37,14 +60,22 @@ define(['lodash', 'canvas-object'], function (_, CanvasObject) {
 	Container.prototype.addChild = function _addChild(child) {
 		child.parent = this;
 		this.children.push(child);
+		this.updateBoundingRectangle();
 		this.NeedsUpdate = true;
+		this._needsRedraw = true;
 	};
 
 	Container.prototype.render = function _render() {
-		_.each(this.children, function (cObj) {
-			cObj.draw();
+		var renderContext = this._prerenderingContext;
+		var contextOffset = this.boundingRectangle;
+		_.each(this.children, function (c) {
+			c.draw(renderContext, contextOffset);
 		});
-		this.NeedsUpdate = false;
+		Renderer.mask = true;
+		_.each(this.masks, function (m){
+			m.draw(renderContext, contextOffset);
+		});
+		Renderer.mask = false;
 	}; //should be overridden by implementors
 
 	Container.prototype.parent = null;

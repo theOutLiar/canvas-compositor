@@ -1,10 +1,16 @@
-define(['lodash', 'vector'], function (_, Vector) {
+define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
+	'use strict';
+
 	function CanvasObject(options) {
 		this.x = options.x || 0;
 		this.y = options.y || 0;
 		this.style = _.assign({}, options.style);
 		this.draggable = options.draggable || false;
 		this._needsUpdate = false;
+		this._needsRedraw = true;
+		this._prerenderedImage = document.createElement('canvas');
+		this._prerenderingContext = this._prerenderedImage.getContext('2d');
+		this.parent = options.parent || null;
 		if (this.draggable) {
 			this.enableDragging();
 		}
@@ -102,11 +108,21 @@ define(['lodash', 'vector'], function (_, Vector) {
 		y: 0
 	};
 
-	CanvasObject.prototype.draw = function _draw() {
+	CanvasObject.prototype.draw = function _draw(context, contextOffset) {
 		this.NeedsUpdate = false;
-		if (this.render) {
+		if (this._needsRedraw && this.render) {
+			delete this._prerenderedImage;
+			delete this._prerenderingContext;
+			this._prerenderedImage = document.createElement('canvas');
+			this._prerenderedImage.width = this.boundingRectangle.right - this.boundingRectangle.left;
+			this._prerenderedImage.height = this.boundingRectangle.bottom - this.boundingRectangle.top;
+			this._prerenderingContext = this._prerenderedImage.getContext('2d');
 			this.render();
+			this._needsRedraw = false;
 		}
+		var x = this.x + this.translation.x - (contextOffset && contextOffset.left ? contextOffset.left : 0);;
+		var y =this.y + this.translation.y - (contextOffset && contextOffset.top ? contextOffset.top : 0);
+		Renderer.drawImage(context, x, y, this._prerenderedImage);
 	};
 
 	CanvasObject.prototype.render = function _render() {}; //should be overridden by implementors
@@ -119,8 +135,6 @@ define(['lodash', 'vector'], function (_, Vector) {
 	CanvasObject.prototype.onpressup = null;
 	CanvasObject.prototype.onpressmove = null;
 	CanvasObject.prototype.onpresscancel = null;
-
-
 
 	return CanvasObject;
 });
