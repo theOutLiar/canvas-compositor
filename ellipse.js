@@ -10,17 +10,17 @@ define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Rende
 
 	Ellipse.prototype.updateBoundingRectangle = function _updateBoundingRectangle(){
 		this.boundingRectangle = {
-			top: this.y + this.translation.y - this.minorRadius,
-			left: this.x + this.translation.x - this.radius,
-			bottom: this.y + this.translation.y + this.minorRadius,
-			right: this.x + this.translation.x + this.radius
+			top: this.y + this.translation.y - this.minorRadius - this.style.lineWidth/2.0,
+			left: this.x + this.translation.x - this.radius - this.style.lineWidth/2.0,
+			bottom: this.y + this.translation.y + this.minorRadius + this.style.lineWidth,
+			right: this.x + this.translation.x + this.radius + this.style.lineWidth
 		};
 	};
 
 	_.assign(Ellipse.prototype, CanvasObject.prototype);
 
 	Ellipse.prototype.render = function _render() {
-		Renderer.drawEllipse(this._prerenderingContext, this.radius, this.minorRadius, this.radius, this.minorRadius, this.style);
+		Renderer.drawEllipse(this._prerenderingContext, this.radius + this.style.lineWidth/2.0, this.minorRadius + this.style.lineWidth/2.0, this.radius, this.minorRadius, this.style);
 	};
 
 	Ellipse.prototype.PointIsInObject = function (x, y) {

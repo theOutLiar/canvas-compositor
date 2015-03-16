@@ -3,6 +3,8 @@ define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Rende
 
 	function Container(options) {
 		CanvasObject.call(this, options);
+		this.children = options.children || [];
+		this.masks = options.masks || [];
 		this.updateBoundingRectangle();
 	}
 
@@ -23,10 +25,10 @@ define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Rende
 		this.x = left;
 		this.y = top;
 		this.boundingRectangle = {
-			top: top,
-			left: left,
-			bottom: bottom,
-			right: right
+			top: top + this.translation.y,
+			left: left + this.translation.x,
+			bottom: bottom + this.translation.y,
+			right: right + this.translation.x
 		};
 	};
 
@@ -65,9 +67,16 @@ define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Rende
 		this.NeedsRedraw = true;
 	};
 
+	//TODO: need to account for translation... should re-work math for this...
 	Container.prototype.render = function _render() {
 		var renderContext = this._prerenderingContext;
-		var contextOffset = this.boundingRectangle;
+		var contextOffset = {
+			top: this.boundingRectangle.top - this.translation.y,
+			left: this.boundingRectangle.left - this.translation.x,
+			bottom: this.boundingRectangle.bottom - this.translation.y,
+			right: this.boundingRectangle.right - this.translation.x
+		};
+
 		_.each(this.children, function (c) {
 			c.draw(renderContext, contextOffset);
 		});

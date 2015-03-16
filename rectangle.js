@@ -8,19 +8,19 @@ define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Rende
 		this.updateBoundingRectangle();
 	}
 
+	_.assign(Rectangle.prototype, CanvasObject.prototype);
+
 	Rectangle.prototype.updateBoundingRectangle = function _updateBoundingRectangle(){
 		this.boundingRectangle = {
-			top: this.y + this.translation.y - this.style.lineWidth/2,
-			left: this.x + this.translation.x - this.style.lineWidth/2,
+			top: this.y + this.translation.y - this.style.lineWidth/2.0,
+			left: this.x + this.translation.x - this.style.lineWidth/2.0,
 			bottom: this.y + this.translation.y + this.height + this.style.lineWidth,
 			right: this.x + this.translation.x + this.width + this.style.lineWidth
 		};
 	};
 
-	_.assign(Rectangle.prototype, CanvasObject.prototype);
-
 	Rectangle.prototype.render = function _render() {
-		Renderer.drawRectangle(this._prerenderingContext, this.style.lineWidth/2, this.style.lineWidth/2, this.width, this.height, this.style);
+		Renderer.drawRectangle(this._prerenderingContext, this.style.lineWidth/2.0, this.style.lineWidth/2.0, this.width, this.height, this.style);
 	};
 
 	Rectangle.prototype.PointIsInObject = function (x, y) {

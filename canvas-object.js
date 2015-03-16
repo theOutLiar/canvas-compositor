@@ -4,7 +4,7 @@ define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
 	function CanvasObject(options) {
 		this.x = options.x || 0;
 		this.y = options.y || 0;
-		this.style = _.assign({}, options.style);
+		this.style = _.assign({}, Renderer.DEFAULTS, options.style);
 		this.draggable = options.draggable || false;
 		this._needsUpdate = false;
 		this._needsRedraw = true;
@@ -81,6 +81,7 @@ define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
 	};
 
 	CanvasObject.prototype.dragStart = function _dragStart(e) {
+		console.log(this);
 		this.mouseOffset = {
 			x: e.offsetX - (this.x + this.translation.x),
 			y: e.offsetY - (this.y + this.translation.y)
@@ -129,6 +130,8 @@ define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
 
 		if (this.NeedsRedraw && this.render) {
 			this.updateBoundingRectangle();
+			delete this._prerenderedImage;
+			delete this._prerenderingContext;
 			this._prerenderedImage = document.createElement('canvas');
 			this._prerenderedImage.width = this.boundingRectangle.right - this.boundingRectangle.left;
 			this._prerenderedImage.height = this.boundingRectangle.bottom - this.boundingRectangle.top;
