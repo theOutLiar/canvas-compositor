@@ -23,7 +23,7 @@ define(['lodash', 'canvas-object', 'vector', 'line'], function (_, CanvasObject,
 				return new Vector([vertex.x, vertex.y]).add(new Vector([translatedX, translatedY]));
 			});
 		}
-		CanvasObject.Renderer.drawPath(translatedVertices, this.style);
+		return CanvasObject.Renderer.drawPath(translatedVertices, this.style);
 	};
 
 	Path.prototype.PointIsInObject = function (x, y) {

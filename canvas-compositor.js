@@ -17,13 +17,13 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
 		this._updateThreshhold = 1000 / 60; //amount of time that must pass before rendering
 		this._lastRenderTime = 0; //set to 0 to make sure first render happens right away
 		this._currentTime = 0;
+		this.style = _.extend({}, Renderer.DEFAULTS, options);
 
 		//TODO:
 		//this is **intended** to be a kind of scoping trick,
 		//and only apply within this instance - needs testing
 		//although may not even be relevant after this point
 		//in processing...
-		CanvasObject.Renderer = new Renderer(this._context, options);
 
 		this.Scene = new Container({
 			x: 0,
@@ -192,39 +192,39 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
 		//set maximum of 60 fps and only redraw if necessary
 		if (this._currentTime - this._lastRenderTime >= this._updateThreshhold && this.Scene.NeedsUpdate) {
 			this._lastRenderTime = +new Date();
-			CanvasObject.Renderer.clearRect(0, 0, this._canvas.width, this._canvas.height);
-			this.Scene.draw();
+			Renderer.clearRect(this._context, 0, 0, this._canvas.width, this._canvas.height);
+			this.Scene.draw(this._context);
 		}
 	};
 
 	//expose primitive canvas functions at high level
 	CanvasCompositor.prototype.drawPath = function _drawPath(vertices) {
-		CanvasObject.Renderer.drawPath(vertices);
+		Renderer.drawPath(this._context, vertices, this.style);
 	};
 
 	//expose primitive canvas functions at high level
 	CanvasCompositor.prototype.drawRectangle = function _drawRectangle(x, y, width, height) {
-		CanvasObject.Renderer.drawRectangle(x, y, width, height || width);
+		Renderer.drawRectangle(this._context, x, y, width, height || width, this.style);
 	};
 
 	//expose primitive canvas functions at high level
 	CanvasCompositor.prototype.drawEllipse = function _drawEllipse(x, y, radius, minorRadius) {
-		CanvasObject.Renderer.drawEllipse(x, y, radius, (minorRadius || radius));
+		Renderer.drawEllipse(this._context, x, y, radius, (minorRadius || radius), this.style);
 	};
 
 	//expose primitive canvas functions at high level
 	CanvasCompositor.prototype.drawText = function _drawText(x, y, text) {
-		CanvasObject.Renderer.drawText(x, y, text);
+		Renderer.drawText(this._context, x, y, text, this.style);
 	};
 
 	//expose primitive canvas functions at high level
 	CanvasCompositor.prototype.measureText = function _measureText(text) {
-		CanvasObject.Renderer.measureText(text);
+		Renderer.measureText(this._context, text, this.style);
 	};
 
 	//expose primitive canvas functions at high level
 	CanvasCompositor.prototype.drawImage = function _drawImage(x, y, image) {
-		CanvasObject.Renderer.drawImage(x, y, image);
+		Renderer.drawImage(this._context, x, y, image, this.style);
 	};
 
 	CanvasCompositor.prototype.draw = function _draw(canvasObject) {
@@ -232,14 +232,6 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
 			canvasObject.draw();
 			return;
 		}
-	};
-
-	CanvasCompositor.prototype.setStyle = function _setStyle(style) {
-		CanvasObject.Renderer.setStyle(style);
-	};
-
-	CanvasCompositor.prototype.getStyle = function _getStyle() {
-		return CanvasObject.Renderer.getStyle();
 	};
 
 	//get the context for direct drawing to the canvas
