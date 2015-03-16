@@ -78,10 +78,11 @@ define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
 		this.onpressmove = null;
 		this.onpressup = null;
 		this.onpresscancel = null;
+		this.NeedsRedraw = true;
+		this.NeedsUpdate = true;
 	};
 
 	CanvasObject.prototype.dragStart = function _dragStart(e) {
-		console.log(this);
 		this.mouseOffset = {
 			x: e.offsetX - (this.x + this.translation.x),
 			y: e.offsetY - (this.y + this.translation.y)
