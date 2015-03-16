@@ -1,34 +1,34 @@
 {
-  "name": "canvas-compositor",
-  "version": "0.0.18",
-  "description": "a light and performant canvas compositing engine",
-  "main": "index.js",
-  "scripts": {
-    "test": "test",
-    "prestart": "npm install && bower install",
-    "start": "grunt dev | rainbowify",
-    "prebuild": "npm install && bower install",
-    "build": "grunt build | rainbowify"
-  },
-  "keywords": [
+	"name": "canvas-compositor",
+	"version": "0.0.19",
+	"description": "a light and performant canvas compositing engine",
+	"main": "index.js",
+	"scripts": {
+		"test": "test",
+		"prestart": "npm install && bower install",
+		"start": "grunt dev | rainbowify",
+		"prebuild": "npm install && bower install",
+		"build": "grunt build | rainbowify"
+	},
+	"keywords": [
     "2d",
     "canvas",
     "compositing"
   ],
-  "author": "Christopher J Gore",
-  "repository" : {
-    "type" : "git",
-    "url" : "git@github.com:theOutLiar/canvas-compositor.git"
-  },
-  "license": "MIT",
-  "dependencies": {},
-  "devDependencies": {
-    "grunt": "^0.4.5",
-    "grunt-cli": "^0.1.13",
-    "grunt-contrib-clean": "^0.6.0",
-    "grunt-contrib-requirejs": "^0.4.4",
-    "grunt-contrib-watch": "^0.6.1",
-    "rainbowify": "^1.0.1",
-    "time-grunt": "^1.1.0"
-  }
+	"author": "Christopher J Gore",
+	"repository": {
+		"type": "git",
+		"url": "git@github.com:theOutLiar/canvas-compositor.git"
+	},
+	"license": "MIT",
+	"dependencies": {},
+	"devDependencies": {
+		"grunt": "^0.4.5",
+		"grunt-cli": "^0.1.13",
+		"grunt-contrib-clean": "^0.6.0",
+		"grunt-contrib-requirejs": "^0.4.4",
+		"grunt-contrib-watch": "^0.6.1",
+		"rainbowify": "^1.0.1",
+		"time-grunt": "^1.1.0"
+	}
 }
