@@ -8,7 +8,7 @@ define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Rende
 
 	_.assign(Container.prototype, CanvasObject.prototype);
 
-	Container.prototype.updateBoundingRectangle = function _getBoundingRectangle() {
+	Container.prototype.updateBoundingRectangle = function _updateBoundingRectangle() {
 		var top = null,
 			left = null,
 			bottom = null,
@@ -62,7 +62,7 @@ define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Rende
 		this.children.push(child);
 		this.updateBoundingRectangle();
 		this.NeedsUpdate = true;
-		this._needsRedraw = true;
+		this.NeedsRedraw = true;
 	};
 
 	Container.prototype.render = function _render() {

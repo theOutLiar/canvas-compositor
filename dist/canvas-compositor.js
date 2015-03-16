@@ -12222,6 +12222,20 @@ define('canvas-object',['lodash', 'vector', 'renderer'], function (_, Vector, Re
 				return this._needsUpdate;
 			}
 		});
+
+		Object.defineProperty(this, 'NeedsRedraw', {
+			configurable: true,
+			enumerable: true,
+			set: function (val) {
+				if (this.parent && val) { //only mark the parent for update if true
+					this.parent.NeedsRedraw = val;
+				}
+				return (this._needsRedraw = val);
+			},
+			get: function () {
+				return this._needsRedraw;
+			}
+		});
 	}
 
 	CanvasObject.prototype.affixToPressPoint = function _affixToPressPoint(x, y) {
@@ -12258,6 +12272,7 @@ define('canvas-object',['lodash', 'vector', 'renderer'], function (_, Vector, Re
 			x: e.offsetX - this.mouseOffset.x - this.x,
 			y: e.offsetY - this.mouseOffset.y - this.y
 		};
+		this.NeedsRedraw = true;
 		this.NeedsUpdate = true;
 	};
 
@@ -12266,6 +12281,7 @@ define('canvas-object',['lodash', 'vector', 'renderer'], function (_, Vector, Re
 		this.onpressmove = null;
 		this.onpressup = null;
 		this.onpresscancel = null;
+		this.NeedsRedraw = true;
 		this.NeedsUpdate = true;
 	};
 
@@ -12286,18 +12302,19 @@ define('canvas-object',['lodash', 'vector', 'renderer'], function (_, Vector, Re
 
 	CanvasObject.prototype.draw = function _draw(context, contextOffset) {
 		this.NeedsUpdate = false;
-		if (this._needsRedraw && this.render) {
-			delete this._prerenderedImage;
-			delete this._prerenderingContext;
+
+		if (this.NeedsRedraw && this.render) {
+			this.updateBoundingRectangle();
 			this._prerenderedImage = document.createElement('canvas');
 			this._prerenderedImage.width = this.boundingRectangle.right - this.boundingRectangle.left;
 			this._prerenderedImage.height = this.boundingRectangle.bottom - this.boundingRectangle.top;
 			this._prerenderingContext = this._prerenderedImage.getContext('2d');
 			this.render();
-			this._needsRedraw = false;
+			this.NeedsRedraw = false;
 		}
-		var x = this.x + this.translation.x - (contextOffset && contextOffset.left ? contextOffset.left : 0);;
-		var y =this.y + this.translation.y - (contextOffset && contextOffset.top ? contextOffset.top : 0);
+
+		var x = this.boundingRectangle.left - (contextOffset && contextOffset.left ? contextOffset.left : 0);
+		var y = this.boundingRectangle.top - (contextOffset && contextOffset.top ? contextOffset.top : 0);
 		Renderer.drawImage(context, x, y, this._prerenderedImage);
 	};
 
@@ -12441,18 +12458,22 @@ define('rectangle',['lodash', 'canvas-object', 'renderer'], function (_, CanvasO
 		CanvasObject.call(this, options);
 		this.width = options.width || 0;
 		this.height = options.height || 0;
-		this.boundingRectangle = {
-			top: this.y + this.translation.y,
-			left: this.x + this.translation.x,
-			bottom: this.y + this.translation.y + this.height,
-			right: this.x  + this.translation.x + this.width
-		};
+		this.updateBoundingRectangle();
 	}
+
+	Rectangle.prototype.updateBoundingRectangle = function _updateBoundingRectangle(){
+		this.boundingRectangle = {
+			top: this.y + this.translation.y - this.style.lineWidth/2,
+			left: this.x + this.translation.x - this.style.lineWidth/2,
+			bottom: this.y + this.translation.y + this.height + this.style.lineWidth,
+			right: this.x + this.translation.x + this.width + this.style.lineWidth
+		};
+	};
 
 	_.assign(Rectangle.prototype, CanvasObject.prototype);
 
 	Rectangle.prototype.render = function _render() {
-		Renderer.drawRectangle(this._prerenderingContext, 0, 0, this.width, this.height, this.style);
+		Renderer.drawRectangle(this._prerenderingContext, this.style.lineWidth/2, this.style.lineWidth/2, this.width, this.height, this.style);
 	};
 
 	Rectangle.prototype.PointIsInObject = function (x, y) {
@@ -12478,14 +12499,22 @@ define('ellipse',['lodash', 'canvas-object', 'renderer'], function (_, CanvasObj
 		CanvasObject.call(this, options);
 		this.radius = options.radius || 0;
 		this.minorRadius = options.minorRadius || this.radius || 0;
+		this.updateBoundingRectangle();
 	}
+
+	Ellipse.prototype.updateBoundingRectangle = function _updateBoundingRectangle(){
+		this.boundingRectangle = {
+			top: this.y + this.translation.y - this.minorRadius,
+			left: this.x + this.translation.x - this.radius,
+			bottom: this.y + this.translation.y + this.minorRadius,
+			right: this.x + this.translation.x + this.radius
+		};
+	};
 
 	_.assign(Ellipse.prototype, CanvasObject.prototype);
 
 	Ellipse.prototype.render = function _render() {
-		var x = this.x + this.translation.x;
-		var y = this.y + this.translation.y;
-		Renderer.drawEllipse(x, y, this.radius, this.minorRadius, this.style);
+		Renderer.drawEllipse(this._prerenderingContext, this.radius, this.minorRadius, this.radius, this.minorRadius, this.style);
 	};
 
 	Ellipse.prototype.PointIsInObject = function (x, y) {
@@ -12524,13 +12553,17 @@ define('text',['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject
 
 		this.textMetrics = Renderer.measureText(this._prerenderingContext, this.text, this.style);
 		this.textMetrics.height = parseFloat(this.fontSize);
+		this.updateBoundingRectangle();
+	}
+
+	Text.prototype.updateBoundingRectangle = function _updateBoundingRectangle(){
 		this.boundingRectangle = {
 			top: this.y + this.translation.y,
 			left: this.x + this.translation.x,
 			bottom: this.y + this.translation.y + this.textMetrics.height,
 			right: this.x  + this.translation.x + this.textMetrics.width
 		};
-	}
+	};
 
 	Text.FormatFontString = function _formatFontString(style, variant, weight, size, lineheight, family) {
 		return style + ' ' + variant + ' ' + weight + ' ' + size + '/' + lineheight + ' ' + family;
@@ -12600,7 +12633,7 @@ define('container',['lodash', 'canvas-object', 'renderer'], function (_, CanvasO
 
 	_.assign(Container.prototype, CanvasObject.prototype);
 
-	Container.prototype.updateBoundingRectangle = function _getBoundingRectangle() {
+	Container.prototype.updateBoundingRectangle = function _updateBoundingRectangle() {
 		var top = null,
 			left = null,
 			bottom = null,
@@ -12654,7 +12687,7 @@ define('container',['lodash', 'canvas-object', 'renderer'], function (_, CanvasO
 		this.children.push(child);
 		this.updateBoundingRectangle();
 		this.NeedsUpdate = true;
-		this._needsRedraw = true;
+		this.NeedsRedraw = true;
 	};
 
 	Container.prototype.render = function _render() {

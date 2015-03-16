@@ -46,6 +46,20 @@ define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
 				return this._needsUpdate;
 			}
 		});
+
+		Object.defineProperty(this, 'NeedsRedraw', {
+			configurable: true,
+			enumerable: true,
+			set: function (val) {
+				if (this.parent && val) { //only mark the parent for update if true
+					this.parent.NeedsRedraw = val;
+				}
+				return (this._needsRedraw = val);
+			},
+			get: function () {
+				return this._needsRedraw;
+			}
+		});
 	}
 
 	CanvasObject.prototype.affixToPressPoint = function _affixToPressPoint(x, y) {
@@ -82,6 +96,7 @@ define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
 			x: e.offsetX - this.mouseOffset.x - this.x,
 			y: e.offsetY - this.mouseOffset.y - this.y
 		};
+		this.NeedsRedraw = true;
 		this.NeedsUpdate = true;
 	};
 
@@ -90,6 +105,7 @@ define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
 		this.onpressmove = null;
 		this.onpressup = null;
 		this.onpresscancel = null;
+		this.NeedsRedraw = true;
 		this.NeedsUpdate = true;
 	};
 
@@ -110,18 +126,19 @@ define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
 
 	CanvasObject.prototype.draw = function _draw(context, contextOffset) {
 		this.NeedsUpdate = false;
-		if (this._needsRedraw && this.render) {
-			delete this._prerenderedImage;
-			delete this._prerenderingContext;
+
+		if (this.NeedsRedraw && this.render) {
+			this.updateBoundingRectangle();
 			this._prerenderedImage = document.createElement('canvas');
 			this._prerenderedImage.width = this.boundingRectangle.right - this.boundingRectangle.left;
 			this._prerenderedImage.height = this.boundingRectangle.bottom - this.boundingRectangle.top;
 			this._prerenderingContext = this._prerenderedImage.getContext('2d');
 			this.render();
-			this._needsRedraw = false;
+			this.NeedsRedraw = false;
 		}
-		var x = this.x + this.translation.x - (contextOffset && contextOffset.left ? contextOffset.left : 0);;
-		var y =this.y + this.translation.y - (contextOffset && contextOffset.top ? contextOffset.top : 0);
+
+		var x = this.boundingRectangle.left - (contextOffset && contextOffset.left ? contextOffset.left : 0);
+		var y = this.boundingRectangle.top - (contextOffset && contextOffset.top ? contextOffset.top : 0);
 		Renderer.drawImage(context, x, y, this._prerenderedImage);
 	};
 
