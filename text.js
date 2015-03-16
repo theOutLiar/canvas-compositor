@@ -27,13 +27,17 @@ define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Rende
 
 		this.textMetrics = Renderer.measureText(this._prerenderingContext, this.text, this.style);
 		this.textMetrics.height = parseFloat(this.fontSize);
+		this.updateBoundingRectangle();
+	}
+
+	Text.prototype.updateBoundingRectangle = function _updateBoundingRectangle(){
 		this.boundingRectangle = {
 			top: this.y + this.translation.y,
 			left: this.x + this.translation.x,
 			bottom: this.y + this.translation.y + this.textMetrics.height,
 			right: this.x  + this.translation.x + this.textMetrics.width
 		};
-	}
+	};
 
 	Text.FormatFontString = function _formatFontString(style, variant, weight, size, lineheight, family) {
 		return style + ' ' + variant + ' ' + weight + ' ' + size + '/' + lineheight + ' ' + family;
