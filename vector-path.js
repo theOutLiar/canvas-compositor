@@ -38,13 +38,12 @@ define(['lodash', 'canvas-object', 'renderer', 'vector', 'line'], function (_, C
 
 	Path.prototype.render = function _render() {
 		var boundingRectangle = this.boundingRectangle;
-		var lineWidth = this.style.lineWidth;
 		var translation = this.translation;
 		//need to revisit these mathematics - shouldn't need to account
 		//for translation here, should be part of the bounding rectangle
 		var translatedVertices = _.map(this.vertices, function (vertex) {
-			var x = vertex.x + (lineWidth/2.0) - boundingRectangle.left + translation.x;
-			var y = vertex.y + (lineWidth/2.0) - boundingRectangle.top + translation.y;
+			var x = vertex.x - boundingRectangle.left + translation.x;
+			var y = vertex.y - boundingRectangle.top + translation.y;
 			return new Vector([x,y]);
 		});
 		Renderer.drawPath(this._prerenderingContext, translatedVertices, this.style);
