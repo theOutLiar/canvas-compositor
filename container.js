@@ -67,6 +67,14 @@ define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Rende
 		this.NeedsRedraw = true;
 	};
 
+	Container.prototype.addMask = function _addMask(mask) {
+		mask.parent = this;
+		this.masks.push(mask);
+		this.NeedsUpdate = true;
+		this.NeedsRedraw = true;
+	};
+
+
 	//TODO: need to account for translation... should re-work math for this...
 	Container.prototype.render = function _render() {
 		var renderContext = this._prerenderingContext;
@@ -80,11 +88,12 @@ define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Rende
 		_.each(this.children, function (c) {
 			c.draw(renderContext, contextOffset);
 		});
-		Renderer.mask = true;
+
+		renderContext.globalCompositeOperation = 'destination-out';
 		_.each(this.masks, function (m){
 			m.draw(renderContext, contextOffset);
 		});
-		Renderer.mask = false;
+		renderContext.globalCompositeOperation = 'normal';
 	}; //should be overridden by implementors
 
 	Container.prototype.parent = null;

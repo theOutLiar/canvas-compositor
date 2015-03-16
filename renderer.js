@@ -48,6 +48,7 @@ define(['lodash'], function (_) {
 		},
 		drawEllipse: function _draw(context, x, y, radius, minorRadius, style) {
 			_.assign(context, style);
+			//context.globalCompositeOperation = this.mask ? 'source-out' : 'normal';
 			context.beginPath();
 			//TODO: 2015-03-12 this is currently only supported by chrome & opera
 			context.ellipse(x, y, radius, minorRadius, 0, 0, 2 * Math.PI);
@@ -71,7 +72,9 @@ define(['lodash'], function (_) {
 		},
 		drawImage: function _draw(context, x, y, image, style) {
 			_.assign(context, style);
+			context.beginPath();
 			context.drawImage(image, x, y);
+			context.closePath();
 		}
 	};
 

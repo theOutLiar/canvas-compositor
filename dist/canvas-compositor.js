@@ -12038,6 +12038,7 @@ define('renderer',['lodash'], function (_) {
 		},
 		drawEllipse: function _draw(context, x, y, radius, minorRadius, style) {
 			_.assign(context, style);
+			//context.globalCompositeOperation = this.mask ? 'source-out' : 'normal';
 			context.beginPath();
 			//TODO: 2015-03-12 this is currently only supported by chrome & opera
 			context.ellipse(x, y, radius, minorRadius, 0, 0, 2 * Math.PI);
@@ -12061,7 +12062,9 @@ define('renderer',['lodash'], function (_) {
 		},
 		drawImage: function _draw(context, x, y, image, style) {
 			_.assign(context, style);
+			context.beginPath();
 			context.drawImage(image, x, y);
+			context.closePath();
 		}
 	};
 
@@ -12254,7 +12257,6 @@ define('canvas-object',['lodash', 'vector', 'renderer'], function (_, Vector, Re
 		this.onpressmove = null;
 		this.onpressup = null;
 		this.onpresscancel = null;
-		
 		this.NeedsRedraw = true;
 		this.NeedsUpdate = true;
 	};
@@ -12722,6 +12724,14 @@ define('container',['lodash', 'canvas-object', 'renderer'], function (_, CanvasO
 		this.NeedsRedraw = true;
 	};
 
+	Container.prototype.addMask = function _addMask(mask) {
+		mask.parent = this;
+		this.masks.push(mask);
+		this.NeedsUpdate = true;
+		this.NeedsRedraw = true;
+	};
+
+
 	//TODO: need to account for translation... should re-work math for this...
 	Container.prototype.render = function _render() {
 		var renderContext = this._prerenderingContext;
@@ -12735,11 +12745,12 @@ define('container',['lodash', 'canvas-object', 'renderer'], function (_, CanvasO
 		_.each(this.children, function (c) {
 			c.draw(renderContext, contextOffset);
 		});
-		Renderer.mask = true;
+
+		renderContext.globalCompositeOperation = 'destination-out';
 		_.each(this.masks, function (m){
 			m.draw(renderContext, contextOffset);
 		});
-		Renderer.mask = false;
+		renderContext.globalCompositeOperation = 'normal';
 	}; //should be overridden by implementors
 
 	Container.prototype.parent = null;

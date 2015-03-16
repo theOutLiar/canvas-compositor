@@ -25,9 +25,9 @@
 			draggable: true
 		});
 
-        _cc.Scene.addChild(rectContainer);
 		_cc.Scene.addChild(textContainer);
 		_cc.Scene.addChild(pathContainer);
+		_cc.Scene.addChild(rectContainer);
 
 		rectContainer.addChild(new cc.Rectangle(
             {
@@ -42,6 +42,18 @@
                 }
             }
         ));
+
+		rectContainer.addMask(new cc.Path(
+			{
+				vertices:[
+					{ x:100, y:100 },
+					{ x:300, y:300 }
+				],
+				style: {
+					lineWidth:20
+				}
+			}
+		));
 
         /*_cc.Scene.addChild(new cc.Ellipse(
             {
