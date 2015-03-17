@@ -19,7 +19,7 @@ define(['lodash'], function (_) {
 		clearRect: function _clearRect(context, x, y, width, height) {
 			context.clearRect(x, y, width, height);
 		},
-		drawPath: function _draw(context, vertices, style) {
+		drawPath: function _drawPath(context, vertices, style) {
 			_.assign(context, style);
 			context.beginPath();
 			var started = false;
@@ -38,7 +38,7 @@ define(['lodash'], function (_) {
 			context.stroke();
 			context.closePath();
 		},
-		drawRectangle: function _draw(context, x, y, width, height, style) {
+		drawRectangle: function _drawRectangle(context, x, y, width, height, style) {
 			_.assign(context, style);
 			context.beginPath();
 			context.rect(x, y, width, height);
@@ -46,7 +46,7 @@ define(['lodash'], function (_) {
 			context.stroke();
 			context.closePath();
 		},
-		drawEllipse: function _draw(context, x, y, radius, minorRadius, style) {
+		drawEllipse: function _drawEllipse(context, x, y, radius, minorRadius, style) {
 			_.assign(context, style);
 			//context.globalCompositeOperation = this.mask ? 'source-out' : 'normal';
 			context.beginPath();
@@ -56,7 +56,7 @@ define(['lodash'], function (_) {
 			context.stroke();
 			context.closePath();
 		},
-		drawText: function _draw(context, x, y, text, style) {
+		drawText: function _drawText(context, x, y, text, style) {
 			_.assign(context, style);
 			context.beginPath();
 			context.fillText(text, x, y);
@@ -70,7 +70,7 @@ define(['lodash'], function (_) {
 			_.assign(context, style);
 			return context.measureText(text);
 		},
-		drawImage: function _draw(context, x, y, image, style) {
+		drawImage: function _drawImage(context, x, y, image, style) {
 			_.assign(context, style);
 			context.beginPath();
 			context.drawImage(image, x, y);

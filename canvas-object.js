@@ -2,33 +2,30 @@ define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
 	'use strict';
 
 	function CanvasObject(options) {
-		this.x = options.x || 0;
-		this.y = options.y || 0;
+		this.d = new Vector([options.x || 0, options.y || 0]);
 		this.style = _.assign({}, Renderer.DEFAULTS, options.style);
 		this.draggable = options.draggable || false;
 		this._needsUpdate = false;
-		this._needsRedraw = true;
+		this._needsRender = true;
 		this._prerenderedImage = document.createElement('canvas');
 		this._prerenderingContext = this._prerenderedImage.getContext('2d');
 		this.parent = options.parent || null;
 		if (this.draggable) {
 			this.enableDragging();
 		}
+
 		//putting defineProperty in constructor to make inheritable
 		//on a tight schedule - would prefer to do this on the
 		//prototype, because doing it otherwise means each instance
 		//has to create a copy of the property/getters/setters
-		Object.defineProperty(this, 'translation', {
+		Object.defineProperty(this, 'offset', {
 			configurable: true,
 			enumerable: true,
-			set: function (val) {
-				this._translation = new Vector([val.x, val.y]);
-			},
 			get: function () {
 				if (this.parent) {
-					return this._translation.add(this.parent.translation);
+					return this.d.add(this.parent.offset);
 				} else {
-					return this._translation;
+					return this.d;
 				}
 			}
 		});
@@ -47,27 +44,20 @@ define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
 			}
 		});
 
-		Object.defineProperty(this, 'NeedsRedraw', {
+		Object.defineProperty(this, 'NeedsRender', {
 			configurable: true,
 			enumerable: true,
 			set: function (val) {
 				if (this.parent && val) { //only mark the parent for update if true
-					this.parent.NeedsRedraw = val;
+					this.parent.NeedsRender = val;
 				}
-				return (this._needsRedraw = val);
+				return (this._needsRender = val);
 			},
 			get: function () {
-				return this._needsRedraw;
+				return this._needsRender;
 			}
 		});
 	}
-
-	CanvasObject.prototype.affixToPressPoint = function _affixToPressPoint(x, y) {
-		this.mouseOffset = {
-			x: x - (this.x + this.translation.x),
-			y: y - (this.y + this.translation.y)
-		};
-	};
 
 	CanvasObject.prototype.enableDragging = function _enableDragging() {
 		this.onpressdown = this.dragStart;
@@ -78,15 +68,12 @@ define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
 		this.onpressmove = null;
 		this.onpressup = null;
 		this.onpresscancel = null;
-		this.NeedsRedraw = true;
+		this.NeedsRender = true;
 		this.NeedsUpdate = true;
 	};
 
 	CanvasObject.prototype.dragStart = function _dragStart(e) {
-		this.mouseOffset = {
-			x: e.offsetX - (this.x + this.translation.x),
-			y: e.offsetY - (this.y + this.translation.y)
-		};
+		this.mouseOffset = new Vector([e.offsetX, e.offsetY]).subtract(this.offset);
 		this.onpressdown = null;
 		this.onpressmove = this.drag;
 		this.onpressup = this.dragEnd;
@@ -94,11 +81,8 @@ define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
 	};
 
 	CanvasObject.prototype.drag = function _drag(e) {
-		this.translation = {
-			x: e.offsetX - this.mouseOffset.x - this.x,
-			y: e.offsetY - this.mouseOffset.y - this.y
-		};
-		this.NeedsRedraw = true;
+		this.d = new Vector([e.offsetX,e.offsetY]).subtract(this.mouseOffset);
+		this.NeedsRender = true;
 		this.NeedsUpdate = true;
 	};
 
@@ -107,42 +91,39 @@ define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
 		this.onpressmove = null;
 		this.onpressup = null;
 		this.onpresscancel = null;
-		this.NeedsRedraw = true;
+		this.NeedsRender = true;
 		this.NeedsUpdate = true;
 	};
 
-	CanvasObject.prototype.x = 0;
-	CanvasObject.prototype.y = 0;
 	CanvasObject.prototype.draggable = false;
 	CanvasObject.prototype.context = null;
 	CanvasObject.prototype.style = null;
 	CanvasObject.prototype.scale = 1;
-	CanvasObject.prototype._translation = new Vector([0, 0]); //how much it's been translated
-
-	CanvasObject.prototype._needsUpdate = false;
-
-	CanvasObject.prototype.mouseOffset = {
-		x: 0,
-		y: 0
-	};
 
 	CanvasObject.prototype.draw = function _draw(context, contextOffset) {
 		this.NeedsUpdate = false;
 
-		if (this.NeedsRedraw && this.render) {
-			this.updateBoundingRectangle();
+		if (this.NeedsRender && this.render) {
 			delete this._prerenderedImage;
 			delete this._prerenderingContext;
 			this._prerenderedImage = document.createElement('canvas');
-			this._prerenderedImage.width = this.boundingRectangle.right - this.boundingRectangle.left;
-			this._prerenderedImage.height = this.boundingRectangle.bottom - this.boundingRectangle.top;
+			// text needs prerendering context defined for boundingBox measurements
 			this._prerenderingContext = this._prerenderedImage.getContext('2d');
-			this.render();
-			this.NeedsRedraw = false;
-		}
+			this._prerenderedImage.width = this.boundingBox.right - this.boundingBox.left;
+			this._prerenderedImage.height = this.boundingBox.bottom - this.boundingBox.top;
 
-		var x = this.boundingRectangle.left - (contextOffset && contextOffset.left ? contextOffset.left : 0);
-		var y = this.boundingRectangle.top - (contextOffset && contextOffset.top ? contextOffset.top : 0);
+			this.render();
+			this.NeedsRender = false;
+		}
+		/*draw bounding boxes*/
+		this._prerenderingContext.beginPath();
+		this._prerenderingContext.lineWidth=2.0;
+		this._prerenderingContext.strokeStyle='#FF0000';
+		this._prerenderingContext.strokeRect(0,0,this._prerenderedImage.width, this._prerenderedImage.height);
+		this._prerenderingContext.closePath();
+
+		var x = this.boundingBox.left + (contextOffset && contextOffset.left ? contextOffset.left : 0);
+		var y = this.boundingBox.top + (contextOffset && contextOffset.top ? contextOffset.top : 0);
 		Renderer.drawImage(context, x, y, this._prerenderedImage);
 	};
 

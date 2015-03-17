@@ -5,32 +5,34 @@ define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Rende
 		CanvasObject.call(this, options);
 		this.children = options.children || [];
 		this.masks = options.masks || [];
-		this.updateBoundingRectangle();
+
+		Object.defineProperty(this, 'boundingBox', {
+			configurable: true,
+			enumerable: true,
+			get: function () {
+				var top = null,
+					left = null,
+					bottom = null,
+					right = null;
+
+				_.each(this.children, function (c) {
+					top = top !== null && top < c.boundingBox.top ? top : c.boundingBox.top;
+					left = left !== null && left < c.boundingBox.left ? left : c.boundingBox.left;
+					bottom = bottom !== null && bottom > c.boundingBox.bottom ? bottom : c.boundingBox.bottom;
+					right = right !== null && right > c.boundingBox.right ? right : c.boundingBox.right;
+				});
+
+				return {
+					top: top,
+					left: left,
+					bottom: bottom,
+					right: right
+				};
+			}
+		});
 	}
 
 	_.assign(Container.prototype, CanvasObject.prototype);
-
-	Container.prototype.updateBoundingRectangle = function _updateBoundingRectangle() {
-		var top = null,
-			left = null,
-			bottom = null,
-			right = null;
-
-		_.each(this.children, function(c){
-			top = top !== null && top < c.boundingRectangle.top ? top : c.boundingRectangle.top;
-			left = left !== null && left < c.boundingRectangle.left ? left : c.boundingRectangle.left;
-			bottom = bottom !== null && bottom > c.boundingRectangle.bottom ? bottom : c.boundingRectangle.bottom;
-			right = right !== null && right > c.boundingRectangle.right ? right : c.boundingRectangle.right;
-		});
-		this.x = left;
-		this.y = top;
-		this.boundingRectangle = {
-			top: top + this.translation.y,
-			left: left + this.translation.x,
-			bottom: bottom + this.translation.y,
-			right: right + this.translation.x
-		};
-	};
 
 	Container.prototype.masks = [];
 	Container.prototype.children = [];
@@ -62,16 +64,16 @@ define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Rende
 	Container.prototype.addChild = function _addChild(child) {
 		child.parent = this;
 		this.children.push(child);
-		this.updateBoundingRectangle();
 		this.NeedsUpdate = true;
-		this.NeedsRedraw = true;
+		this.NeedsRender = true;
 	};
 
 	Container.prototype.addMask = function _addMask(mask) {
 		mask.parent = this;
+		//mask.d = mask.d.add(this.d);
 		this.masks.push(mask);
 		this.NeedsUpdate = true;
-		this.NeedsRedraw = true;
+		this.NeedsRender = true;
 	};
 
 
@@ -79,18 +81,23 @@ define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Rende
 	Container.prototype.render = function _render() {
 		var renderContext = this._prerenderingContext;
 		var contextOffset = {
-			top: this.boundingRectangle.top - this.translation.y,
-			left: this.boundingRectangle.left - this.translation.x,
-			bottom: this.boundingRectangle.bottom - this.translation.y,
-			right: this.boundingRectangle.right - this.translation.x
+			top: -this.boundingBox.top,
+			left: -this.boundingBox.left,
+			bottom: -this.boundingBox.bottom,
+			right: -this.boundingBox.right
 		};
 
 		_.each(this.children, function (c) {
 			c.draw(renderContext, contextOffset);
 		});
-
 		renderContext.globalCompositeOperation = 'destination-out';
-		_.each(this.masks, function (m){
+		contextOffset = {
+			top: -this.boundingBox.top,
+			left: -this.boundingBox.left,
+			bottom: -this.boundingBox.bottom,
+			right: -this.boundingBox.right
+		};
+		_.each(this.masks, function (m) {
 			m.draw(renderContext, contextOffset);
 		});
 		renderContext.globalCompositeOperation = 'normal';

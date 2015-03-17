@@ -4,49 +4,47 @@ define(['lodash', 'canvas-object', 'renderer', 'vector', 'line'], function (_, C
 	'use strict';
 
 	function Path(options) {
-		options.x = options.x || options.vertices[0].x;
-		options.y = options.y || options.vertices[0].y;
 		CanvasObject.call(this, options);
 		this.vertices = _.map(options.vertices || [], function (v) {
 			return new Vector([v.x, v.y]);
 		});
-		this.updateBoundingRectangle();
+		Object.defineProperty(this, 'boundingBox', {
+			configurable: true,
+			enumerable: true,
+			get: function () {
+				var top = null,
+				left = null,
+				bottom = null,
+				right = null;
+
+				for(var v in this.vertices){
+					top = top !== null && top < this.vertices[v].y? top : this.vertices[v].y;
+					left = left !== null && left < this.vertices[v].x ? left : this.vertices[v].x;
+					bottom = bottom !== null && bottom > this.vertices[v].y ? bottom : this.vertices[v].y;
+					right = right !== null && right > this.vertices[v].x ? right : this.vertices[v].x;
+				}
+
+				return {
+					top: top + this.offset.y - this.style.lineWidth/2.0,
+					left: left + this.offset.x - this.style.lineWidth/2.0,
+					bottom: bottom + this.offset.y + this.style.lineWidth/2.0,
+					right: right + this.offset.x + this.style.lineWidth/2.0
+				};
+			}
+		});
 	}
 
 	_.assign(Path.prototype, CanvasObject.prototype);
 
-	Path.prototype.updateBoundingRectangle = function _updateBoundingRectangle(){
-		var top = null,
-			left = null,
-			bottom = null,
-			right = null;
-
-		for(var v in this.vertices){
-			top = top !== null && top < this.vertices[v].y ? top : this.vertices[v].y;
-			left = left !== null && left < this.vertices[v].x ? left : this.vertices[v].x;
-			bottom = bottom !== null && bottom > this.vertices[v].y ? bottom : this.vertices[v].y;
-			right = right !== null && right > this.vertices[v].x ? right : this.vertices[v].x;
-		}
-
-		this.boundingRectangle = {
-			top: top + this.translation.y - this.style.lineWidth/2.0,
-			left: left + this.translation.x - this.style.lineWidth/2.0,
-			bottom: bottom + this.translation.y + this.style.lineWidth,
-			right: right + this.translation.x + this.style.lineWidth
-		};
-	};
 
 	Path.prototype.render = function _render() {
-		var boundingRectangle = this.boundingRectangle;
-		var translation = this.translation;
-		//need to revisit these mathematics - shouldn't need to account
-		//for translation here, should be part of the bounding rectangle
-		var translatedVertices = _.map(this.vertices, function (vertex) {
-			var x = vertex.x - boundingRectangle.left + translation.x;
-			var y = vertex.y - boundingRectangle.top + translation.y;
-			return new Vector([x,y]);
+		var boundingBox = this.boundingBox;
+		var offset = this.offset;
+		//normalize the vertices (left- and top-most x/y-values should be 0 and 0)
+		var normalizedVertices = _.map(this.vertices, function (vertex) {
+			return vertex.subtract(new Vector([boundingBox.left, boundingBox.top])).add(offset);
 		});
-		Renderer.drawPath(this._prerenderingContext, translatedVertices, this.style);
+		Renderer.drawPath(this._prerenderingContext, normalizedVertices, this.style);
 	};
 
 	Path.prototype.PointIsInObject = function (x, y) {
@@ -60,8 +58,8 @@ define(['lodash', 'canvas-object', 'renderer', 'vector', 'line'], function (_, C
 		for (var i = 0; i < this.vertices.length; i++) {
 			var j = (i + 1) >= this.vertices.length ? 0 : i + 1;
 
-			var v = this.vertices[i].add(this.translation);
-			var w = this.vertices[j].add(this.translation);
+			var v = this.vertices[i].add(this.offset);
+			var w = this.vertices[j].add(this.offset);
 
 			var edgeDirection = w.subtract(v).unitVector;
 			var edge = new Line(v, edgeDirection);

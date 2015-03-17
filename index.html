@@ -29,7 +29,7 @@
 		_cc.Scene.addChild(pathContainer);
 		_cc.Scene.addChild(rectContainer);
 
-		rectContainer.addChild(new cc.Rectangle(
+		var _rect = new cc.Rectangle(
             {
                 x:100,
                 y:100,
@@ -41,9 +41,11 @@
                     lineWidth: 10
                 }
             }
-        ));
+        );
 
-		rectContainer.addMask(new cc.Path(
+		//_cc.Scene.addChild(_rect);
+
+		var _mask = new cc.Path(
 			{
 				vertices:[
 					{ x:100, y:100 },
@@ -53,9 +55,15 @@
 					lineWidth:20
 				}
 			}
-		));
+		);
+		rectContainer.addChild(_rect);
 
-        /*_cc.Scene.addChild(new cc.Ellipse(
+		rectContainer.d.x = rectContainer.d.x + 50;
+		rectContainer.d.y = rectContainer.d.y + 50;
+		rectContainer.addMask(_mask);
+
+
+        _cc.Scene.addChild(new cc.Ellipse(
             {
                 x:400,
                 y:400,
@@ -67,9 +75,9 @@
                     lineWidth: 10
                 }
             }
-        ));*/
+        ));
 
-        textContainer.addChild(new cc.Text(
+		var _text = new cc.Text(
             {
                 x:100,
                 y:400,
@@ -81,7 +89,8 @@
                     lineWidth: 1
                 }
             }
-        ));
+        );
+        textContainer.addChild(_text);
 
 		pathContainer.addChild(new cc.Path(
 			{

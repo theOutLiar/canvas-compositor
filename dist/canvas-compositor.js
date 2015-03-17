@@ -12009,7 +12009,7 @@ define('renderer',['lodash'], function (_) {
 		clearRect: function _clearRect(context, x, y, width, height) {
 			context.clearRect(x, y, width, height);
 		},
-		drawPath: function _draw(context, vertices, style) {
+		drawPath: function _drawPath(context, vertices, style) {
 			_.assign(context, style);
 			context.beginPath();
 			var started = false;
@@ -12028,7 +12028,7 @@ define('renderer',['lodash'], function (_) {
 			context.stroke();
 			context.closePath();
 		},
-		drawRectangle: function _draw(context, x, y, width, height, style) {
+		drawRectangle: function _drawRectangle(context, x, y, width, height, style) {
 			_.assign(context, style);
 			context.beginPath();
 			context.rect(x, y, width, height);
@@ -12036,7 +12036,7 @@ define('renderer',['lodash'], function (_) {
 			context.stroke();
 			context.closePath();
 		},
-		drawEllipse: function _draw(context, x, y, radius, minorRadius, style) {
+		drawEllipse: function _drawEllipse(context, x, y, radius, minorRadius, style) {
 			_.assign(context, style);
 			//context.globalCompositeOperation = this.mask ? 'source-out' : 'normal';
 			context.beginPath();
@@ -12046,7 +12046,7 @@ define('renderer',['lodash'], function (_) {
 			context.stroke();
 			context.closePath();
 		},
-		drawText: function _draw(context, x, y, text, style) {
+		drawText: function _drawText(context, x, y, text, style) {
 			_.assign(context, style);
 			context.beginPath();
 			context.fillText(text, x, y);
@@ -12060,7 +12060,7 @@ define('renderer',['lodash'], function (_) {
 			_.assign(context, style);
 			return context.measureText(text);
 		},
-		drawImage: function _draw(context, x, y, image, style) {
+		drawImage: function _drawImage(context, x, y, image, style) {
 			_.assign(context, style);
 			context.beginPath();
 			context.drawImage(image, x, y);
@@ -12181,33 +12181,30 @@ define('canvas-object',['lodash', 'vector', 'renderer'], function (_, Vector, Re
 	
 
 	function CanvasObject(options) {
-		this.x = options.x || 0;
-		this.y = options.y || 0;
+		this.d = new Vector([options.x || 0, options.y || 0]);
 		this.style = _.assign({}, Renderer.DEFAULTS, options.style);
 		this.draggable = options.draggable || false;
 		this._needsUpdate = false;
-		this._needsRedraw = true;
+		this._needsRender = true;
 		this._prerenderedImage = document.createElement('canvas');
 		this._prerenderingContext = this._prerenderedImage.getContext('2d');
 		this.parent = options.parent || null;
 		if (this.draggable) {
 			this.enableDragging();
 		}
+
 		//putting defineProperty in constructor to make inheritable
 		//on a tight schedule - would prefer to do this on the
 		//prototype, because doing it otherwise means each instance
 		//has to create a copy of the property/getters/setters
-		Object.defineProperty(this, 'translation', {
+		Object.defineProperty(this, 'offset', {
 			configurable: true,
 			enumerable: true,
-			set: function (val) {
-				this._translation = new Vector([val.x, val.y]);
-			},
 			get: function () {
 				if (this.parent) {
-					return this._translation.add(this.parent.translation);
+					return this.d.add(this.parent.offset);
 				} else {
-					return this._translation;
+					return this.d;
 				}
 			}
 		});
@@ -12226,27 +12223,20 @@ define('canvas-object',['lodash', 'vector', 'renderer'], function (_, Vector, Re
 			}
 		});
 
-		Object.defineProperty(this, 'NeedsRedraw', {
+		Object.defineProperty(this, 'NeedsRender', {
 			configurable: true,
 			enumerable: true,
 			set: function (val) {
 				if (this.parent && val) { //only mark the parent for update if true
-					this.parent.NeedsRedraw = val;
+					this.parent.NeedsRender = val;
 				}
-				return (this._needsRedraw = val);
+				return (this._needsRender = val);
 			},
 			get: function () {
-				return this._needsRedraw;
+				return this._needsRender;
 			}
 		});
 	}
-
-	CanvasObject.prototype.affixToPressPoint = function _affixToPressPoint(x, y) {
-		this.mouseOffset = {
-			x: x - (this.x + this.translation.x),
-			y: y - (this.y + this.translation.y)
-		};
-	};
 
 	CanvasObject.prototype.enableDragging = function _enableDragging() {
 		this.onpressdown = this.dragStart;
@@ -12257,15 +12247,12 @@ define('canvas-object',['lodash', 'vector', 'renderer'], function (_, Vector, Re
 		this.onpressmove = null;
 		this.onpressup = null;
 		this.onpresscancel = null;
-		this.NeedsRedraw = true;
+		this.NeedsRender = true;
 		this.NeedsUpdate = true;
 	};
 
 	CanvasObject.prototype.dragStart = function _dragStart(e) {
-		this.mouseOffset = {
-			x: e.offsetX - (this.x + this.translation.x),
-			y: e.offsetY - (this.y + this.translation.y)
-		};
+		this.mouseOffset = new Vector([e.offsetX, e.offsetY]).subtract(this.offset);
 		this.onpressdown = null;
 		this.onpressmove = this.drag;
 		this.onpressup = this.dragEnd;
@@ -12273,11 +12260,8 @@ define('canvas-object',['lodash', 'vector', 'renderer'], function (_, Vector, Re
 	};
 
 	CanvasObject.prototype.drag = function _drag(e) {
-		this.translation = {
-			x: e.offsetX - this.mouseOffset.x - this.x,
-			y: e.offsetY - this.mouseOffset.y - this.y
-		};
-		this.NeedsRedraw = true;
+		this.d = new Vector([e.offsetX,e.offsetY]).subtract(this.mouseOffset);
+		this.NeedsRender = true;
 		this.NeedsUpdate = true;
 	};
 
@@ -12286,42 +12270,39 @@ define('canvas-object',['lodash', 'vector', 'renderer'], function (_, Vector, Re
 		this.onpressmove = null;
 		this.onpressup = null;
 		this.onpresscancel = null;
-		this.NeedsRedraw = true;
+		this.NeedsRender = true;
 		this.NeedsUpdate = true;
 	};
 
-	CanvasObject.prototype.x = 0;
-	CanvasObject.prototype.y = 0;
 	CanvasObject.prototype.draggable = false;
 	CanvasObject.prototype.context = null;
 	CanvasObject.prototype.style = null;
 	CanvasObject.prototype.scale = 1;
-	CanvasObject.prototype._translation = new Vector([0, 0]); //how much it's been translated
-
-	CanvasObject.prototype._needsUpdate = false;
-
-	CanvasObject.prototype.mouseOffset = {
-		x: 0,
-		y: 0
-	};
 
 	CanvasObject.prototype.draw = function _draw(context, contextOffset) {
 		this.NeedsUpdate = false;
 
-		if (this.NeedsRedraw && this.render) {
-			this.updateBoundingRectangle();
+		if (this.NeedsRender && this.render) {
 			delete this._prerenderedImage;
 			delete this._prerenderingContext;
 			this._prerenderedImage = document.createElement('canvas');
-			this._prerenderedImage.width = this.boundingRectangle.right - this.boundingRectangle.left;
-			this._prerenderedImage.height = this.boundingRectangle.bottom - this.boundingRectangle.top;
+			// text needs prerendering context defined for boundingBox measurements
 			this._prerenderingContext = this._prerenderedImage.getContext('2d');
-			this.render();
-			this.NeedsRedraw = false;
-		}
+			this._prerenderedImage.width = this.boundingBox.right - this.boundingBox.left;
+			this._prerenderedImage.height = this.boundingBox.bottom - this.boundingBox.top;
 
-		var x = this.boundingRectangle.left - (contextOffset && contextOffset.left ? contextOffset.left : 0);
-		var y = this.boundingRectangle.top - (contextOffset && contextOffset.top ? contextOffset.top : 0);
+			this.render();
+			this.NeedsRender = false;
+		}
+		/*draw bounding boxes*/
+		this._prerenderingContext.beginPath();
+		this._prerenderingContext.lineWidth=2.0;
+		this._prerenderingContext.strokeStyle='#FF0000';
+		this._prerenderingContext.strokeRect(0,0,this._prerenderedImage.width, this._prerenderedImage.height);
+		this._prerenderingContext.closePath();
+
+		var x = this.boundingBox.left + (contextOffset && contextOffset.left ? contextOffset.left : 0);
+		var y = this.boundingBox.top + (contextOffset && contextOffset.top ? contextOffset.top : 0);
 		Renderer.drawImage(context, x, y, this._prerenderedImage);
 	};
 
@@ -12381,49 +12362,47 @@ define('vector-path',['lodash', 'canvas-object', 'renderer', 'vector', 'line'], 
 	
 
 	function Path(options) {
-		options.x = options.x || options.vertices[0].x;
-		options.y = options.y || options.vertices[0].y;
 		CanvasObject.call(this, options);
 		this.vertices = _.map(options.vertices || [], function (v) {
 			return new Vector([v.x, v.y]);
 		});
-		this.updateBoundingRectangle();
+		Object.defineProperty(this, 'boundingBox', {
+			configurable: true,
+			enumerable: true,
+			get: function () {
+				var top = null,
+				left = null,
+				bottom = null,
+				right = null;
+
+				for(var v in this.vertices){
+					top = top !== null && top < this.vertices[v].y? top : this.vertices[v].y;
+					left = left !== null && left < this.vertices[v].x ? left : this.vertices[v].x;
+					bottom = bottom !== null && bottom > this.vertices[v].y ? bottom : this.vertices[v].y;
+					right = right !== null && right > this.vertices[v].x ? right : this.vertices[v].x;
+				}
+
+				return {
+					top: top + this.offset.y - this.style.lineWidth/2.0,
+					left: left + this.offset.x - this.style.lineWidth/2.0,
+					bottom: bottom + this.offset.y + this.style.lineWidth/2.0,
+					right: right + this.offset.x + this.style.lineWidth/2.0
+				};
+			}
+		});
 	}
 
 	_.assign(Path.prototype, CanvasObject.prototype);
 
-	Path.prototype.updateBoundingRectangle = function _updateBoundingRectangle(){
-		var top = null,
-			left = null,
-			bottom = null,
-			right = null;
-
-		for(var v in this.vertices){
-			top = top !== null && top < this.vertices[v].y ? top : this.vertices[v].y;
-			left = left !== null && left < this.vertices[v].x ? left : this.vertices[v].x;
-			bottom = bottom !== null && bottom > this.vertices[v].y ? bottom : this.vertices[v].y;
-			right = right !== null && right > this.vertices[v].x ? right : this.vertices[v].x;
-		}
-
-		this.boundingRectangle = {
-			top: top + this.translation.y - this.style.lineWidth/2.0,
-			left: left + this.translation.x - this.style.lineWidth/2.0,
-			bottom: bottom + this.translation.y + this.style.lineWidth,
-			right: right + this.translation.x + this.style.lineWidth
-		};
-	};
 
 	Path.prototype.render = function _render() {
-		var boundingRectangle = this.boundingRectangle;
-		var translation = this.translation;
-		//need to revisit these mathematics - shouldn't need to account
-		//for translation here, should be part of the bounding rectangle
-		var translatedVertices = _.map(this.vertices, function (vertex) {
-			var x = vertex.x - boundingRectangle.left + translation.x;
-			var y = vertex.y - boundingRectangle.top + translation.y;
-			return new Vector([x,y]);
+		var boundingBox = this.boundingBox;
+		var offset = this.offset;
+		//normalize the vertices (left- and top-most x/y-values should be 0 and 0)
+		var normalizedVertices = _.map(this.vertices, function (vertex) {
+			return vertex.subtract(new Vector([boundingBox.left, boundingBox.top])).add(offset);
 		});
-		Renderer.drawPath(this._prerenderingContext, translatedVertices, this.style);
+		Renderer.drawPath(this._prerenderingContext, normalizedVertices, this.style);
 	};
 
 	Path.prototype.PointIsInObject = function (x, y) {
@@ -12437,8 +12416,8 @@ define('vector-path',['lodash', 'canvas-object', 'renderer', 'vector', 'line'], 
 		for (var i = 0; i < this.vertices.length; i++) {
 			var j = (i + 1) >= this.vertices.length ? 0 : i + 1;
 
-			var v = this.vertices[i].add(this.translation);
-			var w = this.vertices[j].add(this.translation);
+			var v = this.vertices[i].add(this.offset);
+			var w = this.vertices[j].add(this.offset);
 
 			var edgeDirection = w.subtract(v).unitVector;
 			var edge = new Line(v, edgeDirection);
@@ -12488,29 +12467,32 @@ define('rectangle',['lodash', 'canvas-object', 'renderer'], function (_, CanvasO
 		CanvasObject.call(this, options);
 		this.width = options.width || 0;
 		this.height = options.height || 0;
-		this.updateBoundingRectangle();
+
+		Object.defineProperty(this, 'boundingBox', {
+			configurable: true,
+			enumerable: true,
+			get: function () {
+				return {
+					top: this.offset.y - this.style.lineWidth/2.0,
+					left: this.offset.x - this.style.lineWidth/2.0,
+					bottom: this.offset.y + this.height + this.style.lineWidth/2.0,
+					right: this.offset.x + this.width + this.style.lineWidth/2.0
+				};
+			}
+		});
 	}
 
 	_.assign(Rectangle.prototype, CanvasObject.prototype);
-
-	Rectangle.prototype.updateBoundingRectangle = function _updateBoundingRectangle(){
-		this.boundingRectangle = {
-			top: this.y + this.translation.y - this.style.lineWidth/2.0,
-			left: this.x + this.translation.x - this.style.lineWidth/2.0,
-			bottom: this.y + this.translation.y + this.height + this.style.lineWidth,
-			right: this.x + this.translation.x + this.width + this.style.lineWidth
-		};
-	};
 
 	Rectangle.prototype.render = function _render() {
 		Renderer.drawRectangle(this._prerenderingContext, this.style.lineWidth/2.0, this.style.lineWidth/2.0, this.width, this.height, this.style);
 	};
 
 	Rectangle.prototype.PointIsInObject = function (x, y) {
-		var lowerBoundX = this.x + this.translation.x,
-			lowerBoundY = this.y + this.translation.y,
-			upperBoundX = this.x + this.translation.x + this.width,
-			upperBoundY = this.y + this.translation.y + this.height;
+		var lowerBoundX = this.offset.x - this.style.lineWidth/2.0,
+			lowerBoundY = this.offset.y - this.style.lineWidth/2.0,
+			upperBoundX = this.offset.x + this.width + this.style.lineWidth/2.0,
+			upperBoundY = this.offset.y + this.height + this.style.lineWidth/2.0;
 
 		return (
 			x > lowerBoundX &&
@@ -12529,17 +12511,19 @@ define('ellipse',['lodash', 'canvas-object', 'renderer'], function (_, CanvasObj
 		CanvasObject.call(this, options);
 		this.radius = options.radius || 0;
 		this.minorRadius = options.minorRadius || this.radius || 0;
-		this.updateBoundingRectangle();
+		Object.defineProperty(this, 'boundingBox', {
+			configurable: true,
+			enumerable: true,
+			get: function () {
+				return {
+					top: this.offset.y - (this.minorRadius + this.style.lineWidth/2.0),
+					left: this.offset.x - (this.radius + this.style.lineWidth/2.0),
+					bottom: this.offset.y + this.minorRadius + this.style.lineWidth/2.0,
+					right: this.offset.x + this.radius + this.style.lineWidth/2.0
+				};
+			}
+		});
 	}
-
-	Ellipse.prototype.updateBoundingRectangle = function _updateBoundingRectangle(){
-		this.boundingRectangle = {
-			top: this.y + this.translation.y - this.minorRadius - this.style.lineWidth/2.0,
-			left: this.x + this.translation.x - this.radius - this.style.lineWidth/2.0,
-			bottom: this.y + this.translation.y + this.minorRadius + this.style.lineWidth,
-			right: this.x + this.translation.x + this.radius + this.style.lineWidth
-		};
-	};
 
 	_.assign(Ellipse.prototype, CanvasObject.prototype);
 
@@ -12549,7 +12533,7 @@ define('ellipse',['lodash', 'canvas-object', 'renderer'], function (_, CanvasObj
 
 	Ellipse.prototype.PointIsInObject = function (x, y) {
 		//see: http://math.stackexchange.com/questions/76457/check-if-a-point-is-within-an-ellipse
-		return Math.pow((x - (this.x + this.translation.x)), 2) / Math.pow(this.radius, 2) + Math.pow((y - (this.y + this.translation.y)), 2) / Math.pow(this.minorRadius, 2) <= 1;
+		return Math.pow((x - this.offset.x), 2) / Math.pow(this.radius, 2) + Math.pow((y - this.offset.y), 2) / Math.pow(this.minorRadius, 2) <= 1;
 	};
 
 	return Ellipse;
@@ -12583,19 +12567,24 @@ define('text',['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject
 
 		this.textMetrics = Renderer.measureText(this._prerenderingContext, this.text, this.style);
 		this.textMetrics.height = parseFloat(this.fontSize);
-		this.updateBoundingRectangle();
+
+		Object.defineProperty(this, 'boundingBox', {
+			configurable: true,
+			enumerable: true,
+			get: function () {
+				this.textMetrics = Renderer.measureText(this._prerenderingContext, this.text, this.style);
+				this.textMetrics.height = parseFloat(this.fontSize);
+				return {
+					top: this.offset.y,
+					left: this.offset.x,
+					bottom: this.offset.y + this.textMetrics.height,
+					right: this.offset.x + this.textMetrics.width
+				};
+			}
+		});
 	}
 
-	Text.prototype.updateBoundingRectangle = function _updateBoundingRectangle(){
-		this.textMetrics = Renderer.measureText(this._prerenderingContext, this.text, this.style);
-		this.textMetrics.height = parseFloat(this.fontSize);
-		this.boundingRectangle = {
-			top: this.y + this.translation.y,
-			left: this.x + this.translation.x,
-			bottom: this.y + this.translation.y + this.textMetrics.height,
-			right: this.x  + this.translation.x + this.textMetrics.width
-		};
-	};
+	_.assign(Text.prototype, CanvasObject.prototype);
 
 	Text.FormatFontString = function _formatFontString(style, variant, weight, size, lineheight, family) {
 		return style + ' ' + variant + ' ' + weight + ' ' + size + '/' + lineheight + ' ' + family;
@@ -12615,18 +12604,16 @@ define('text',['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject
 		textBaseline: 'top'
 	};
 
-	_.assign(Text.prototype, CanvasObject.prototype);
-
 	Text.prototype.render = function _render() {
 		Renderer.drawText(this._prerenderingContext, 0, 0, this.text, this.style);
 	};
 
 	Text.prototype.PointIsInObject = function (x, y) {
 		//x & y are starting vertex of the baseline...
-		var lowerBoundX = this.x + this.translation.x,
-			lowerBoundY = this.y + this.translation.y,
-			upperBoundX = this.x + this.translation.x + this.textMetrics.width,
-			upperBoundY = this.y + this.translation.y + this.textMetrics.height;
+		var lowerBoundX = this.offset.x,
+			lowerBoundY = this.offset.y,
+			upperBoundX = this.offset.x + this.textMetrics.width,
+			upperBoundY = this.offset.y + this.textMetrics.height;
 		return (
 			x > lowerBoundX &&
 			y > lowerBoundY &&
@@ -12662,32 +12649,34 @@ define('container',['lodash', 'canvas-object', 'renderer'], function (_, CanvasO
 		CanvasObject.call(this, options);
 		this.children = options.children || [];
 		this.masks = options.masks || [];
-		this.updateBoundingRectangle();
+
+		Object.defineProperty(this, 'boundingBox', {
+			configurable: true,
+			enumerable: true,
+			get: function () {
+				var top = null,
+					left = null,
+					bottom = null,
+					right = null;
+
+				_.each(this.children, function (c) {
+					top = top !== null && top < c.boundingBox.top ? top : c.boundingBox.top;
+					left = left !== null && left < c.boundingBox.left ? left : c.boundingBox.left;
+					bottom = bottom !== null && bottom > c.boundingBox.bottom ? bottom : c.boundingBox.bottom;
+					right = right !== null && right > c.boundingBox.right ? right : c.boundingBox.right;
+				});
+
+				return {
+					top: top,
+					left: left,
+					bottom: bottom,
+					right: right
+				};
+			}
+		});
 	}
 
 	_.assign(Container.prototype, CanvasObject.prototype);
-
-	Container.prototype.updateBoundingRectangle = function _updateBoundingRectangle() {
-		var top = null,
-			left = null,
-			bottom = null,
-			right = null;
-
-		_.each(this.children, function(c){
-			top = top !== null && top < c.boundingRectangle.top ? top : c.boundingRectangle.top;
-			left = left !== null && left < c.boundingRectangle.left ? left : c.boundingRectangle.left;
-			bottom = bottom !== null && bottom > c.boundingRectangle.bottom ? bottom : c.boundingRectangle.bottom;
-			right = right !== null && right > c.boundingRectangle.right ? right : c.boundingRectangle.right;
-		});
-		this.x = left;
-		this.y = top;
-		this.boundingRectangle = {
-			top: top + this.translation.y,
-			left: left + this.translation.x,
-			bottom: bottom + this.translation.y,
-			right: right + this.translation.x
-		};
-	};
 
 	Container.prototype.masks = [];
 	Container.prototype.children = [];
@@ -12719,16 +12708,16 @@ define('container',['lodash', 'canvas-object', 'renderer'], function (_, CanvasO
 	Container.prototype.addChild = function _addChild(child) {
 		child.parent = this;
 		this.children.push(child);
-		this.updateBoundingRectangle();
 		this.NeedsUpdate = true;
-		this.NeedsRedraw = true;
+		this.NeedsRender = true;
 	};
 
 	Container.prototype.addMask = function _addMask(mask) {
 		mask.parent = this;
+		//mask.d = mask.d.add(this.d);
 		this.masks.push(mask);
 		this.NeedsUpdate = true;
-		this.NeedsRedraw = true;
+		this.NeedsRender = true;
 	};
 
 
@@ -12736,18 +12725,23 @@ define('container',['lodash', 'canvas-object', 'renderer'], function (_, CanvasO
 	Container.prototype.render = function _render() {
 		var renderContext = this._prerenderingContext;
 		var contextOffset = {
-			top: this.boundingRectangle.top - this.translation.y,
-			left: this.boundingRectangle.left - this.translation.x,
-			bottom: this.boundingRectangle.bottom - this.translation.y,
-			right: this.boundingRectangle.right - this.translation.x
+			top: -this.boundingBox.top,
+			left: -this.boundingBox.left,
+			bottom: -this.boundingBox.bottom,
+			right: -this.boundingBox.right
 		};
 
 		_.each(this.children, function (c) {
 			c.draw(renderContext, contextOffset);
 		});
-
 		renderContext.globalCompositeOperation = 'destination-out';
-		_.each(this.masks, function (m){
+		contextOffset = {
+			top: -this.boundingBox.top,
+			left: -this.boundingBox.left,
+			bottom: -this.boundingBox.bottom,
+			right: -this.boundingBox.right
+		};
+		_.each(this.masks, function (m) {
 			m.draw(renderContext, contextOffset);
 		});
 		renderContext.globalCompositeOperation = 'normal';
@@ -12914,7 +12908,6 @@ define('canvas-compositor',['lodash', 'renderer', 'canvas-object', 'vector-path'
 
 	CanvasCompositor.prototype._handlePressMove = function (e) {
 		e.preventDefault();
-
 		var objects = _.filter(this.Scene.children, function (c) {
 			// `!!` is a quick hack to convert to a bool
 			return !!(c.onpressmove);
