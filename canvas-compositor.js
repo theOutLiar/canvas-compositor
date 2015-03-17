@@ -19,12 +19,6 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
 		this._currentTime = 0;
 		this.style = _.extend({}, Renderer.DEFAULTS, options);
 
-		//TODO:
-		//this is **intended** to be a kind of scoping trick,
-		//and only apply within this instance - needs testing
-		//although may not even be relevant after this point
-		//in processing...
-
 		this.Scene = new Container({
 			x: 0,
 			y: 0

@@ -12279,6 +12279,10 @@ define('canvas-object',['lodash', 'vector', 'renderer'], function (_, Vector, Re
 	CanvasObject.prototype.style = null;
 	CanvasObject.prototype.scale = 1;
 
+	CanvasObject.prototype.flags = {
+		DEBUG: false
+	};
+
 	CanvasObject.prototype.draw = function _draw(context, contextOffset) {
 		this.NeedsUpdate = false;
 
@@ -12295,11 +12299,13 @@ define('canvas-object',['lodash', 'vector', 'renderer'], function (_, Vector, Re
 			this.NeedsRender = false;
 		}
 		/*draw bounding boxes*/
-		this._prerenderingContext.beginPath();
-		this._prerenderingContext.lineWidth=2.0;
-		this._prerenderingContext.strokeStyle='#FF0000';
-		this._prerenderingContext.strokeRect(0,0,this._prerenderedImage.width, this._prerenderedImage.height);
-		this._prerenderingContext.closePath();
+		if(this.flags.DEBUG){
+			this._prerenderingContext.beginPath();
+			this._prerenderingContext.lineWidth=2.0;
+			this._prerenderingContext.strokeStyle='#FF0000';
+			this._prerenderingContext.strokeRect(0,0,this._prerenderedImage.width, this._prerenderedImage.height);
+			this._prerenderingContext.closePath();
+		}
 
 		var x = this.boundingBox.left + (contextOffset && contextOffset.left ? contextOffset.left : 0);
 		var y = this.boundingBox.top + (contextOffset && contextOffset.top ? contextOffset.top : 0);
@@ -12772,12 +12778,6 @@ define('canvas-compositor',['lodash', 'renderer', 'canvas-object', 'vector-path'
 		this._lastRenderTime = 0; //set to 0 to make sure first render happens right away
 		this._currentTime = 0;
 		this.style = _.extend({}, Renderer.DEFAULTS, options);
-
-		//TODO:
-		//this is **intended** to be a kind of scoping trick,
-		//and only apply within this instance - needs testing
-		//although may not even be relevant after this point
-		//in processing...
 
 		this.Scene = new Container({
 			x: 0,

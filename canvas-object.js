@@ -100,6 +100,10 @@ define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
 	CanvasObject.prototype.style = null;
 	CanvasObject.prototype.scale = 1;
 
+	CanvasObject.prototype.flags = {
+		DEBUG: false
+	};
+
 	CanvasObject.prototype.draw = function _draw(context, contextOffset) {
 		this.NeedsUpdate = false;
 
@@ -116,11 +120,13 @@ define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
 			this.NeedsRender = false;
 		}
 		/*draw bounding boxes*/
-		this._prerenderingContext.beginPath();
-		this._prerenderingContext.lineWidth=2.0;
-		this._prerenderingContext.strokeStyle='#FF0000';
-		this._prerenderingContext.strokeRect(0,0,this._prerenderedImage.width, this._prerenderedImage.height);
-		this._prerenderingContext.closePath();
+		if(this.flags.DEBUG){
+			this._prerenderingContext.beginPath();
+			this._prerenderingContext.lineWidth=2.0;
+			this._prerenderingContext.strokeStyle='#FF0000';
+			this._prerenderingContext.strokeRect(0,0,this._prerenderedImage.width, this._prerenderedImage.height);
+			this._prerenderingContext.closePath();
+		}
 
 		var x = this.boundingBox.left + (contextOffset && contextOffset.left ? contextOffset.left : 0);
 		var y = this.boundingBox.top + (contextOffset && contextOffset.top ? contextOffset.top : 0);
