@@ -154,7 +154,6 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
 
 	CanvasCompositor.prototype._handlePressMove = function (e) {
 		e.preventDefault();
-
 		var objects = _.filter(this.Scene.children, function (c) {
 			// `!!` is a quick hack to convert to a bool
 			return !!(c.onpressmove);

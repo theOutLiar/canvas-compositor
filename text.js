@@ -27,19 +27,24 @@ define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Rende
 
 		this.textMetrics = Renderer.measureText(this._prerenderingContext, this.text, this.style);
 		this.textMetrics.height = parseFloat(this.fontSize);
-		this.updateBoundingRectangle();
+
+		Object.defineProperty(this, 'boundingBox', {
+			configurable: true,
+			enumerable: true,
+			get: function () {
+				this.textMetrics = Renderer.measureText(this._prerenderingContext, this.text, this.style);
+				this.textMetrics.height = parseFloat(this.fontSize);
+				return {
+					top: this.offset.y,
+					left: this.offset.x,
+					bottom: this.offset.y + this.textMetrics.height,
+					right: this.offset.x + this.textMetrics.width
+				};
+			}
+		});
 	}
 
-	Text.prototype.updateBoundingRectangle = function _updateBoundingRectangle(){
-		this.textMetrics = Renderer.measureText(this._prerenderingContext, this.text, this.style);
-		this.textMetrics.height = parseFloat(this.fontSize);
-		this.boundingRectangle = {
-			top: this.y + this.translation.y,
-			left: this.x + this.translation.x,
-			bottom: this.y + this.translation.y + this.textMetrics.height,
-			right: this.x  + this.translation.x + this.textMetrics.width
-		};
-	};
+	_.assign(Text.prototype, CanvasObject.prototype);
 
 	Text.FormatFontString = function _formatFontString(style, variant, weight, size, lineheight, family) {
 		return style + ' ' + variant + ' ' + weight + ' ' + size + '/' + lineheight + ' ' + family;
@@ -59,18 +64,16 @@ define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Rende
 		textBaseline: 'top'
 	};
 
-	_.assign(Text.prototype, CanvasObject.prototype);
-
 	Text.prototype.render = function _render() {
 		Renderer.drawText(this._prerenderingContext, 0, 0, this.text, this.style);
 	};
 
 	Text.prototype.PointIsInObject = function (x, y) {
 		//x & y are starting vertex of the baseline...
-		var lowerBoundX = this.x + this.translation.x,
-			lowerBoundY = this.y + this.translation.y,
-			upperBoundX = this.x + this.translation.x + this.textMetrics.width,
-			upperBoundY = this.y + this.translation.y + this.textMetrics.height;
+		var lowerBoundX = this.offset.x,
+			lowerBoundY = this.offset.y,
+			upperBoundX = this.offset.x + this.textMetrics.width,
+			upperBoundY = this.offset.y + this.textMetrics.height;
 		return (
 			x > lowerBoundX &&
 			y > lowerBoundY &&
