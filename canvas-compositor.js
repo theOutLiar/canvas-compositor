@@ -245,5 +245,3 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
 
 	return CanvasCompositor;
 });
-
-window.CanvasCompositor = require('canvas-compositor');
