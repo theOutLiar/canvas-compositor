@@ -27,7 +27,10 @@ define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Rende
 
 	Ellipse.prototype.PointIsInObject = function (x, y) {
 		//see: http://math.stackexchange.com/questions/76457/check-if-a-point-is-within-an-ellipse
-		return Math.pow((x - this.offset.x), 2) / Math.pow(this.radius, 2) + Math.pow((y - this.offset.y), 2) / Math.pow(this.minorRadius, 2) <= 1;
+		return (
+			CanvasObject.prototype.PointIsInObject.call(this, x, y) &&
+			Math.pow((x - this.offset.x), 2) / Math.pow(this.radius, 2) + Math.pow((y - this.offset.y), 2) / Math.pow(this.minorRadius, 2) <= 1
+		);
 	};
 
 	return Ellipse;

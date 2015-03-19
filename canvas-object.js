@@ -3,16 +3,28 @@ define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
 
 	function CanvasObject(options) {
 		this.d = new Vector([options.x || 0, options.y || 0]);
+
 		this.style = _.assign({}, Renderer.DEFAULTS, options.style);
+		this.unscaledLineWidth = this.style.lineWidth;
+
+		this.pressPassThrough = options.pressPassThrough || false;
 		this.draggable = options.draggable || false;
+
 		this._needsUpdate = false;
 		this._needsRender = true;
+		this._scaleWidth = 1;
+		this._scaleHeight = 1;
+
 		this._prerenderedImage = document.createElement('canvas');
 		this._prerenderingContext = this._prerenderedImage.getContext('2d');
+
 		this.parent = options.parent || null;
 		if (this.draggable) {
 			this.enableDragging();
 		}
+
+		this.sticky = false;
+		this.stickyPosition = null;
 
 		//putting defineProperty in constructor to make inheritable
 		//on a tight schedule - would prefer to do this on the
@@ -23,7 +35,9 @@ define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
 			enumerable: true,
 			get: function () {
 				if (this.parent) {
-					return this.d.add(this.parent.offset);
+					return this.d
+						//.multiply(new Vector([this.parent.ScaleWidth, this.parent.ScaleHeight]))
+						.add(this.parent.offset);
 				} else {
 					return this.d;
 				}
@@ -55,6 +69,95 @@ define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
 			},
 			get: function () {
 				return this._needsRender;
+			}
+		});
+
+		Object.defineProperty(this, 'Scale', {
+			configurable: true,
+			enumerable: true,
+			set: function (val) {
+				this.ScaleWidth = val;
+				this.ScaleHeight = val;
+			},
+			get: function () {
+				return {
+					scaleWidth: this.ScaleWidth,
+					scaleHeight: this.ScaleHeight
+				};
+			}
+		});
+
+		Object.defineProperty(this, 'ScaleWidth', {
+			configurable: true,
+			enumerable: true,
+			set: function (val) {
+				this.NeedsUpdate = true;
+				this.NeedsRender = true;
+				if (this.children){
+					_.each(this.children, function (c){
+						c.NeedsUpdate = true;
+						c.NeedsRender = true;
+					});
+					_.each(this.masks, function (m){
+						m.NeedsUpdate = true;
+						m.NeedsRender = true;
+					});
+				}
+				this._scaleWidth = val;
+			},
+			get: function () {
+				return this._scaleWidth;
+			}
+		});
+
+		Object.defineProperty(this, 'ScaleHeight', {
+			configurable: true,
+			enumerable: true,
+			set: function (val) {
+				this.NeedsUpdate = true;
+				this.NeedsRender = true;
+				if (this.children){
+					_.each(this.children, function (c){
+						c.NeedsUpdate = true;
+						c.NeedsRender = true;
+					});
+					_.each(this.masks, function (m){
+						m.NeedsUpdate = true;
+						m.NeedsRender = true;
+					});
+				}
+				this._scaleHeight = val;
+			},
+			get: function () {
+				return this._scaleHeight;
+			}
+		});
+
+		Object.defineProperty(this, 'GlobalScale', {
+			configurable: true,
+			enumerable: true,
+			get: function () {
+				var width = this._scaleWidth;
+				var height = this._scaleHeight;
+
+				if(this.parent){
+					var parentScale = this.parent.GlobalScale;
+					width *= parentScale.scaleWidth;
+					height *= parentScale.scaleHeight;
+				}
+
+				return {
+					scaleHeight: width,
+					scaleWidth: height
+				};
+			}
+		});
+
+		Object.defineProperty(this, 'GlobalLineScale', {
+			configurable: true,
+			enumerable: true,
+			get: function (){
+				return Math.min(this.GlobalScale.scaleWidth, this.GlobalScale.scaleHeight);
 			}
 		});
 	}
@@ -116,11 +219,12 @@ define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
 			this._prerenderedImage.width = this.boundingBox.right - this.boundingBox.left;
 			this._prerenderedImage.height = this.boundingBox.bottom - this.boundingBox.top;
 
+			this.style.lineWidth = this.unscaledLineWidth * this.GlobalLineScale;
 			this.render();
 			this.NeedsRender = false;
 		}
 		/*draw bounding boxes*/
-		if(this.flags.DEBUG){
+		if (this.flags.DEBUG) {
 			this._prerenderingContext.beginPath();
 			this._prerenderingContext.lineWidth=2.0;
 			this._prerenderingContext.strokeStyle='#FF0000';
@@ -135,9 +239,21 @@ define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
 
 	CanvasObject.prototype.render = function _render() {}; //should be overridden by implementors
 
-	CanvasObject.prototype.PointIsInObject = function _pointIsInObject() {
-		return false;
-	}; //should be overridden by implementors
+	CanvasObject.prototype.PointIsInBoundingBox = function _pointIsInBoundingBox(x, y){
+		return (
+			x > this.boundingBox.left &&
+			y > this.boundingBox.top &&
+			x < this.boundingBox.right &&
+			y < this.boundingBox.bottom
+		);
+	}
+	CanvasObject.prototype.PointIsInObject = function _pointIsInObject(x, y) {
+		if (this.pressPassThrough){
+			return false;
+		}
+
+		return this.PointIsInBoundingBox(x, y);
+	}; //can be overridden by implementors
 
 	CanvasObject.prototype.onpressdown = null;
 	CanvasObject.prototype.onpressup = null;

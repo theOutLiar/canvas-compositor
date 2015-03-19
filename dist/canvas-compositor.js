@@ -1,8 +1,8 @@
-(function (root, factory) {
+(function (rootScope, moduleFactory) {
     if (typeof define === 'function' && define.amd) {
-        define([], factory);
+        define([], moduleFactory);
     } else {
-        root.CanvasCompositor = factory();
+        rootScope.CanvasCompositor = moduleFactory();
     }
 }(this, function () {/**
  * @license almond 0.3.1 Copyright (c) 2011-2014, The Dojo Foundation All Rights Reserved.
@@ -12188,16 +12188,28 @@ define('canvas-object',['lodash', 'vector', 'renderer'], function (_, Vector, Re
 
 	function CanvasObject(options) {
 		this.d = new Vector([options.x || 0, options.y || 0]);
+
 		this.style = _.assign({}, Renderer.DEFAULTS, options.style);
+		this.unscaledLineWidth = this.style.lineWidth;
+
+		this.pressPassThrough = options.pressPassThrough || false;
 		this.draggable = options.draggable || false;
+
 		this._needsUpdate = false;
 		this._needsRender = true;
+		this._scaleWidth = 1;
+		this._scaleHeight = 1;
+
 		this._prerenderedImage = document.createElement('canvas');
 		this._prerenderingContext = this._prerenderedImage.getContext('2d');
+
 		this.parent = options.parent || null;
 		if (this.draggable) {
 			this.enableDragging();
 		}
+
+		this.sticky = false;
+		this.stickyPosition = null;
 
 		//putting defineProperty in constructor to make inheritable
 		//on a tight schedule - would prefer to do this on the
@@ -12208,7 +12220,9 @@ define('canvas-object',['lodash', 'vector', 'renderer'], function (_, Vector, Re
 			enumerable: true,
 			get: function () {
 				if (this.parent) {
-					return this.d.add(this.parent.offset);
+					return this.d
+						//.multiply(new Vector([this.parent.ScaleWidth, this.parent.ScaleHeight]))
+						.add(this.parent.offset);
 				} else {
 					return this.d;
 				}
@@ -12240,6 +12254,95 @@ define('canvas-object',['lodash', 'vector', 'renderer'], function (_, Vector, Re
 			},
 			get: function () {
 				return this._needsRender;
+			}
+		});
+
+		Object.defineProperty(this, 'Scale', {
+			configurable: true,
+			enumerable: true,
+			set: function (val) {
+				this.ScaleWidth = val;
+				this.ScaleHeight = val;
+			},
+			get: function () {
+				return {
+					scaleWidth: this.ScaleWidth,
+					scaleHeight: this.ScaleHeight
+				};
+			}
+		});
+
+		Object.defineProperty(this, 'ScaleWidth', {
+			configurable: true,
+			enumerable: true,
+			set: function (val) {
+				this.NeedsUpdate = true;
+				this.NeedsRender = true;
+				if (this.children){
+					_.each(this.children, function (c){
+						c.NeedsUpdate = true;
+						c.NeedsRender = true;
+					});
+					_.each(this.masks, function (m){
+						m.NeedsUpdate = true;
+						m.NeedsRender = true;
+					});
+				}
+				this._scaleWidth = val;
+			},
+			get: function () {
+				return this._scaleWidth;
+			}
+		});
+
+		Object.defineProperty(this, 'ScaleHeight', {
+			configurable: true,
+			enumerable: true,
+			set: function (val) {
+				this.NeedsUpdate = true;
+				this.NeedsRender = true;
+				if (this.children){
+					_.each(this.children, function (c){
+						c.NeedsUpdate = true;
+						c.NeedsRender = true;
+					});
+					_.each(this.masks, function (m){
+						m.NeedsUpdate = true;
+						m.NeedsRender = true;
+					});
+				}
+				this._scaleHeight = val;
+			},
+			get: function () {
+				return this._scaleHeight;
+			}
+		});
+
+		Object.defineProperty(this, 'GlobalScale', {
+			configurable: true,
+			enumerable: true,
+			get: function () {
+				var width = this._scaleWidth;
+				var height = this._scaleHeight;
+
+				if(this.parent){
+					var parentScale = this.parent.GlobalScale;
+					width *= parentScale.scaleWidth;
+					height *= parentScale.scaleHeight;
+				}
+
+				return {
+					scaleHeight: width,
+					scaleWidth: height
+				};
+			}
+		});
+
+		Object.defineProperty(this, 'GlobalLineScale', {
+			configurable: true,
+			enumerable: true,
+			get: function (){
+				return Math.min(this.GlobalScale.scaleWidth, this.GlobalScale.scaleHeight);
 			}
 		});
 	}
@@ -12301,11 +12404,12 @@ define('canvas-object',['lodash', 'vector', 'renderer'], function (_, Vector, Re
 			this._prerenderedImage.width = this.boundingBox.right - this.boundingBox.left;
 			this._prerenderedImage.height = this.boundingBox.bottom - this.boundingBox.top;
 
+			this.style.lineWidth = this.unscaledLineWidth * this.GlobalLineScale;
 			this.render();
 			this.NeedsRender = false;
 		}
 		/*draw bounding boxes*/
-		if(this.flags.DEBUG){
+		if (this.flags.DEBUG) {
 			this._prerenderingContext.beginPath();
 			this._prerenderingContext.lineWidth=2.0;
 			this._prerenderingContext.strokeStyle='#FF0000';
@@ -12320,9 +12424,21 @@ define('canvas-object',['lodash', 'vector', 'renderer'], function (_, Vector, Re
 
 	CanvasObject.prototype.render = function _render() {}; //should be overridden by implementors
 
-	CanvasObject.prototype.PointIsInObject = function _pointIsInObject() {
-		return false;
-	}; //should be overridden by implementors
+	CanvasObject.prototype.PointIsInBoundingBox = function _pointIsInBoundingBox(x, y){
+		return (
+			x > this.boundingBox.left &&
+			y > this.boundingBox.top &&
+			x < this.boundingBox.right &&
+			y < this.boundingBox.bottom
+		);
+	}
+	CanvasObject.prototype.PointIsInObject = function _pointIsInObject(x, y) {
+		if (this.pressPassThrough){
+			return false;
+		}
+
+		return this.PointIsInBoundingBox(x, y);
+	}; //can be overridden by implementors
 
 	CanvasObject.prototype.onpressdown = null;
 	CanvasObject.prototype.onpressup = null;
@@ -12375,30 +12491,47 @@ define('vector-path',['lodash', 'canvas-object', 'renderer', 'vector', 'line'], 
 
 	function Path(options) {
 		CanvasObject.call(this, options);
+		this.unscaledLineWidth = this.style.lineWidth;
 		this.vertices = _.map(options.vertices || [], function (v) {
 			return new Vector([v.x, v.y]);
 		});
+		var yCoordinates = _.map(this.vertices, function(v) { return v.y; });
+		var xCoordinates = _.map(this.vertices, function(v) { return v.x; });
+
+		this._left = Math.min.apply(null, xCoordinates);
+		this._top = Math.min.apply(null, yCoordinates);
+		this._right = Math.max.apply(null, xCoordinates);
+		this._bottom = Math.max.apply(null, yCoordinates);
+
+		this.d = new Vector([this._left,this._top]);
+		var normalizationVector = this.d;
+		this._normalizedVertices = _.map(this.vertices, function(v){
+			return v.subtract(normalizationVector);
+		});
+
+		this._normalizedBoundingBox = null;
+
 		Object.defineProperty(this, 'boundingBox', {
 			configurable: true,
 			enumerable: true,
 			get: function () {
-				var top = null,
-				left = null,
-				bottom = null,
-				right = null;
+				var top = 0,
+				left = 0,
+				bottom = this._bottom - this._top,
+				right = this._right - this._left;
 
-				for(var v in this.vertices){
-					top = top !== null && top < this.vertices[v].y? top : this.vertices[v].y;
-					left = left !== null && left < this.vertices[v].x ? left : this.vertices[v].x;
-					bottom = bottom !== null && bottom > this.vertices[v].y ? bottom : this.vertices[v].y;
-					right = right !== null && right > this.vertices[v].x ? right : this.vertices[v].x;
-				}
+				this._normalizedBoundingBox = {
+					top: top,
+					left: left,
+					right: right,
+					bottom: bottom
+					};
 
 				return {
-					top: top + this.offset.y - this.style.lineWidth/2.0,
-					left: left + this.offset.x - this.style.lineWidth/2.0,
-					bottom: bottom + this.offset.y + this.style.lineWidth/2.0,
-					right: right + this.offset.x + this.style.lineWidth/2.0
+					top: (this._normalizedBoundingBox.top * this.GlobalScale.scaleHeight) + this.offset.y - (this.GlobalLineScale * this.unscaledLineWidth),
+					left: (this._normalizedBoundingBox.left * this.GlobalScale.scaleWidth) + this.offset.x - (this.GlobalLineScale * this.unscaledLineWidth),
+					bottom: (this._normalizedBoundingBox.bottom * this.GlobalScale.scaleHeight) + this.offset.y + (this.GlobalLineScale * this.unscaledLineWidth),
+					right: (this._normalizedBoundingBox.right * this.GlobalScale.scaleWidth) + this.offset.x + (this.GlobalLineScale * this.unscaledLineWidth)
 				};
 			}
 		});
@@ -12410,61 +12543,73 @@ define('vector-path',['lodash', 'canvas-object', 'renderer', 'vector', 'line'], 
 	Path.prototype.render = function _render() {
 		var boundingBox = this.boundingBox;
 		var offset = this.offset;
+		var scale = this.GlobalScale;
 		//normalize the vertices (left- and top-most x/y-values should be 0 and 0)
-		var normalizedVertices = _.map(this.vertices, function (vertex) {
-			return vertex.subtract(new Vector([boundingBox.left, boundingBox.top])).add(offset);
+		var pathToDraw = _.map(this._normalizedVertices, function (vertex) {
+			return vertex
+					.multiply(new Vector([scale.scaleWidth, scale.scaleHeight]))
+					.subtract(new Vector([boundingBox.left, boundingBox.top]))
+					.add(offset);
 		});
-		Renderer.drawPath(this._prerenderingContext, normalizedVertices, this.style);
+		Renderer.drawPath(this._prerenderingContext, pathToDraw, this.style);
 	};
 
 	Path.prototype.PointIsInObject = function (x, y) {
-		//create a line that travels from this point in any direction
-		//if it intersects the polygon an odd number of times, it is inside
-
 		var inside = false;
-		//a line can be described as a vertex and a direction
-		var l = new Line(new Vector([x, y]), new Vector([1, 0]));
+		//cut out all this processing if it isn't even in the bounding box
+		if (CanvasObject.prototype.PointIsInObject.call(this, x, y)){
+			//create a line that travels from this point in any direction
+			//if it intersects the polygon an odd number of times, it is inside
 
-		for (var i = 0; i < this.vertices.length; i++) {
-			var j = (i + 1) >= this.vertices.length ? 0 : i + 1;
+			//a line can be described as a vertex and a direction
+			var l = new Line(new Vector([x, y]), new Vector([1, 0]));
 
-			var v = this.vertices[i].add(this.offset);
-			var w = this.vertices[j].add(this.offset);
+			for (var i = 0; i < this._normalizedVertices.length; i++) {
+				var j = (i + 1) >= this._normalizedVertices.length ? 0 : i + 1;
 
-			var edgeDirection = w.subtract(v).unitVector;
-			var edge = new Line(v, edgeDirection);
-			var intersection = edge.intersectionWith(l);
+				var v = this._normalizedVertices[i]
+							.multiply(new Vector([this.GlobalScale.scaleWidth, this.GlobalScale.scaleHeight]))
+							.add(this.offset);
 
-			if (intersection === null) {
-				continue;
-			}
+				var w = this._normalizedVertices[j]
+							.multiply(new Vector([this.GlobalScale.scaleWidth, this.GlobalScale.scaleHeight]))
+							.add(this.offset);
 
-			//should replace 0s with epsilons, where epsilon is
-			//the threshhold for considering two things as touching/intersecting
-			var intersectToTheRight = intersection.x - x >= 0;
-			if (!intersectToTheRight) {
-				continue;
-			}
+				var edgeDirection = w.subtract(v).unitVector;
+				var edge = new Line(v, edgeDirection);
+				var intersection = edge.intersectionWith(l);
 
-			var negativeX = (edgeDirection.x < 0);
-			var negativeY = (edgeDirection.y < 0);
+				if (intersection === null) {
+					continue;
+				}
 
-			//technically speaking, bottom and top should be reversed,
-			//since y=0 is the top left corner of the screen - it's
-			//just easier to think about it mathematically this way
-			var leftVertex = negativeX ? w : v;
-			var rightVertex = negativeX ? v : w;
-			var topVertex = negativeY ? w : v;
-			var bottomVertex = negativeY ? v : w;
+				//should replace 0s with epsilons, where epsilon is
+				//the threshhold for considering two things as touching/intersecting
+				var intersectToTheRight = intersection.x - x >= 0;
+				if (!intersectToTheRight) {
+					continue;
+				}
 
-			var intersectWithinSegment =
-				(intersection.x - leftVertex.x >= 0) &&
-				(rightVertex.x - intersection.x >= 0) &&
-				(intersection.y - topVertex.y >= 0) &&
-				(bottomVertex.y - intersection.y >= 0);
+				var negativeX = (edgeDirection.x < 0);
+				var negativeY = (edgeDirection.y < 0);
 
-			if (intersectWithinSegment) {
-				inside = !inside;
+				//technically speaking, bottom and top should be reversed,
+				//since y=0 is the top left corner of the screen - it's
+				//just easier to think about it mathematically this way
+				var leftVertex = negativeX ? w : v;
+				var rightVertex = negativeX ? v : w;
+				var topVertex = negativeY ? w : v;
+				var bottomVertex = negativeY ? v : w;
+
+				var intersectWithinSegment =
+					(intersection.x - leftVertex.x >= 0) &&
+					(rightVertex.x - intersection.x >= 0) &&
+					(intersection.y - topVertex.y >= 0) &&
+					(bottomVertex.y - intersection.y >= 0);
+
+				if (intersectWithinSegment) {
+					inside = !inside;
+				}
 			}
 		}
 		return inside;
@@ -12485,10 +12630,10 @@ define('rectangle',['lodash', 'canvas-object', 'renderer'], function (_, CanvasO
 			enumerable: true,
 			get: function () {
 				return {
-					top: this.offset.y - this.style.lineWidth/2.0,
-					left: this.offset.x - this.style.lineWidth/2.0,
-					bottom: this.offset.y + this.height + this.style.lineWidth/2.0,
-					right: this.offset.x + this.width + this.style.lineWidth/2.0
+					top: this.offset.y - (this.GlobalLineScale * this.unscaledLineWidth/2.0),
+					left: this.offset.x - (this.GlobalLineScale * this.unscaledLineWidth/2.0),
+					bottom: this.offset.y + (this.GlobalScale.scaleHeight * this.height) + (this.GlobalLineScale * this.unscaledLineWidth/2.0),
+					right: this.offset.x + (this.GlobalScale.scaleWidth * this.width) + (this.GlobalLineScale * this.unscaledLineWidth/2.0)
 				};
 			}
 		});
@@ -12497,21 +12642,12 @@ define('rectangle',['lodash', 'canvas-object', 'renderer'], function (_, CanvasO
 	_.assign(Rectangle.prototype, CanvasObject.prototype);
 
 	Rectangle.prototype.render = function _render() {
-		Renderer.drawRectangle(this._prerenderingContext, this.style.lineWidth/2.0, this.style.lineWidth/2.0, this.width, this.height, this.style);
-	};
-
-	Rectangle.prototype.PointIsInObject = function (x, y) {
-		var lowerBoundX = this.offset.x - this.style.lineWidth/2.0,
-			lowerBoundY = this.offset.y - this.style.lineWidth/2.0,
-			upperBoundX = this.offset.x + this.width + this.style.lineWidth/2.0,
-			upperBoundY = this.offset.y + this.height + this.style.lineWidth/2.0;
-
-		return (
-			x > lowerBoundX &&
-			y > lowerBoundY &&
-			x < upperBoundX &&
-			y < upperBoundY
-		);
+		Renderer.drawRectangle(this._prerenderingContext,
+							   (this.GlobalLineScale * this.unscaledLineWidth/2.0),
+							   (this.GlobalLineScale * this.unscaledLineWidth/2.0),
+							   this.width * this.GlobalScale.scaleWidth,
+							   this.height * this.GlobalScale.scaleHeight,
+							   this.style);
 	};
 
 	return Rectangle;
@@ -12545,7 +12681,10 @@ define('ellipse',['lodash', 'canvas-object', 'renderer'], function (_, CanvasObj
 
 	Ellipse.prototype.PointIsInObject = function (x, y) {
 		//see: http://math.stackexchange.com/questions/76457/check-if-a-point-is-within-an-ellipse
-		return Math.pow((x - this.offset.x), 2) / Math.pow(this.radius, 2) + Math.pow((y - this.offset.y), 2) / Math.pow(this.minorRadius, 2) <= 1;
+		return (
+			CanvasObject.prototype.PointIsInObject.call(this, x, y) &&
+			Math.pow((x - this.offset.x), 2) / Math.pow(this.radius, 2) + Math.pow((y - this.offset.y), 2) / Math.pow(this.minorRadius, 2) <= 1
+		);
 	};
 
 	return Ellipse;
@@ -12709,9 +12848,13 @@ define('container',['lodash', 'canvas-object', 'renderer'], function (_, CanvasO
 	};
 
 	Container.prototype.PointIsInObject = function _pointIsInObject(x, y) {
-		for (var c in this.children) {
-			if (this.children[c].PointIsInObject(x, y)) {
-				return true;
+		//don't even bother checking the children
+		//if the point isn't in the bounding box
+		if(CanvasObject.prototype.PointIsInObject.call(this, x, y)){
+			for (var c in this.children) {
+				if (this.children[c].PointIsInObject(x, y)) {
+					return true;
+				}
 			}
 		}
 		return false;

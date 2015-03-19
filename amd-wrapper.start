@@ -1,7 +1,7 @@
-(function (root, factory) {
+(function (rootScope, moduleFactory) {
     if (typeof define === 'function' && define.amd) {
-        define([], factory);
+        define([], moduleFactory);
     } else {
-        root.CanvasCompositor = factory();
+        rootScope.CanvasCompositor = moduleFactory();
     }
 }(this, function () {

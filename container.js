@@ -53,9 +53,13 @@ define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Rende
 	};
 
 	Container.prototype.PointIsInObject = function _pointIsInObject(x, y) {
-		for (var c in this.children) {
-			if (this.children[c].PointIsInObject(x, y)) {
-				return true;
+		//don't even bother checking the children
+		//if the point isn't in the bounding box
+		if(CanvasObject.prototype.PointIsInObject.call(this, x, y)){
+			for (var c in this.children) {
+				if (this.children[c].PointIsInObject(x, y)) {
+					return true;
+				}
 			}
 		}
 		return false;
