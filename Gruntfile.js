@@ -10,7 +10,11 @@ module.exports = function (grunt) {
 					mainConfigFile: 'config.js',
 					preserveLicenseComments: true,
 					include: ['canvas-compositor'],
-					out: 'dist/canvas-compositor.js'
+					out: 'dist/canvas-compositor.js',
+					wrap: {
+						startFile: 'amd-wrapper.start',
+						endFile: 'amd-wrapper.end'
+					}
 				}
 			},
 			minify: {
@@ -20,7 +24,11 @@ module.exports = function (grunt) {
 					mainConfigFile: 'config.js',
 					preserveLicenseComments: true,
 					include: ['canvas-compositor'],
-					out: 'dist/canvas-compositor.min.js'
+					out: 'dist/canvas-compositor.min.js',
+					wrap: {
+						startFile: 'amd-wrapper.start',
+						endFile: 'amd-wrapper.end'
+					}
 				}
 			}
 		},

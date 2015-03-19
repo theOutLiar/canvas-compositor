@@ -1,4 +1,10 @@
-/**
+(function (root, factory) {
+    if (typeof define === 'function' && define.amd) {
+        define([], factory);
+    } else {
+        root.CanvasCompositor = factory();
+    }
+}(this, function () {/**
  * @license almond 0.3.1 Copyright (c) 2011-2014, The Dojo Foundation All Rights Reserved.
  * Available via the MIT or new BSD license.
  * see: http://github.com/jrburke/almond for details
@@ -13005,5 +13011,5 @@ define('canvas-compositor',['lodash', 'renderer', 'canvas-object', 'vector-path'
 
 	return CanvasCompositor;
 });
-
-window.CanvasCompositor = require('canvas-compositor');
+    return require('canvas-compositor');
+}));
