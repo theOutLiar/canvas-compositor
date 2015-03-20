@@ -1,5 +1,6 @@
 define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
 	'use strict';
+	var STICKY_POSITION = { FRONT:'front', BACK: 'back' };
 
 	function CanvasObject(options) {
 		this.d = new Vector([options.x || 0, options.y || 0]);
@@ -264,7 +265,64 @@ define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
 		}
 
 		return this.PointIsInBoundingBox(x, y);
-	}; //can be overridden by implementors
+	}; //can (and should) be overridden by implementors
+
+	CanvasObject.prototype.PinToFront = function _pinToFront(){
+		this.sticky = true;
+		this.stickyPosition = STICKY_POSITION.FRONT;
+	};
+	CanvasObject.prototype.PinToBack = function _pinToFront(){
+		this.sticky = true;
+		this.stickyPosition = STICKY_POSITION.BACK;
+	};
+
+	CanvasObject.prototype.MoveToFront = function _moveToFront() {
+		if (this.parent){
+			var index = this.parent.children.indexOf(this);
+			if( index >= 0 ){
+				this.parent.children.splice(index, 1);
+				this.parent.children.splice(this.parent.children.length, 0, this);
+				this.NeedsUpdate = true;
+				this.NeedsRender = true;
+			}
+		}
+	};
+
+	CanvasObject.prototype.MoveToBack = function _moveToBack() {
+		if (this.parent){
+			var index = this.parent.children.indexOf(this);
+			if( index >= 0 ){
+				this.parent.children.splice(index, 1);
+				this.parent.children.splice(0, 0, this); //if index + 1 > siblings.length, inserts it at end
+				this.NeedsUpdate = true;
+				this.NeedsRender = true;
+			}
+		}
+	};
+
+
+	CanvasObject.prototype.MoveForward = function _moveForward(){
+		if (this.parent){
+			var index = this.parent.children.indexOf(this);
+			if( index >= 0 ){
+				this.parent.children.splice(index, 1);
+				this.parent.children.splice(index + 1, 0, this); //if index + 1 > siblings.length, inserts it at end
+				this.NeedsUpdate = true;
+				this.NeedsRender = true;
+			}
+		}
+	};
+	CanvasObject.prototype.MoveBackward = function _moveBackward(){
+		if (this.parent){
+			var index = this.parent.children.indexOf(this);
+			if( index > 0 ){
+				this.parent.children.splice(index, 1);
+				this.parent.children.splice(index - 1, 0, this);
+				this.NeedsUpdate = true;
+				this.NeedsRender = true;
+			}
+		}
+	};
 
 	CanvasObject.prototype.onpressdown = null;
 	CanvasObject.prototype.onpressup = null;

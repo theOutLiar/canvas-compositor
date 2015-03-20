@@ -40,8 +40,8 @@ module.exports = function (grunt) {
 				events: ['changed', 'added', 'deleted']
 			},
 			requirejs: {
-				files: ['*.js'],
-				tasks: ['clean', 'requirejs']
+				files: ['**/*.js', '!dist/**/*'],
+				tasks: ['clean', 'jshint', 'requirejs']
 			}
 		},
 		clean: {
@@ -53,7 +53,7 @@ module.exports = function (grunt) {
 	grunt.loadNpmTasks('grunt-contrib-requirejs');
 	grunt.loadNpmTasks('grunt-contrib-watch');
 	grunt.loadNpmTasks('grunt-contrib-clean');
-	
+
 	grunt.registerTask('lint', ['jshint']);
 
 	grunt.registerTask('build', ['lint', 'clean', 'requirejs']);
