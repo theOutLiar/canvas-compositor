@@ -4,7 +4,7 @@ define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Rende
 	function Text(options) {
 		CanvasObject.call(this, options);
 		this.text = options.text;
-		this.fontSize = options.fontSize || Text.DEFAULTS.fontSize;
+		this.unscaledFontSize = options.fontSize || Text.DEFAULTS.fontSize;
 		this.fontFamily = options.fontFamily || Text.DEFAULTS.fontFamily;
 		this.fontStyle = options.fontStyle || Text.DEFAULTS.fontStyle;
 		this.fontVariant = options.fontVariant || Text.DEFAULTS.fontVariant;
@@ -13,27 +13,36 @@ define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Rende
 		this.textAlign = options.textAlign || Text.DEFAULTS.textAlign;
 		this.textBaseline = options.textBaseline || Text.DEFAULTS.textBaseline;
 
-		_.assign(this.style, options.style, {
-			font: Text.FormatFontString(
-				this.fontStyle,
-				this.fontVariant,
-				this.fontWeight,
-				this.fontSize,
-				this.lineHeight,
-				this.fontFamily),
-			textAlign: this.textAlign,
-			textBaseline: this.textBaseline
+		this._textMetricsNeedUpdate = true;
+		this._textMetricsNeed = null;
+
+		Object.defineProperty(this, 'fontSize', {
+			configurable: true,
+			enumerable: true,
+			get: function(){
+				return (parseFloat(this.unscaledFontSize) * this.GlobalFontScale) + 'px';
+			}
 		});
 
-		this.textMetrics = Renderer.measureText(this._prerenderingContext, this.text, this.style);
-		this.textMetrics.height = parseFloat(this.fontSize);
+		Object.defineProperty(this, 'textMetrics', {
+			configurable: true,
+			enumerable: true,
+			get: function(){
+				if(this._textMetrics === null || this._textMetricsNeedUpdate){
+					this._updateStyle();
+					this._textMetrics = Renderer.measureText(this._prerenderingContext, this.text, this.style);
+					this._textMetrics.height = parseFloat(this.fontSize);
+					this._textMetricsNeedUpdate = false;
+				}
+				return this._textMetrics;
+			}
+		});
 
 		Object.defineProperty(this, 'boundingBox', {
 			configurable: true,
 			enumerable: true,
 			get: function () {
-				this.textMetrics = Renderer.measureText(this._prerenderingContext, this.text, this.style);
-				this.textMetrics.height = parseFloat(this.fontSize);
+				this._textMetricsNeedUpdate = true;
 				return {
 					top: this.offset.y,
 					left: this.offset.x,
@@ -45,6 +54,20 @@ define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Rende
 	}
 
 	_.assign(Text.prototype, CanvasObject.prototype);
+
+	Text.prototype._updateStyle = function(options){
+		_.assign(this.style, (options || {}), {
+			font: Text.FormatFontString(
+				this.fontStyle,
+				this.fontVariant,
+				this.fontWeight,
+				this.fontSize,
+				this.lineHeight,
+				this.fontFamily),
+			textAlign: this.textAlign,
+			textBaseline: this.textBaseline
+		});
+	};
 
 	Text.FormatFontString = function _formatFontString(style, variant, weight, size, lineheight, family) {
 		return style + ' ' + variant + ' ' + weight + ' ' + size + '/' + lineheight + ' ' + family;
@@ -65,6 +88,7 @@ define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Rende
 	};
 
 	Text.prototype.render = function _render() {
+		this._updateStyle();
 		Renderer.drawText(this._prerenderingContext, 0, 0, this.text, this.style);
 	};
 

@@ -1,6 +1,7 @@
 define(['lodash'], function (_) {
 	'use strict';
 
+	//TODO: would like to use SVG if/where/when possible - not sure of performance implications
 	var Renderer = {
 		DEFAULTS: {
 			//direction: 'inherit',

@@ -11997,6 +11997,7 @@ define("bower_components/almond/almond", function(){});
 define('renderer',['lodash'], function (_) {
 	
 
+	//TODO: would like to use SVG if/where/when possible - not sure of performance implications
 	var Renderer = {
 		DEFAULTS: {
 			//direction: 'inherit',
@@ -12342,6 +12343,16 @@ define('canvas-object',['lodash', 'vector', 'renderer'], function (_, Vector, Re
 			configurable: true,
 			enumerable: true,
 			get: function (){
+				//not sure what the best approach for line scale is...
+				return Math.min(this.GlobalScale.scaleWidth, this.GlobalScale.scaleHeight);
+			}
+		});
+
+		Object.defineProperty(this, 'GlobalFontScale', {
+			configurable: true,
+			enumerable: true,
+			get: function (){
+				//not sure what the best approach for line scale is...
 				return Math.min(this.GlobalScale.scaleWidth, this.GlobalScale.scaleHeight);
 			}
 		});
@@ -12431,7 +12442,8 @@ define('canvas-object',['lodash', 'vector', 'renderer'], function (_, Vector, Re
 			x < this.boundingBox.right &&
 			y < this.boundingBox.bottom
 		);
-	}
+	};
+
 	CanvasObject.prototype.PointIsInObject = function _pointIsInObject(x, y) {
 		if (this.pressPassThrough){
 			return false;
@@ -12664,10 +12676,18 @@ define('ellipse',['lodash', 'canvas-object', 'renderer'], function (_, CanvasObj
 			enumerable: true,
 			get: function () {
 				return {
-					top: this.offset.y - (this.minorRadius + this.style.lineWidth/2.0),
-					left: this.offset.x - (this.radius + this.style.lineWidth/2.0),
-					bottom: this.offset.y + this.minorRadius + this.style.lineWidth/2.0,
-					right: this.offset.x + this.radius + this.style.lineWidth/2.0
+					top: this.offset.y -
+						 ((this.minorRadius * this.GlobalScale.scaleHeight) +
+					 	 (this.unscaledLineWidth/2.0 * this.GlobalLineScale)),
+					left: this.offset.x -
+						  ((this.radius * this.GlobalScale.scaleWidth) +
+						  (this.unscaledLineWidth/2.0 * this.GlobalLineScale)),
+					bottom: this.offset.y +
+						    (this.minorRadius * this.GlobalScale.scaleHeight) +
+						    (this.unscaledLineWidth/2.0 * this.GlobalLineScale),
+					right: this.offset.x +
+						   (this.radius * this.GlobalScale.scaleWidth) +
+						   (this.unscaledLineWidth/2.0 * this.GlobalLineScale)
 				};
 			}
 		});
@@ -12676,14 +12696,21 @@ define('ellipse',['lodash', 'canvas-object', 'renderer'], function (_, CanvasObj
 	_.assign(Ellipse.prototype, CanvasObject.prototype);
 
 	Ellipse.prototype.render = function _render() {
-		Renderer.drawEllipse(this._prerenderingContext, this.radius + this.style.lineWidth/2.0, this.minorRadius + this.style.lineWidth/2.0, this.radius, this.minorRadius, this.style);
+		Renderer.drawEllipse(
+			this._prerenderingContext,
+			(this.radius * this.GlobalScale.scaleWidth) + (this.unscaledLineWidth/2.0 * this.GlobalLineScale),
+			(this.minorRadius * this.GlobalScale.scaleHeight) + (this.unscaledLineWidth/2.0 * this.GlobalLineScale),
+			(this.radius * this.GlobalScale.scaleWidth),
+			(this.minorRadius * this.GlobalScale.scaleHeight),
+			this.style
+		);
 	};
 
 	Ellipse.prototype.PointIsInObject = function (x, y) {
 		//see: http://math.stackexchange.com/questions/76457/check-if-a-point-is-within-an-ellipse
 		return (
 			CanvasObject.prototype.PointIsInObject.call(this, x, y) &&
-			Math.pow((x - this.offset.x), 2) / Math.pow(this.radius, 2) + Math.pow((y - this.offset.y), 2) / Math.pow(this.minorRadius, 2) <= 1
+			Math.pow((x - this.offset.x), 2) / Math.pow((this.radius * this.GlobalScale.scaleWidth), 2) + Math.pow((y - this.offset.y), 2) / Math.pow((this.minorRadius * this.GlobalScale.scaleHeight), 2) <= 1
 		);
 	};
 
@@ -12695,7 +12722,7 @@ define('text',['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject
 	function Text(options) {
 		CanvasObject.call(this, options);
 		this.text = options.text;
-		this.fontSize = options.fontSize || Text.DEFAULTS.fontSize;
+		this.unscaledFontSize = options.fontSize || Text.DEFAULTS.fontSize;
 		this.fontFamily = options.fontFamily || Text.DEFAULTS.fontFamily;
 		this.fontStyle = options.fontStyle || Text.DEFAULTS.fontStyle;
 		this.fontVariant = options.fontVariant || Text.DEFAULTS.fontVariant;
@@ -12704,27 +12731,36 @@ define('text',['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject
 		this.textAlign = options.textAlign || Text.DEFAULTS.textAlign;
 		this.textBaseline = options.textBaseline || Text.DEFAULTS.textBaseline;
 
-		_.assign(this.style, options.style, {
-			font: Text.FormatFontString(
-				this.fontStyle,
-				this.fontVariant,
-				this.fontWeight,
-				this.fontSize,
-				this.lineHeight,
-				this.fontFamily),
-			textAlign: this.textAlign,
-			textBaseline: this.textBaseline
+		this._textMetricsNeedUpdate = true;
+		this._textMetricsNeed = null;
+
+		Object.defineProperty(this, 'fontSize', {
+			configurable: true,
+			enumerable: true,
+			get: function(){
+				return (parseFloat(this.unscaledFontSize) * this.GlobalFontScale) + 'px';
+			}
 		});
 
-		this.textMetrics = Renderer.measureText(this._prerenderingContext, this.text, this.style);
-		this.textMetrics.height = parseFloat(this.fontSize);
+		Object.defineProperty(this, 'textMetrics', {
+			configurable: true,
+			enumerable: true,
+			get: function(){
+				if(this._textMetrics === null || this._textMetricsNeedUpdate){
+					this._updateStyle();
+					this._textMetrics = Renderer.measureText(this._prerenderingContext, this.text, this.style);
+					this._textMetrics.height = parseFloat(this.fontSize);
+					this._textMetricsNeedUpdate = false;
+				}
+				return this._textMetrics;
+			}
+		});
 
 		Object.defineProperty(this, 'boundingBox', {
 			configurable: true,
 			enumerable: true,
 			get: function () {
-				this.textMetrics = Renderer.measureText(this._prerenderingContext, this.text, this.style);
-				this.textMetrics.height = parseFloat(this.fontSize);
+				this._textMetricsNeedUpdate = true;
 				return {
 					top: this.offset.y,
 					left: this.offset.x,
@@ -12736,6 +12772,20 @@ define('text',['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject
 	}
 
 	_.assign(Text.prototype, CanvasObject.prototype);
+
+	Text.prototype._updateStyle = function(options){
+		_.assign(this.style, (options || {}), {
+			font: Text.FormatFontString(
+				this.fontStyle,
+				this.fontVariant,
+				this.fontWeight,
+				this.fontSize,
+				this.lineHeight,
+				this.fontFamily),
+			textAlign: this.textAlign,
+			textBaseline: this.textBaseline
+		});
+	};
 
 	Text.FormatFontString = function _formatFontString(style, variant, weight, size, lineheight, family) {
 		return style + ' ' + variant + ' ' + weight + ' ' + size + '/' + lineheight + ' ' + family;
@@ -12756,6 +12806,7 @@ define('text',['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject
 	};
 
 	Text.prototype.render = function _render() {
+		this._updateStyle();
 		Renderer.drawText(this._prerenderingContext, 0, 0, this.text, this.style);
 	};
 

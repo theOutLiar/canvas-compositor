@@ -2,6 +2,9 @@ module.exports = function (grunt) {
 	'use strict';
 
 	grunt.initConfig({
+        jshint: {
+			build: ['**/*.js', '!dist/**/*', '!node_modules/**/*', '!bower_components/**/*']
+		},
 		requirejs: {
 			build: {
 				options: {
@@ -46,11 +49,14 @@ module.exports = function (grunt) {
 		}
 	});
 
+	grunt.loadNpmTasks('grunt-contrib-jshint');
 	grunt.loadNpmTasks('grunt-contrib-requirejs');
 	grunt.loadNpmTasks('grunt-contrib-watch');
 	grunt.loadNpmTasks('grunt-contrib-clean');
+	
+	grunt.registerTask('lint', ['jshint']);
 
-	grunt.registerTask('build', ['clean', 'requirejs']);
+	grunt.registerTask('build', ['lint', 'clean', 'requirejs']);
 
 	grunt.registerTask('default', ['build']);
 	grunt.registerTask('dev', ['build', 'watch']);

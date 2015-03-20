@@ -157,6 +157,16 @@ define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
 			configurable: true,
 			enumerable: true,
 			get: function (){
+				//not sure what the best approach for line scale is...
+				return Math.min(this.GlobalScale.scaleWidth, this.GlobalScale.scaleHeight);
+			}
+		});
+
+		Object.defineProperty(this, 'GlobalFontScale', {
+			configurable: true,
+			enumerable: true,
+			get: function (){
+				//not sure what the best approach for line scale is...
 				return Math.min(this.GlobalScale.scaleWidth, this.GlobalScale.scaleHeight);
 			}
 		});
@@ -246,7 +256,8 @@ define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
 			x < this.boundingBox.right &&
 			y < this.boundingBox.bottom
 		);
-	}
+	};
+
 	CanvasObject.prototype.PointIsInObject = function _pointIsInObject(x, y) {
 		if (this.pressPassThrough){
 			return false;
