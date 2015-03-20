@@ -36,19 +36,54 @@ define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Rende
 
 	Container.prototype.masks = [];
 	Container.prototype.children = [];
+	Container.prototype.frontChildren = [];
+	Container.prototype.backChildren = [];
+	Container.prototype.middleChildren = [];
+
 	Container.prototype.ChildrenAt = function _childrenAt(x, y) {
 		return _.filter(this.children, function (c) {
 			return c.PointIsInObject(x, y);
 		});
 	};
 
+	Container.prototype.UpdateChildrenLists = function _updateChildrenLists(){
+		this.frontChildren = _.filter(this.children, function(c){
+			return c.sticky && c.stickyPosition === CanvasObject.STICKY_POSITION.FRONT;
+		});
+		this.backChildren = _.filter(this.children, function(c){
+			return c.sticky && c.stickyPosition === CanvasObject.STICKY_POSITION.BACK;
+		});
+		this.middleChildren = _.filter(this.children, function(c){
+			return !c.sticky;
+		});
+	};
+
 	Container.prototype.ChildAt = function _childAt(x, y) {
 		//loop over the children in reverse because drawing order
-		for (var c = this.children.length - 1; c >= 0; c--) {
+		/*for (var c = this.children.length - 1; c >= 0; c--) {
 			if (this.children[c].PointIsInObject(x, y)) {
 				return this.children[c];
 			}
+		}*/
+
+		for (var fc = this.frontChildren.length - 1; fc >= 0; fc--) {
+			if (this.frontChildren[fc].PointIsInObject(x, y)) {
+				return this.frontChildren[fc];
+			}
 		}
+
+		for (var mc = this.middleChildren.length - 1; mc >= 0; mc--) {
+			if (this.middleChildren[mc].PointIsInObject(x, y)) {
+				return this.middleChildren[mc];
+			}
+		}
+
+		for (var bc = this.backChildren.length - 1; bc >= 0; bc--) {
+			if (this.backChildren[bc].PointIsInObject(x, y)) {
+				return this.backChildren[bc];
+			}
+		}
+
 		return null;
 	};
 
@@ -56,8 +91,20 @@ define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Rende
 		//don't even bother checking the children
 		//if the point isn't in the bounding box
 		if(CanvasObject.prototype.PointIsInObject.call(this, x, y)){
-			for (var c in this.children) {
-				if (this.children[c].PointIsInObject(x, y)) {
+			for (var fc in this.frontChildren) {
+				if (this.frontChildren[fc].PointIsInObject(x, y)) {
+					return true;
+				}
+			}
+
+			for (var mc in this.middleChildren) {
+				if (this.middleChildren[mc].PointIsInObject(x, y)) {
+					return true;
+				}
+			}
+
+			for (var bc in this.backChildren) {
+				if (this.backChildren[bc].PointIsInObject(x, y)) {
 					return true;
 				}
 			}
@@ -68,13 +115,13 @@ define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Rende
 	Container.prototype.addChild = function _addChild(child) {
 		child.parent = this;
 		this.children.push(child);
+		this.UpdateChildrenLists();
 		this.NeedsUpdate = true;
 		this.NeedsRender = true;
 	};
 
 	Container.prototype.addMask = function _addMask(mask) {
 		mask.parent = this;
-		//mask.d = mask.d.add(this.d);
 		this.masks.push(mask);
 		this.NeedsUpdate = true;
 		this.NeedsRender = true;
@@ -91,16 +138,20 @@ define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Rende
 			right: -this.boundingBox.right
 		};
 
-		_.each(this.children, function (c) {
+		_.each(this.backChildren, function (c) {
 			c.draw(renderContext, contextOffset);
 		});
+
+		_.each(this.middleChildren, function (c) {
+			c.draw(renderContext, contextOffset);
+		});
+
+		_.each(this.frontChildren, function (c) {
+			c.draw(renderContext, contextOffset);
+		});
+
 		renderContext.globalCompositeOperation = 'destination-out';
-		contextOffset = {
-			top: -this.boundingBox.top,
-			left: -this.boundingBox.left,
-			bottom: -this.boundingBox.bottom,
-			right: -this.boundingBox.right
-		};
+
 		_.each(this.masks, function (m) {
 			m.draw(renderContext, contextOffset);
 		});

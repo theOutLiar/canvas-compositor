@@ -1,6 +1,5 @@
 define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
 	'use strict';
-	var STICKY_POSITION = { FRONT:'front', BACK: 'back' };
 
 	function CanvasObject(options) {
 		this.d = new Vector([options.x || 0, options.y || 0]);
@@ -267,13 +266,34 @@ define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
 		return this.PointIsInBoundingBox(x, y);
 	}; //can (and should) be overridden by implementors
 
+	CanvasObject.prototype.UnPin = function _unpin(){
+		this.sticky = false;
+		this.stickyPosition = null;
+		this.NeedsUpdate = true;
+		this.NeedsRender = true;
+		if(this.parent){
+			this.parent.UpdateChildrenLists();
+		}
+	};
+
 	CanvasObject.prototype.PinToFront = function _pinToFront(){
 		this.sticky = true;
-		this.stickyPosition = STICKY_POSITION.FRONT;
+		this.stickyPosition = CanvasObject.STICKY_POSITION.FRONT;
+		this.NeedsUpdate = true;
+		this.NeedsRender = true;
+		if(this.parent){
+			this.parent.UpdateChildrenLists();
+		}
 	};
+
 	CanvasObject.prototype.PinToBack = function _pinToFront(){
 		this.sticky = true;
-		this.stickyPosition = STICKY_POSITION.BACK;
+		this.stickyPosition = CanvasObject.STICKY_POSITION.BACK;
+		this.NeedsUpdate = true;
+		this.NeedsRender = true;
+		if(this.parent){
+			this.parent.UpdateChildrenLists();
+		}
 	};
 
 	CanvasObject.prototype.MoveToFront = function _moveToFront() {
@@ -323,6 +343,8 @@ define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
 			}
 		}
 	};
+
+	CanvasObject.STICKY_POSITION = { FRONT:'front', BACK: 'back' };
 
 	CanvasObject.prototype.onpressdown = null;
 	CanvasObject.prototype.onpressup = null;
