@@ -31,7 +31,8 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
 			onpressup: [],
 			onpressdown: [],
 			onpressmove: [],
-			onpresscancel: []
+			onpresscancel: [],
+			onpress: []
 		};
 	}
 

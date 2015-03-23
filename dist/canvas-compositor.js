@@ -13183,7 +13183,8 @@ define('canvas-compositor',['lodash', 'renderer', 'canvas-object', 'vector-path'
 			onpressup: [],
 			onpressdown: [],
 			onpressmove: [],
-			onpresscancel: []
+			onpresscancel: [],
+			onpress: []
 		};
 	}
 
