@@ -120,6 +120,7 @@ define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Rende
 		this.UpdateChildrenLists();
 		this.NeedsUpdate = true;
 		this.NeedsRender = true;
+		//TODO: make this hook more generic
 		if(this.onchildadded){
 			this.onchildadded();
 		}
@@ -130,6 +131,7 @@ define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Rende
 			var index = this.children.indexOf(child);
 			if( index >= 0 ){
 				this.children.splice(index, 1);
+				this.UpdateChildrenLists();
 				this.NeedsUpdate = true;
 				this.NeedsRender = true;
 			}

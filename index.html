@@ -106,6 +106,21 @@
         );
 
         textContainer.addChild(_text);
+		var _image = null;
+		var i = new Image();
+		i.src = 'demo.png';
+		i.onload = function(e){
+			_image = new cc.Image({
+				image: i,
+				x: 100, y: 100,
+				style: {
+					strokeStyle: 'orange',
+					lineWidth: 10.0
+				},
+				draggable: true
+			});
+			_cc.Scene.addChild(_image);
+		}
 
 		pathContainer.addChild(new cc.Path(
 			{

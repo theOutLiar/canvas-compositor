@@ -1,15 +1,28 @@
-require(['lodash', 'canvas-object'], function (_, CanvasObject) {
+define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Renderer) {
+	'use strict';
+
 	function Image(options) {
 		CanvasObject.call(this, options);
 		this.image = options.image;
+
+		Object.defineProperty(this, 'boundingBox', {
+			configurable: true,
+			enumerable: true,
+			get: function () {
+				return {
+					top: this.offset.y,
+					left: this.offset.x,
+					bottom: this.offset.y + (this.GlobalScale.scaleHeight * this.image.height),
+					right: this.offset.x + (this.GlobalScale.scaleWidth * this.image.width)
+				};
+			}
+		});
 	}
 
 	_.assign(Image.prototype, CanvasObject.prototype);
 
-	Image.prototype.draw = function _drawSelf() {
-		var x = this.x + this.translation.x;
-		var y = this.y + this.translation.y;
-		CanvasObject.Renderer.drawImage(this.image, x, y, this.style);
+	Image.prototype.render = function _drawSelf() {
+		Renderer.drawImage(this._prerenderingContext, 0, 0, this.image, this.style);
 	};
 
 	return Image;
