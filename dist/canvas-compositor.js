@@ -13026,6 +13026,7 @@ define('container',['lodash', 'canvas-object', 'renderer'], function (_, CanvasO
 	Container.prototype.frontChildren = [];
 	Container.prototype.backChildren = [];
 	Container.prototype.middleChildren = [];
+	Container.prototype.mostRecentlyAddedChild = null;
 
 	Container.prototype.ChildrenAt = function _childrenAt(x, y) {
 		return _.filter(this.children, function (c) {
@@ -13102,9 +13103,24 @@ define('container',['lodash', 'canvas-object', 'renderer'], function (_, CanvasO
 	Container.prototype.addChild = function _addChild(child) {
 		child.parent = this;
 		this.children.push(child);
+		this.mostRecentlyAddedChild = child;
 		this.UpdateChildrenLists();
 		this.NeedsUpdate = true;
 		this.NeedsRender = true;
+		if(this.onchildadded){
+			this.onchildadded();
+		}
+	};
+
+	Container.prototype.removeChild = function _removeChild(child){
+		if (child){
+			var index = this.children.indexOf(child);
+			if( index >= 0 ){
+				this.children.splice(index, 1);
+				this.NeedsUpdate = true;
+				this.NeedsRender = true;
+			}
+		}
 	};
 
 	Container.prototype.addMask = function _addMask(mask) {
@@ -13178,7 +13194,6 @@ define('canvas-compositor',['lodash', 'renderer', 'canvas-object', 'vector-path'
 		});
 
 		this._bindEvents();
-		this._animationLoop();
 		this._eventRegistry = {
 			onpressup: [],
 			onpressdown: [],
@@ -13186,6 +13201,8 @@ define('canvas-compositor',['lodash', 'renderer', 'canvas-object', 'vector-path'
 			onpresscancel: [],
 			onpress: []
 		};
+
+		this._animationLoop();
 	}
 
 	CanvasCompositor.prototype.registerEvent = function _registerEvent(eventType, callback) {
