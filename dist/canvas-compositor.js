@@ -12430,7 +12430,7 @@ define('canvas-object',['lodash', 'vector', 'renderer'], function (_, Vector, Re
 
 		var x = this.boundingBox.left + (contextOffset && contextOffset.left ? contextOffset.left : 0);
 		var y = this.boundingBox.top + (contextOffset && contextOffset.top ? contextOffset.top : 0);
-		Renderer.drawImage(context, x, y, this._prerenderedImage);
+		Renderer.drawImage(context, x, y, this._prerenderedImage, this.style);
 	};
 
 	CanvasObject.prototype.render = function _render() {}; //should be overridden by implementors
