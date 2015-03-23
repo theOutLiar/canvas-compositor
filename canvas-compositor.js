@@ -5,7 +5,8 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
 		PRESS_UP: 'onpressup',
 		PRESS_DOWN: 'onpressdown',
 		PRESS_MOVE: 'onpressmove',
-		PRESS_CANCEL: 'onpresscancel'
+		PRESS_CANCEL: 'onpresscancel',
+		PRESS: 'onpress'
 	};
 
 	var _lastKnownTouchLocation;
@@ -54,6 +55,7 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
 		this._canvas.addEventListener('mouseup', _.bind(this._handlePressUp, this));
 		this._canvas.addEventListener('mousemove', _.bind(this._handlePressMove, this));
 		this._canvas.addEventListener('mouseout', _.bind(this._handlePressCancel, this));
+		this._canvas.addEventListener('click', _.bind(this._handlePress, this));
 
 		this._canvas.addEventListener('touchstart', function (e) {
 			e.preventDefault();
@@ -74,6 +76,11 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
 			e.preventDefault();
 			e.stopPropagation();
 			_translateTouchEvent('mouseout', e);
+		});
+		this._canvas.addEventListener('touch', function (e) {
+			e.preventDefault();
+			e.stopPropagation();
+			_translateTouchEvent('click', e);
 		});
 	};
 
@@ -158,6 +165,22 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
 		});
 
 		_.each(this._eventRegistry[_events.PRESS_MOVE], function (callback) {
+			callback(e);
+		});
+	};
+
+	CanvasCompositor.prototype._handlePress = function(e){
+		e.preventDefault();
+		var objects = _.filter(this.Scene.children, function (c) {
+			// `!!` is a quick hack to convert to a bool
+			return !!(c.onpress);
+		});
+
+		_.each(objects, function (o) {
+			o.onpress(e);
+		});
+
+		_.each(this._eventRegistry[_events.PRESS], function (callback) {
 			callback(e);
 		});
 	};
