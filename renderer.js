@@ -56,6 +56,15 @@ define(['lodash'], function (_) {
 			context.stroke();
 			context.closePath();
 		},
+		drawCircle: function _drawCircle(context, x, y, radius, style){
+			_.assign(context, style || {});
+			context.beginPath();
+			//TODO: 2015-03-12 this is currently only supported by chrome & opera
+			context.arc(x, y, radius, 0, 2 * Math.PI);
+			context.fill();
+			context.stroke();
+			context.closePath();
+		},
 		drawText: function _drawText(context, x, y, text, style) {
 			_.assign(context, style || {});
 			context.beginPath();

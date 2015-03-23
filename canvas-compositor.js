@@ -1,4 +1,4 @@
-define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'ellipse', 'text', 'image', 'container'], function (_, Renderer, CanvasObject, Path, Rectangle, Ellipse, Text, Image, Container) {
+define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'ellipse', 'circle', 'text', 'image', 'container'], function (_, Renderer, CanvasObject, Path, Rectangle, Ellipse, Circle, Text, Image, Container) {
 	'use strict';
 
 	var _events = {
@@ -229,6 +229,11 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
 	};
 
 	//expose primitive canvas functions at high level
+	CanvasCompositor.prototype.drawCircle = function _drawCircle(x, y, radius) {
+		Renderer.drawEllipse(this._context, x, y, radius, this.style);
+	};
+
+	//expose primitive canvas functions at high level
 	CanvasCompositor.prototype.drawText = function _drawText(x, y, text) {
 		Renderer.drawText(this._context, x, y, text, this.style);
 	};
@@ -260,6 +265,7 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
 	CanvasCompositor.Ellipse = Ellipse;
 	CanvasCompositor.Text = Text;
 	CanvasCompositor.Image = Image;
+	CanvasCompositor.Circle = Circle;
 	CanvasCompositor.Container = Container;
 
 	CanvasCompositor.Events = _events;
