@@ -26,7 +26,6 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
 		});
 
 		this._bindEvents();
-		this._animationLoop();
 		this._eventRegistry = {
 			onpressup: [],
 			onpressdown: [],
@@ -34,6 +33,8 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
 			onpresscancel: [],
 			onpress: []
 		};
+
+		this._animationLoop();
 	}
 
 	CanvasCompositor.prototype.registerEvent = function _registerEvent(eventType, callback) {

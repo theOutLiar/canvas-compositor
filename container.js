@@ -39,6 +39,7 @@ define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Rende
 	Container.prototype.frontChildren = [];
 	Container.prototype.backChildren = [];
 	Container.prototype.middleChildren = [];
+	Container.prototype.mostRecentlyAddedChild = null;
 
 	Container.prototype.ChildrenAt = function _childrenAt(x, y) {
 		return _.filter(this.children, function (c) {
@@ -115,9 +116,24 @@ define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Rende
 	Container.prototype.addChild = function _addChild(child) {
 		child.parent = this;
 		this.children.push(child);
+		this.mostRecentlyAddedChild = child;
 		this.UpdateChildrenLists();
 		this.NeedsUpdate = true;
 		this.NeedsRender = true;
+		if(this.onchildadded){
+			this.onchildadded();
+		}
+	};
+
+	Container.prototype.removeChild = function _removeChild(child){
+		if (child){
+			var index = this.children.indexOf(child);
+			if( index >= 0 ){
+				this.children.splice(index, 1);
+				this.NeedsUpdate = true;
+				this.NeedsRender = true;
+			}
+		}
 	};
 
 	Container.prototype.addMask = function _addMask(mask) {
