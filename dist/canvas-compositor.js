@@ -12017,7 +12017,7 @@ define('renderer',['lodash'], function (_) {
 			context.clearRect(x, y, width, height);
 		},
 		drawPath: function _drawPath(context, vertices, style) {
-			_.assign(context, style);
+			_.assign(context, style || {});
 			context.beginPath();
 			var started = false;
 			var x = 0;
@@ -12036,7 +12036,7 @@ define('renderer',['lodash'], function (_) {
 			context.closePath();
 		},
 		drawRectangle: function _drawRectangle(context, x, y, width, height, style) {
-			_.assign(context, style);
+			_.assign(context, style || {});
 			context.beginPath();
 			context.rect(x, y, width, height);
 			context.fill();
@@ -12044,8 +12044,7 @@ define('renderer',['lodash'], function (_) {
 			context.closePath();
 		},
 		drawEllipse: function _drawEllipse(context, x, y, radius, minorRadius, style) {
-			_.assign(context, style);
-			//context.globalCompositeOperation = this.mask ? 'source-out' : 'normal';
+			_.assign(context, style || {});
 			context.beginPath();
 			//TODO: 2015-03-12 this is currently only supported by chrome & opera
 			context.ellipse(x, y, radius, minorRadius, 0, 0, 2 * Math.PI);
@@ -12054,7 +12053,7 @@ define('renderer',['lodash'], function (_) {
 			context.closePath();
 		},
 		drawText: function _drawText(context, x, y, text, style) {
-			_.assign(context, style);
+			_.assign(context, style || {});
 			context.beginPath();
 			context.fillText(text, x, y);
 			//TODO: does it make sense to `strokeText`
@@ -12064,14 +12063,17 @@ define('renderer',['lodash'], function (_) {
 			context.closePath();
 		},
 		measureText: function _measureText(context, text, style) {
-			_.assign(context, style);
+			_.assign(context, style || {});
 			return context.measureText(text);
 		},
 		drawImage: function _drawImage(context, x, y, image, style) {
-			_.assign(context, style);
-			context.beginPath();
-			context.drawImage(image, x, y);
-			context.closePath();
+			_.assign(context, style || {});
+			//no reason to draw 0-sized images
+			if(image.width > 0 && image.height > 0){
+				context.beginPath();
+				context.drawImage(image, x, y);
+				context.closePath();
+			}
 		}
 	};
 
