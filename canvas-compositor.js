@@ -79,11 +79,13 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
 			e.stopPropagation();
 			_translateTouchEvent('mouseout', e);
 		});
-		this._canvas.addEventListener('touch', function (e) {
+
+		//there is no 'touch' event - what is best way to deal with this?
+		/*this._canvas.addEventListener('touch', function (e) {
 			e.preventDefault();
 			e.stopPropagation();
 			_translateTouchEvent('click', e);
-		});
+		});*/
 	};
 
 	function _translateTouchEvent(type, e) {

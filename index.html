@@ -95,18 +95,18 @@
             {
                 x:100,
                 y:400,
-                text: 'blah blah blah',
+                text: 'The quick red fox jumps over the lazy brown dog.',
                 fontSize: '20px',
                 style: {
-                    strokeStyle: 'green',
-                    fillStyle: 'green',
-                    lineWidth: 1
+                    fillStyle: 'green'
                 }
             }
         );
+		//_text.flags.DEBUG = true
 
         textContainer.addChild(_text);
-		var _image = null;
+
+		/*var _image = null;
 		var i = new Image();
 		i.src = 'demo.png';
 		i.onload = function(e){
@@ -120,7 +120,7 @@
 				draggable: true
 			});
 			_cc.Scene.addChild(_image);
-		}
+		}*/
 
 		pathContainer.addChild(new cc.Path(
 			{
