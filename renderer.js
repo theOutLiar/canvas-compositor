@@ -69,10 +69,7 @@ define(['lodash'], function (_) {
 			_.assign(context, style || {});
 			context.beginPath();
 			context.fillText(text, x, y);
-			//TODO: does it make sense to `strokeText`
-			//at all?! wtf are the implications of
-			//lineWidth to the text measurements?
-			//this._context.strokeText(text, x, y);
+			//TODO: implement stroke text if specified
 			context.closePath();
 		},
 		measureText: function _measureText(context, text, style) {

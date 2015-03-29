@@ -1,7 +1,7 @@
 {
 	"name": "canvas-compositor",
 	"main": "index.js",
-	"version": "0.1.12",
+	"version": "0.1.13",
 	"authors": [
     "Christopher J Gore"
   ],

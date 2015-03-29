@@ -118,15 +118,16 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
 		var x = e.offsetX - leftPadding;
 		var y = e.offsetY - topPadding;
 
+		_.each(this._eventRegistry[_events.PRESS_DOWN], function (callback) {
+			callback(e);
+		});
+
 		var clickedObject = this.Scene.ChildAt(x, y);
 
 		if (clickedObject && clickedObject.onpressdown) {
 			clickedObject.onpressdown(e);
 		}
 
-		_.each(this._eventRegistry[_events.PRESS_DOWN], function (callback) {
-			callback(e);
-		});
 	};
 
 	CanvasCompositor.prototype._handlePressUp = function (e) {
@@ -146,15 +147,15 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
 		var x = e.offsetX - leftPadding;
 		var y = e.offsetY - topPadding;
 
+		_.each(this._eventRegistry[_events.PRESS_UP], function (callback) {
+			callback(e);
+		});
+
 		var clickedObject = this.Scene.ChildAt(x, y);
 
 		if (clickedObject && clickedObject.onpressup) {
 			clickedObject.onpressup(e);
 		}
-
-		_.each(this._eventRegistry[_events.PRESS_UP], function (callback) {
-			callback(e);
-		});
 	};
 
 	CanvasCompositor.prototype._handlePressMove = function (e) {
@@ -164,12 +165,12 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
 			return !!(c.onpressmove);
 		});
 
-		_.each(objects, function (o) {
-			o.onpressmove(e);
-		});
-
 		_.each(this._eventRegistry[_events.PRESS_MOVE], function (callback) {
 			callback(e);
+		});
+
+		_.each(objects, function (o) {
+			o.onpressmove(e);
 		});
 	};
 
@@ -180,12 +181,12 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
 			return !!(c.onpress);
 		});
 
-		_.each(objects, function (o) {
-			o.onpress(e);
-		});
-
 		_.each(this._eventRegistry[_events.PRESS], function (callback) {
 			callback(e);
+		});
+
+		_.each(objects, function (o) {
+			o.onpress(e);
 		});
 	};
 

@@ -12065,10 +12065,7 @@ define('renderer',['lodash'], function (_) {
 			_.assign(context, style || {});
 			context.beginPath();
 			context.fillText(text, x, y);
-			//TODO: does it make sense to `strokeText`
-			//at all?! wtf are the implications of
-			//lineWidth to the text measurements?
-			//this._context.strokeText(text, x, y);
+			//TODO: implement stroke text if specified
 			context.closePath();
 		},
 		measureText: function _measureText(context, text, style) {
@@ -12223,10 +12220,11 @@ define('canvas-object',['lodash', 'vector', 'renderer'], function (_, Vector, Re
 		this.sticky = false;
 		this.stickyPosition = null;
 
-		//putting defineProperty in constructor to make inheritable
-		//on a tight schedule - would prefer to do this on the
-		//prototype, because doing it otherwise means each instance
-		//has to create a copy of the property/getters/setters
+		//TODO: putting defineProperty in constructor to make inheritable on
+		//a tight schedule - would prefer to do this on the prototype, because
+		//doing it otherwise means each instance has to create a copy of the
+		//property/getters/setters, but properties on the prototype aren't
+		//copied by _'s `assign` funcion
 		Object.defineProperty(this, 'offset', {
 			configurable: true,
 			enumerable: true,
@@ -12517,7 +12515,6 @@ define('canvas-object',['lodash', 'vector', 'renderer'], function (_, Vector, Re
 		}
 	};
 
-
 	CanvasObject.prototype.MoveForward = function _moveForward(){
 		if (this.parent){
 			var index = this.parent.children.indexOf(this);
@@ -12529,6 +12526,7 @@ define('canvas-object',['lodash', 'vector', 'renderer'], function (_, Vector, Re
 			}
 		}
 	};
+
 	CanvasObject.prototype.MoveBackward = function _moveBackward(){
 		if (this.parent){
 			var index = this.parent.children.indexOf(this);
@@ -12994,6 +12992,7 @@ define('text',['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject
 		this._textMetricsNeedUpdate = true;
 		this._updateStyle();
 		Renderer.drawText(this._prerenderingContext, 0, this.textMetrics.ascent, this.text, this.style);
+
 		if(this.flags.DEBUG){
 			Renderer.drawPath(this._prerenderingContext, [{x:0, y:this.textMetrics.ascent}, {x:this.textMetrics.width, y: this.textMetrics.ascent}], {strokeStyle:'Blue'});
 			Renderer.drawCircle(this._prerenderingContext, 0, this.textMetrics.ascent, 3, {strokeStyle: 'Blue', fillStyle: 'Blue'});
@@ -13338,15 +13337,16 @@ define('canvas-compositor',['lodash', 'renderer', 'canvas-object', 'vector-path'
 		var x = e.offsetX - leftPadding;
 		var y = e.offsetY - topPadding;
 
+		_.each(this._eventRegistry[_events.PRESS_DOWN], function (callback) {
+			callback(e);
+		});
+
 		var clickedObject = this.Scene.ChildAt(x, y);
 
 		if (clickedObject && clickedObject.onpressdown) {
 			clickedObject.onpressdown(e);
 		}
 
-		_.each(this._eventRegistry[_events.PRESS_DOWN], function (callback) {
-			callback(e);
-		});
 	};
 
 	CanvasCompositor.prototype._handlePressUp = function (e) {
@@ -13366,15 +13366,15 @@ define('canvas-compositor',['lodash', 'renderer', 'canvas-object', 'vector-path'
 		var x = e.offsetX - leftPadding;
 		var y = e.offsetY - topPadding;
 
+		_.each(this._eventRegistry[_events.PRESS_UP], function (callback) {
+			callback(e);
+		});
+
 		var clickedObject = this.Scene.ChildAt(x, y);
 
 		if (clickedObject && clickedObject.onpressup) {
 			clickedObject.onpressup(e);
 		}
-
-		_.each(this._eventRegistry[_events.PRESS_UP], function (callback) {
-			callback(e);
-		});
 	};
 
 	CanvasCompositor.prototype._handlePressMove = function (e) {
@@ -13384,12 +13384,12 @@ define('canvas-compositor',['lodash', 'renderer', 'canvas-object', 'vector-path'
 			return !!(c.onpressmove);
 		});
 
-		_.each(objects, function (o) {
-			o.onpressmove(e);
-		});
-
 		_.each(this._eventRegistry[_events.PRESS_MOVE], function (callback) {
 			callback(e);
+		});
+
+		_.each(objects, function (o) {
+			o.onpressmove(e);
 		});
 	};
 
@@ -13400,12 +13400,12 @@ define('canvas-compositor',['lodash', 'renderer', 'canvas-object', 'vector-path'
 			return !!(c.onpress);
 		});
 
-		_.each(objects, function (o) {
-			o.onpress(e);
-		});
-
 		_.each(this._eventRegistry[_events.PRESS], function (callback) {
 			callback(e);
+		});
+
+		_.each(objects, function (o) {
+			o.onpress(e);
 		});
 	};
 

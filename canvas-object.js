@@ -26,10 +26,11 @@ define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
 		this.sticky = false;
 		this.stickyPosition = null;
 
-		//putting defineProperty in constructor to make inheritable
-		//on a tight schedule - would prefer to do this on the
-		//prototype, because doing it otherwise means each instance
-		//has to create a copy of the property/getters/setters
+		//TODO: putting defineProperty in constructor to make inheritable on
+		//a tight schedule - would prefer to do this on the prototype, because
+		//doing it otherwise means each instance has to create a copy of the
+		//property/getters/setters, but properties on the prototype aren't
+		//copied by _'s `assign` funcion
 		Object.defineProperty(this, 'offset', {
 			configurable: true,
 			enumerable: true,
@@ -320,7 +321,6 @@ define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
 		}
 	};
 
-
 	CanvasObject.prototype.MoveForward = function _moveForward(){
 		if (this.parent){
 			var index = this.parent.children.indexOf(this);
@@ -332,6 +332,7 @@ define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
 			}
 		}
 	};
+
 	CanvasObject.prototype.MoveBackward = function _moveBackward(){
 		if (this.parent){
 			var index = this.parent.children.indexOf(this);

@@ -135,6 +135,7 @@ define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Rende
 		this._textMetricsNeedUpdate = true;
 		this._updateStyle();
 		Renderer.drawText(this._prerenderingContext, 0, this.textMetrics.ascent, this.text, this.style);
+
 		if(this.flags.DEBUG){
 			Renderer.drawPath(this._prerenderingContext, [{x:0, y:this.textMetrics.ascent}, {x:this.textMetrics.width, y: this.textMetrics.ascent}], {strokeStyle:'Blue'});
 			Renderer.drawCircle(this._prerenderingContext, 0, this.textMetrics.ascent, 3, {strokeStyle: 'Blue', fillStyle: 'Blue'});
