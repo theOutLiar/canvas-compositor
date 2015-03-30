@@ -12204,6 +12204,9 @@ define('canvas-object',['lodash', 'vector', 'renderer'], function (_, Vector, Re
 		this.pressPassThrough = options.pressPassThrough || false;
 		this.draggable = options.draggable || false;
 
+		this.drawBoundingBox = false;
+		this.boundingBoxColor = '#cccccc';
+
 		this._needsUpdate = false;
 		this._needsRender = true;
 		this._scaleWidth = 1;
@@ -12433,6 +12436,14 @@ define('canvas-object',['lodash', 'vector', 'renderer'], function (_, Vector, Re
 			this._prerenderingContext.beginPath();
 			this._prerenderingContext.lineWidth=2.0;
 			this._prerenderingContext.strokeStyle='#FF0000';
+			this._prerenderingContext.strokeRect(0,0,this._prerenderedImage.width, this._prerenderedImage.height);
+			this._prerenderingContext.closePath();
+		}
+
+		if (this.drawBoundingBox){
+			this._prerenderingContext.beginPath();
+			this._prerenderingContext.lineWidth=2.0;
+			this._prerenderingContext.strokeStyle=this.boundingBoxColor;
 			this._prerenderingContext.strokeRect(0,0,this._prerenderedImage.width, this._prerenderedImage.height);
 			this._prerenderingContext.closePath();
 		}
