@@ -3,7 +3,7 @@ define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Rende
 
 	function Image(options) {
 		CanvasObject.call(this, options);
-		this.image = options.image;
+		this.unscaledImage = options.image;
 
 		Object.defineProperty(this, 'boundingBox', {
 			configurable: true,
@@ -12,8 +12,8 @@ define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Rende
 				return {
 					top: this.offset.y,
 					left: this.offset.x,
-					bottom: this.offset.y + (this.GlobalScale.scaleHeight * this.image.height),
-					right: this.offset.x + (this.GlobalScale.scaleWidth * this.image.width)
+					bottom: this.offset.y + (this.GlobalScale.scaleHeight * this.unscaledImage.height),
+					right: this.offset.x + (this.GlobalScale.scaleWidth * this.unscaledImage.width)
 				};
 			}
 		});
@@ -22,7 +22,11 @@ define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Rende
 	_.assign(Image.prototype, CanvasObject.prototype);
 
 	Image.prototype.render = function _drawSelf() {
-		Renderer.drawImage(this._prerenderingContext, 0, 0, this.image, this.style);
+		var image = new window.Image();
+		image.src = this.unscaledImage.src;
+		image.width = this.unscaledImage.width * this.GlobalScale.scaleWidth;
+		image.height = this.unscaledImage.height * this.GlobalScale.scaleHeight;
+		Renderer.drawImage(this._prerenderingContext, 0, 0, image, this.style);
 	};
 
 	return Image;

@@ -12077,7 +12077,7 @@ define('renderer',['lodash'], function (_) {
 			//no reason to draw 0-sized images
 			if(image.width > 0 && image.height > 0){
 				context.beginPath();
-				context.drawImage(image, x, y);
+				context.drawImage(image, x, y, image.width, image.height);
 				context.closePath();
 			}
 		}
@@ -13025,7 +13025,7 @@ define('image',['lodash', 'canvas-object', 'renderer'], function (_, CanvasObjec
 
 	function Image(options) {
 		CanvasObject.call(this, options);
-		this.image = options.image;
+		this.unscaledImage = options.image;
 
 		Object.defineProperty(this, 'boundingBox', {
 			configurable: true,
@@ -13034,8 +13034,8 @@ define('image',['lodash', 'canvas-object', 'renderer'], function (_, CanvasObjec
 				return {
 					top: this.offset.y,
 					left: this.offset.x,
-					bottom: this.offset.y + (this.GlobalScale.scaleHeight * this.image.height),
-					right: this.offset.x + (this.GlobalScale.scaleWidth * this.image.width)
+					bottom: this.offset.y + (this.GlobalScale.scaleHeight * this.unscaledImage.height),
+					right: this.offset.x + (this.GlobalScale.scaleWidth * this.unscaledImage.width)
 				};
 			}
 		});
@@ -13044,7 +13044,11 @@ define('image',['lodash', 'canvas-object', 'renderer'], function (_, CanvasObjec
 	_.assign(Image.prototype, CanvasObject.prototype);
 
 	Image.prototype.render = function _drawSelf() {
-		Renderer.drawImage(this._prerenderingContext, 0, 0, this.image, this.style);
+		var image = new window.Image();
+		image.src = this.unscaledImage.src;
+		image.width = this.unscaledImage.width * this.GlobalScale.scaleWidth;
+		image.height = this.unscaledImage.height * this.GlobalScale.scaleHeight;
+		Renderer.drawImage(this._prerenderingContext, 0, 0, image, this.style);
 	};
 
 	return Image;

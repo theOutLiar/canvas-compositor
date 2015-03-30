@@ -81,7 +81,7 @@ define(['lodash'], function (_) {
 			//no reason to draw 0-sized images
 			if(image.width > 0 && image.height > 0){
 				context.beginPath();
-				context.drawImage(image, x, y);
+				context.drawImage(image, x, y, image.width, image.height);
 				context.closePath();
 			}
 		}
