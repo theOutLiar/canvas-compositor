@@ -8,6 +8,7 @@
 </head>
 <body>
     <canvas id="test-canvas" width="800" height="600" style="margin-top:20px"></canvas>
+    <button onclick="movetofront();">movetofront</button>
     <script>
         var _canvas = document.getElementById('test-canvas');
         var cc = CanvasCompositor;
@@ -137,6 +138,10 @@
 				pressPassThrough: true
 			}
 		));
+
+            function movetofront(){
+            	rectContainer.MoveToFront();
+            }
 
     </script>
 </body>

@@ -12497,6 +12497,7 @@ define('canvas-object',['lodash', 'vector', 'renderer'], function (_, Vector, Re
 			if( index >= 0 ){
 				this.parent.children.splice(index, 1);
 				this.parent.children.splice(this.parent.children.length, 0, this);
+				this.parent.UpdateChildrenLists();
 				this.NeedsUpdate = true;
 				this.NeedsRender = true;
 			}
@@ -12509,6 +12510,7 @@ define('canvas-object',['lodash', 'vector', 'renderer'], function (_, Vector, Re
 			if( index >= 0 ){
 				this.parent.children.splice(index, 1);
 				this.parent.children.splice(0, 0, this); //if index + 1 > siblings.length, inserts it at end
+				this.parent.UpdateChildrenLists();
 				this.NeedsUpdate = true;
 				this.NeedsRender = true;
 			}
@@ -12521,6 +12523,7 @@ define('canvas-object',['lodash', 'vector', 'renderer'], function (_, Vector, Re
 			if( index >= 0 ){
 				this.parent.children.splice(index, 1);
 				this.parent.children.splice(index + 1, 0, this); //if index + 1 > siblings.length, inserts it at end
+				this.parent.UpdateChildrenLists();
 				this.NeedsUpdate = true;
 				this.NeedsRender = true;
 			}
@@ -12533,6 +12536,7 @@ define('canvas-object',['lodash', 'vector', 'renderer'], function (_, Vector, Re
 			if( index > 0 ){
 				this.parent.children.splice(index, 1);
 				this.parent.children.splice(index - 1, 0, this);
+				this.parent.UpdateChildrenLists();
 				this.NeedsUpdate = true;
 				this.NeedsRender = true;
 			}
