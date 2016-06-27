@@ -2,7 +2,7 @@ module.exports = function (grunt) {
 	'use strict';
 
 	grunt.initConfig({
-        jshint: {
+		jshint: {
 			build: ['**/*.js', '!dist/**/*', '!node_modules/**/*', '!bower_components/**/*']
 		},
 		requirejs: {
@@ -56,7 +56,7 @@ module.exports = function (grunt) {
 
 	grunt.registerTask('lint', ['jshint']);
 
-	grunt.registerTask('build', ['lint', 'clean', 'requirejs']);
+	grunt.registerTask('build', ['lint', 'clean', 'requirejs:build', 'requirejs:minify']);
 
 	grunt.registerTask('default', ['build']);
 	grunt.registerTask('dev', ['build', 'watch']);

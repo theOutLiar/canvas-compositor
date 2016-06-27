@@ -14,6 +14,7 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
 	function CanvasCompositor(canvas, options) {
 		this._canvas = canvas;
 		this._context = this._canvas.getContext('2d');
+		this._targetObject = null;
 
 		this._updateThreshhold = 1000 / 60; //amount of time that must pass before rendering
 		this._lastRenderTime = 0; //set to 0 to make sure first render happens right away
@@ -80,12 +81,10 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
 			_translateTouchEvent('mouseout', e);
 		});
 
-		//there is no 'touch' event - what is best way to deal with this?
-		/*this._canvas.addEventListener('touch', function (e) {
-			e.preventDefault();
-			e.stopPropagation();
-			_translateTouchEvent('click', e);
-		});*/
+		//there is no 'touch' event
+		//should the press event be disabled?
+		//should it be simulated?
+		//can all functionality be covered by up+down/start+end events?
 	};
 
 	function _translateTouchEvent(type, e) {
@@ -118,16 +117,19 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
 		var x = e.offsetX - leftPadding;
 		var y = e.offsetY - topPadding;
 
+		//pass through x and y to propagated events
+		e.canvasX = x;
+		e.canvasY = y;
+
 		_.each(this._eventRegistry[_events.PRESS_DOWN], function (callback) {
 			callback(e);
 		});
 
-		var clickedObject = this.Scene.ChildAt(x, y);
+		var clickedObject = this.Scene.PressableChildAt(x, y);
 
 		if (clickedObject && clickedObject.onpressdown) {
 			clickedObject.onpressdown(e);
 		}
-
 	};
 
 	CanvasCompositor.prototype._handlePressUp = function (e) {
@@ -139,19 +141,24 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
 		var topPadding = parseFloat(style.getPropertyValue('border-top')) +
 			parseFloat(style.getPropertyValue('padding-top'));
 
+		var x = e.offsetX - leftPadding;
+		var y = e.offsetY - topPadding;
+
+		//pass through x and y to propagated events
+		e.canvasX = x;
+		e.canvasY = y;
+
 		_.each(this.Scene.children, function (c) {
 			if (c.draggable && c.onpressup) {
 				c.onpressup(e);
 			}
 		});
-		var x = e.offsetX - leftPadding;
-		var y = e.offsetY - topPadding;
 
 		_.each(this._eventRegistry[_events.PRESS_UP], function (callback) {
 			callback(e);
 		});
 
-		var clickedObject = this.Scene.ChildAt(x, y);
+		var clickedObject = this.Scene.PressableChildAt(x, y);
 
 		if (clickedObject && clickedObject.onpressup) {
 			clickedObject.onpressup(e);
@@ -174,8 +181,22 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
 		});
 	};
 
-	CanvasCompositor.prototype._handlePress = function(e){
+	CanvasCompositor.prototype._handlePress = function (e) {
 		e.preventDefault();
+
+		var style = window.getComputedStyle(this._canvas);
+		var leftPadding = parseFloat(style.getPropertyValue('border-left')) +
+			parseFloat(style.getPropertyValue('padding-left'));
+		var topPadding = parseFloat(style.getPropertyValue('border-top')) +
+			parseFloat(style.getPropertyValue('padding-top'));
+
+		var x = e.offsetX - leftPadding;
+		var y = e.offsetY - topPadding;
+
+		//pass through x and y to propagated events
+		e.canvasX = x;
+		e.canvasY = y;
+
 		var objects = _.filter(this.Scene.children, function (c) {
 			// `!!` is a quick hack to convert to a bool
 			return !!(c.onpress);
@@ -206,6 +227,17 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
 			callback(e);
 		});
 	};
+
+	Object.defineProperty(CanvasCompositor.prototype, 'targetObject', {
+		configurable: true,
+		enumerable: true,
+		get: function _getTargetObject() {
+			return this._targetObject;
+		},
+		set: function _setTargetObject(o) {
+			this._targetObject = o;
+		}
+	});
 
 	CanvasCompositor.prototype._animationLoop = function _animationLoop() {
 		window.requestAnimationFrame(_.bind(this._animationLoop, this));

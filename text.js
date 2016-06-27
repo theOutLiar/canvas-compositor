@@ -5,6 +5,7 @@ define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Rende
 
 	//this is a version of:
 	//http://stackoverflow.com/questions/1134586/how-can-you-find-the-height-of-text-on-an-html-canvas
+	//it's a pretty awful hack.
 	function _getTextHeight(font){
 		//create an element with every character in it with this font
 		var fontHolder = document.createElement('span');

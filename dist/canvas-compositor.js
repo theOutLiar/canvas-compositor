@@ -12364,7 +12364,7 @@ define('canvas-object',['lodash', 'vector', 'renderer'], function (_, Vector, Re
 			configurable: true,
 			enumerable: true,
 			get: function (){
-				//not sure what the best approach for line scale is...
+				//not sure what the best approach for font scale is...
 				return Math.min(this.GlobalScale.scaleWidth, this.GlobalScale.scaleHeight);
 			}
 		});
@@ -12465,11 +12465,15 @@ define('canvas-object',['lodash', 'vector', 'renderer'], function (_, Vector, Re
 	};
 
 	CanvasObject.prototype.PointIsInObject = function _pointIsInObject(x, y) {
+		return this.PointIsInBoundingBox(x, y);
+	}; //can (and should) be overridden by implementors
+
+	CanvasObject.prototype.PressIsInObject = function _pressIsInObject(x, y) {
 		if (this.pressPassThrough){
 			return false;
 		}
 
-		return this.PointIsInBoundingBox(x, y);
+		return this.PointIsInObject(x, y);
 	}; //can (and should) be overridden by implementors
 
 	CanvasObject.prototype.UnPin = function _unpin(){
@@ -12520,7 +12524,7 @@ define('canvas-object',['lodash', 'vector', 'renderer'], function (_, Vector, Re
 			var index = this.parent.children.indexOf(this);
 			if( index >= 0 ){
 				this.parent.children.splice(index, 1);
-				this.parent.children.splice(0, 0, this); //if index + 1 > siblings.length, inserts it at end
+				this.parent.children.splice(0, 0, this);
 				this.parent.UpdateChildrenLists();
 				this.NeedsUpdate = true;
 				this.NeedsRender = true;
@@ -12877,6 +12881,7 @@ define('text',['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject
 
 	//this is a version of:
 	//http://stackoverflow.com/questions/1134586/how-can-you-find-the-height-of-text-on-an-html-canvas
+	//it's a pretty awful hack.
 	function _getTextHeight(font){
 		//create an element with every character in it with this font
 		var fontHolder = document.createElement('span');
@@ -13102,25 +13107,26 @@ define('container',['lodash', 'canvas-object', 'renderer'], function (_, CanvasO
 		});
 	};
 
-	Container.prototype.UpdateChildrenLists = function _updateChildrenLists(){
-		this.frontChildren = _.filter(this.children, function(c){
+	Container.prototype.PressableChildrenAt = function _pressableChildrenAt(x, y) {
+		return _.filter(this.children, function (c) {
+			return c.PressIsInObject(x, y);
+		});
+	};
+
+	Container.prototype.UpdateChildrenLists = function _updateChildrenLists() {
+		this.frontChildren = _.filter(this.children, function (c) {
 			return c.sticky && c.stickyPosition === CanvasObject.STICKY_POSITION.FRONT;
 		});
-		this.backChildren = _.filter(this.children, function(c){
+		this.backChildren = _.filter(this.children, function (c) {
 			return c.sticky && c.stickyPosition === CanvasObject.STICKY_POSITION.BACK;
 		});
-		this.middleChildren = _.filter(this.children, function(c){
+		this.middleChildren = _.filter(this.children, function (c) {
 			return !c.sticky;
 		});
 	};
 
 	Container.prototype.ChildAt = function _childAt(x, y) {
 		//loop over the children in reverse because drawing order
-		/*for (var c = this.children.length - 1; c >= 0; c--) {
-			if (this.children[c].PointIsInObject(x, y)) {
-				return this.children[c];
-			}
-		}*/
 
 		for (var fc = this.frontChildren.length - 1; fc >= 0; fc--) {
 			if (this.frontChildren[fc].PointIsInObject(x, y)) {
@@ -13143,10 +13149,37 @@ define('container',['lodash', 'canvas-object', 'renderer'], function (_, CanvasO
 		return null;
 	};
 
+	Container.prototype.PressableChildAt = function _pressableChildAt(x, y) {
+		if (this.pressPassThrough){
+			return null;
+		}
+		
+		//loop over the children in reverse because drawing order
+		for (var fc = this.frontChildren.length - 1; fc >= 0; fc--) {
+			if (this.frontChildren[fc].PressIsInObject(x, y)) {
+				return this.frontChildren[fc];
+			}
+		}
+
+		for (var mc = this.middleChildren.length - 1; mc >= 0; mc--) {
+			if (this.middleChildren[mc].PressIsInObject(x, y)) {
+				return this.middleChildren[mc];
+			}
+		}
+
+		for (var bc = this.backChildren.length - 1; bc >= 0; bc--) {
+			if (this.backChildren[bc].PressIsInObject(x, y)) {
+				return this.backChildren[bc];
+			}
+		}
+
+		return null;
+	};
+
 	Container.prototype.PointIsInObject = function _pointIsInObject(x, y) {
 		//don't even bother checking the children
 		//if the point isn't in the bounding box
-		if(CanvasObject.prototype.PointIsInObject.call(this, x, y)){
+		if (CanvasObject.prototype.PointIsInObject.call(this, x, y)) {
 			for (var fc in this.frontChildren) {
 				if (this.frontChildren[fc].PointIsInObject(x, y)) {
 					return true;
@@ -13176,15 +13209,15 @@ define('container',['lodash', 'canvas-object', 'renderer'], function (_, CanvasO
 		this.NeedsUpdate = true;
 		this.NeedsRender = true;
 		//TODO: make this hook more generic
-		if(this.onchildadded){
+		if (this.onchildadded) {
 			this.onchildadded();
 		}
 	};
 
-	Container.prototype.removeChild = function _removeChild(child){
-		if (child){
+	Container.prototype.removeChild = function _removeChild(child) {
+		if (child) {
 			var index = this.children.indexOf(child);
-			if( index >= 0 ){
+			if (index >= 0) {
 				this.children.splice(index, 1);
 				this.UpdateChildrenLists();
 				this.NeedsUpdate = true;
@@ -13252,6 +13285,7 @@ define('canvas-compositor',['lodash', 'renderer', 'canvas-object', 'vector-path'
 	function CanvasCompositor(canvas, options) {
 		this._canvas = canvas;
 		this._context = this._canvas.getContext('2d');
+		this._targetObject = null;
 
 		this._updateThreshhold = 1000 / 60; //amount of time that must pass before rendering
 		this._lastRenderTime = 0; //set to 0 to make sure first render happens right away
@@ -13318,12 +13352,10 @@ define('canvas-compositor',['lodash', 'renderer', 'canvas-object', 'vector-path'
 			_translateTouchEvent('mouseout', e);
 		});
 
-		//there is no 'touch' event - what is best way to deal with this?
-		/*this._canvas.addEventListener('touch', function (e) {
-			e.preventDefault();
-			e.stopPropagation();
-			_translateTouchEvent('click', e);
-		});*/
+		//there is no 'touch' event
+		//should the press event be disabled?
+		//should it be simulated?
+		//can all functionality be covered by up+down/start+end events?
 	};
 
 	function _translateTouchEvent(type, e) {
@@ -13356,16 +13388,19 @@ define('canvas-compositor',['lodash', 'renderer', 'canvas-object', 'vector-path'
 		var x = e.offsetX - leftPadding;
 		var y = e.offsetY - topPadding;
 
+		//pass through x and y to propagated events
+		e.canvasX = x;
+		e.canvasY = y;
+
 		_.each(this._eventRegistry[_events.PRESS_DOWN], function (callback) {
 			callback(e);
 		});
 
-		var clickedObject = this.Scene.ChildAt(x, y);
+		var clickedObject = this.Scene.PressableChildAt(x, y);
 
 		if (clickedObject && clickedObject.onpressdown) {
 			clickedObject.onpressdown(e);
 		}
-
 	};
 
 	CanvasCompositor.prototype._handlePressUp = function (e) {
@@ -13377,19 +13412,24 @@ define('canvas-compositor',['lodash', 'renderer', 'canvas-object', 'vector-path'
 		var topPadding = parseFloat(style.getPropertyValue('border-top')) +
 			parseFloat(style.getPropertyValue('padding-top'));
 
+		var x = e.offsetX - leftPadding;
+		var y = e.offsetY - topPadding;
+
+		//pass through x and y to propagated events
+		e.canvasX = x;
+		e.canvasY = y;
+
 		_.each(this.Scene.children, function (c) {
 			if (c.draggable && c.onpressup) {
 				c.onpressup(e);
 			}
 		});
-		var x = e.offsetX - leftPadding;
-		var y = e.offsetY - topPadding;
 
 		_.each(this._eventRegistry[_events.PRESS_UP], function (callback) {
 			callback(e);
 		});
 
-		var clickedObject = this.Scene.ChildAt(x, y);
+		var clickedObject = this.Scene.PressableChildAt(x, y);
 
 		if (clickedObject && clickedObject.onpressup) {
 			clickedObject.onpressup(e);
@@ -13412,8 +13452,22 @@ define('canvas-compositor',['lodash', 'renderer', 'canvas-object', 'vector-path'
 		});
 	};
 
-	CanvasCompositor.prototype._handlePress = function(e){
+	CanvasCompositor.prototype._handlePress = function (e) {
 		e.preventDefault();
+
+		var style = window.getComputedStyle(this._canvas);
+		var leftPadding = parseFloat(style.getPropertyValue('border-left')) +
+			parseFloat(style.getPropertyValue('padding-left'));
+		var topPadding = parseFloat(style.getPropertyValue('border-top')) +
+			parseFloat(style.getPropertyValue('padding-top'));
+
+		var x = e.offsetX - leftPadding;
+		var y = e.offsetY - topPadding;
+
+		//pass through x and y to propagated events
+		e.canvasX = x;
+		e.canvasY = y;
+
 		var objects = _.filter(this.Scene.children, function (c) {
 			// `!!` is a quick hack to convert to a bool
 			return !!(c.onpress);
@@ -13444,6 +13498,17 @@ define('canvas-compositor',['lodash', 'renderer', 'canvas-object', 'vector-path'
 			callback(e);
 		});
 	};
+
+	Object.defineProperty(CanvasCompositor.prototype, 'targetObject', {
+		configurable: true,
+		enumerable: true,
+		get: function _getTargetObject() {
+			return this._targetObject;
+		},
+		set: function _setTargetObject(o) {
+			this._targetObject = o;
+		}
+	});
 
 	CanvasCompositor.prototype._animationLoop = function _animationLoop() {
 		window.requestAnimationFrame(_.bind(this._animationLoop, this));

@@ -170,7 +170,7 @@ define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
 			configurable: true,
 			enumerable: true,
 			get: function (){
-				//not sure what the best approach for line scale is...
+				//not sure what the best approach for font scale is...
 				return Math.min(this.GlobalScale.scaleWidth, this.GlobalScale.scaleHeight);
 			}
 		});
@@ -271,11 +271,15 @@ define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
 	};
 
 	CanvasObject.prototype.PointIsInObject = function _pointIsInObject(x, y) {
+		return this.PointIsInBoundingBox(x, y);
+	}; //can (and should) be overridden by implementors
+
+	CanvasObject.prototype.PressIsInObject = function _pressIsInObject(x, y) {
 		if (this.pressPassThrough){
 			return false;
 		}
 
-		return this.PointIsInBoundingBox(x, y);
+		return this.PointIsInObject(x, y);
 	}; //can (and should) be overridden by implementors
 
 	CanvasObject.prototype.UnPin = function _unpin(){
@@ -326,7 +330,7 @@ define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
 			var index = this.parent.children.indexOf(this);
 			if( index >= 0 ){
 				this.parent.children.splice(index, 1);
-				this.parent.children.splice(0, 0, this); //if index + 1 > siblings.length, inserts it at end
+				this.parent.children.splice(0, 0, this);
 				this.parent.UpdateChildrenLists();
 				this.NeedsUpdate = true;
 				this.NeedsRender = true;

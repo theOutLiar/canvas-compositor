@@ -47,25 +47,26 @@ define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Rende
 		});
 	};
 
-	Container.prototype.UpdateChildrenLists = function _updateChildrenLists(){
-		this.frontChildren = _.filter(this.children, function(c){
+	Container.prototype.PressableChildrenAt = function _pressableChildrenAt(x, y) {
+		return _.filter(this.children, function (c) {
+			return c.PressIsInObject(x, y);
+		});
+	};
+
+	Container.prototype.UpdateChildrenLists = function _updateChildrenLists() {
+		this.frontChildren = _.filter(this.children, function (c) {
 			return c.sticky && c.stickyPosition === CanvasObject.STICKY_POSITION.FRONT;
 		});
-		this.backChildren = _.filter(this.children, function(c){
+		this.backChildren = _.filter(this.children, function (c) {
 			return c.sticky && c.stickyPosition === CanvasObject.STICKY_POSITION.BACK;
 		});
-		this.middleChildren = _.filter(this.children, function(c){
+		this.middleChildren = _.filter(this.children, function (c) {
 			return !c.sticky;
 		});
 	};
 
 	Container.prototype.ChildAt = function _childAt(x, y) {
 		//loop over the children in reverse because drawing order
-		/*for (var c = this.children.length - 1; c >= 0; c--) {
-			if (this.children[c].PointIsInObject(x, y)) {
-				return this.children[c];
-			}
-		}*/
 
 		for (var fc = this.frontChildren.length - 1; fc >= 0; fc--) {
 			if (this.frontChildren[fc].PointIsInObject(x, y)) {
@@ -88,10 +89,37 @@ define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Rende
 		return null;
 	};
 
+	Container.prototype.PressableChildAt = function _pressableChildAt(x, y) {
+		if (this.pressPassThrough){
+			return null;
+		}
+		
+		//loop over the children in reverse because drawing order
+		for (var fc = this.frontChildren.length - 1; fc >= 0; fc--) {
+			if (this.frontChildren[fc].PressIsInObject(x, y)) {
+				return this.frontChildren[fc];
+			}
+		}
+
+		for (var mc = this.middleChildren.length - 1; mc >= 0; mc--) {
+			if (this.middleChildren[mc].PressIsInObject(x, y)) {
+				return this.middleChildren[mc];
+			}
+		}
+
+		for (var bc = this.backChildren.length - 1; bc >= 0; bc--) {
+			if (this.backChildren[bc].PressIsInObject(x, y)) {
+				return this.backChildren[bc];
+			}
+		}
+
+		return null;
+	};
+
 	Container.prototype.PointIsInObject = function _pointIsInObject(x, y) {
 		//don't even bother checking the children
 		//if the point isn't in the bounding box
-		if(CanvasObject.prototype.PointIsInObject.call(this, x, y)){
+		if (CanvasObject.prototype.PointIsInObject.call(this, x, y)) {
 			for (var fc in this.frontChildren) {
 				if (this.frontChildren[fc].PointIsInObject(x, y)) {
 					return true;
@@ -121,15 +149,15 @@ define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Rende
 		this.NeedsUpdate = true;
 		this.NeedsRender = true;
 		//TODO: make this hook more generic
-		if(this.onchildadded){
+		if (this.onchildadded) {
 			this.onchildadded();
 		}
 	};
 
-	Container.prototype.removeChild = function _removeChild(child){
-		if (child){
+	Container.prototype.removeChild = function _removeChild(child) {
+		if (child) {
 			var index = this.children.indexOf(child);
-			if( index >= 0 ){
+			if (index >= 0) {
 				this.children.splice(index, 1);
 				this.UpdateChildrenLists();
 				this.NeedsUpdate = true;
