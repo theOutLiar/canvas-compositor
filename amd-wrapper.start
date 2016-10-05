@@ -1,7 +1,0 @@
-(function (rootScope, moduleFactory) {
-    if (typeof define === 'function' && define.amd) {
-        define([], moduleFactory);
-    } else {
-        rootScope.CanvasCompositor = moduleFactory();
-    }
-}(this, function () {
