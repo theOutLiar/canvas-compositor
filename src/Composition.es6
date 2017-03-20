@@ -1,35 +1,41 @@
-define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Renderer) {
+import { Primitive } from './Primitive';
+
+export default class Composition extends Primitive {
+    constructor(canvas, children, masks) {
+        super(canvas);
+        this.children = children || [];
+        this.masks = masks;
+    }
+
+    get boundingBox() {
+        var top = null,
+            left = null,
+            bottom = null,
+            right = null;
+
+        for (var c of this.children) {
+            top = top !== null && top < c.boundingBox.top ? top : c.boundingBox.top;
+            left = left !== null && left < c.boundingBox.left ? left : c.boundingBox.left;
+            bottom = bottom !== null && bottom > c.boundingBox.bottom ? bottom : c.boundingBox.bottom;
+            right = right !== null && right > c.boundingBox.right ? right : c.boundingBox.right;
+        };
+
+        return {
+            top: top,
+            left: left,
+            bottom: bottom,
+            right: right
+        };
+    }
+}
+
+/*define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Renderer) {
 	'use strict';
 
 	function Container(options) {
 		CanvasObject.call(this, options);
 		this.children = options.children || [];
 		this.masks = options.masks || [];
-
-		Object.defineProperty(this, 'boundingBox', {
-			configurable: true,
-			enumerable: true,
-			get: function () {
-				var top = null,
-					left = null,
-					bottom = null,
-					right = null;
-
-				_.each(this.children, function (c) {
-					top = top !== null && top < c.boundingBox.top ? top : c.boundingBox.top;
-					left = left !== null && left < c.boundingBox.left ? left : c.boundingBox.left;
-					bottom = bottom !== null && bottom > c.boundingBox.bottom ? bottom : c.boundingBox.bottom;
-					right = right !== null && right > c.boundingBox.right ? right : c.boundingBox.right;
-				});
-
-				return {
-					top: top,
-					left: left,
-					bottom: bottom,
-					right: right
-				};
-			}
-		});
 	}
 
 	_.assign(Container.prototype, CanvasObject.prototype);
@@ -93,7 +99,7 @@ define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Rende
 		if (this.pressPassThrough){
 			return null;
 		}
-		
+
 		//loop over the children in reverse because drawing order
 		for (var fc = this.frontChildren.length - 1; fc >= 0; fc--) {
 			if (this.frontChildren[fc].PressIsInObject(x, y)) {
@@ -208,4 +214,4 @@ define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Rende
 	Container.prototype.children = [];
 
 	return Container;
-});
+});*/

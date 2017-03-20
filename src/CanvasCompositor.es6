@@ -1,3 +1,59 @@
+import Primitive from './Primitive';
+import Composition from './Composition';
+
+import Renderer from './Renderer';
+
+export * from './Primitive';
+export * from './Composition';
+export * from './Renderer';
+
+//const FPS_EPSILON = 10; // +/- 10ms for animation loop to determine if enough time has passed to render
+const DEFAULT_TARGET_FPS = 1000 / 60; //amount of time that must pass before rendering
+
+/**
+ * The CanvasCompositor class is the entry-point to usage of the `canvas-compositor`.
+ * The application programmer is expected to hand over low-level control of the canvas
+ * context to the high-level classes and methods exposed by CanvasCompositor.
+ */
+export class CanvasCompositor {
+    /**
+     * The CanvasCompositor class provides a context in which to
+     * @param canvas {Object} This should be a canvas, either from the DOM or from the `canvas` package
+     * @example
+     * let cc = new CanvasCompositor(document.getElementById('myCanvas'));
+     */
+    constructor(canvas) {
+        this.canvas = canvas;
+        this.context = this.canvas.getContext('2d');
+
+        this._targetFPS = DEFAULT_TARGET_FPS;
+        this._currentTime = 0;
+        this._lastRenderTime = 0;
+        this.scene = new Composition(this.canvas);
+    }
+
+    /**
+     * The animation loop for this instance of CanvasCompositor.
+     * Upon receipt of the animation frame from `requestAnimationFrame`, the loop will check
+     * whether enough time has passed to redraw for the target framerate.
+     * It will only draw if somewhere along the scene graph, an object needs updating.
+     * There is no need to invoke this directly, the constructor will do it.
+     */
+    _animationLoop() {
+        window.requestAnimationFrame(animationLoop);
+        this._currentTime = +new Date();
+        //set maximum of 60 fps and only redraw if necessary
+        if (this._currentTime - this._lastRenderTime >= this._targetFPS && this.Scene.NeedsUpdate) {
+            this._lastRenderTime = +new Date();
+            Renderer.clearRect(this._context, 0, 0, this._canvas.width, this._canvas.height);
+            this.Scene.draw(this._context);
+        }
+    }
+}
+
+export default CanvasCompositor;
+
+/*
 define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'ellipse', 'circle', 'text', 'image', 'container'], function (_, Renderer, CanvasObject, Path, Rectangle, Ellipse, Circle, Text, Image, Container) {
 	'use strict';
 
@@ -60,6 +116,7 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
 		this._canvas.addEventListener('mouseout', _.bind(this._handlePressCancel, this));
 		this._canvas.addEventListener('click', _.bind(this._handlePress, this));
 
+        //TODO: typically, usage of stopPropagation() is a sign that things were done wrong.
 		this._canvas.addEventListener('touchstart', function (e) {
 			e.preventDefault();
 			e.stopPropagation();
@@ -311,3 +368,4 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
 
 	return CanvasCompositor;
 });
+*/

@@ -1,4 +1,22 @@
-define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
+import Vector from 'vectorious/withoutblas';
+import Renderer from './Renderer';
+
+/*
+ * The base class for things that may be drawn on the canvas.
+ * All drawable objects should inherit from this class.
+ * Typically, it is unnecessary for application programmers to
+ * call this directly, although they may wish to extend their own
+ * classes with it.
+ */
+class Primitive {
+    constructor(canvas) {
+        this.canvas = canvas;
+    }
+}
+
+exports.Primitive = Primitive;
+
+/*define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
 	'use strict';
 
 	function CanvasObject(options) {
@@ -237,7 +255,7 @@ define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
 			this.render();
 			this.NeedsRender = false;
 		}
-		/*draw bounding boxes*/
+		//draw bounding boxes
 		if (this.flags.DEBUG) {
 			this._prerenderingContext.beginPath();
 			this._prerenderingContext.lineWidth=2.0;
@@ -373,3 +391,4 @@ define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
 
 	return CanvasObject;
 });
+*/

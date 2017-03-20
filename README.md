@@ -1,7 +1,7 @@
 # canvas-compositor
 A canvas compositor that doesn't suck. 
 
-###WIP
+### WIP
 
 This is a Work In Progress. 
 
@@ -9,7 +9,7 @@ If you have something helpful to say, please do - otherwise, keep your complaint
 
 Proper API documentation to come... 
 
-#Getting started
+# Getting started
 
 You should be able to include the compiled files from the dist directory in any HTML page, which will add the `CanvasCompositor` namespace to your global scope. I like to assign it to a shorthand `cc`. 
 
@@ -29,7 +29,7 @@ The `Scene` property is the entry point to your scene graph. It is of class `Con
 
 `Container`s and `CanvasObject`s, in conjunction with `Rectangle`s, `Ellipse`s, `Text` etc., comprise an implementation of the [Composite Pattern](http://en.wikipedia.org/wiki/Composite_pattern) - thus, "canvas-compositor". 
 
-#Tests
+# Tests
 
 At the moment, there are none. I'll probably get to that later. 
 
