@@ -1,3 +1,6 @@
+/**
+ * Default style values for the renderer
+ */
 export const DEFAULTS = {
     //direction: 'inherit',
     fillStyle: 'black',
@@ -12,16 +15,31 @@ export const DEFAULTS = {
     textBaseline: 'alphabetic'
 }
 
-//TODO: masking? it looks like this is done in the Conposition, but that may be bugged out.
+//TODO: masking? it looks like this is done in the Composition, but that may be bugged out.
 
+/**
+ * A collection of high level static methods for drawing directly to canvas
+ *
+ */
 export default class Renderer {
-
-    constructor() {}
-
+    /**
+     * Erase everything drawn on the supplied rectangle for the given context.
+     * @param {number} x the x coordinate of the top left corner
+     * @param {number} y the y coordinate of the top left corner
+     * @param {number} width the x coordinate
+     * @param {number} height the y coordinate
+     * @param {object} context the 2D Context object for the canvas we're drawing onto
+     */
     static clearRect(x, y, width, height, context) {
         context.clearRect(x, y, width, height);
     }
 
+    /**
+     * Draw a path, unclosed, with the given vertices
+     * @param {object} vertices the path of vertices to be drawn
+     * @param {object} context the 2D Context object for the canvas we're drawing onto
+     * @param {object} style the style options to be used when drawing the path
+     */
     static drawPath(vertices, context, style) {
         Object.assign(context, style);
         context.beginPath();
@@ -42,6 +60,12 @@ export default class Renderer {
         context.closePath();
     }
 
+    /**
+     * Draw a closed polygon with the given vertices
+     * @param {object} vertices the path of vertices to be drawn
+     * @param {object} context the 2D Context object for the canvas we're drawing onto
+     * @param {object} style the style options to be used when drawing the polygon
+     */
     static drawPolygon(vertices, context, style) {
         Object.assign(context, style);
         context.beginPath();
@@ -63,6 +87,15 @@ export default class Renderer {
         context.closePath();
     }
 
+    /**
+     * Draw a rectangle
+     * @param {number} x the x coordinate of the top let corner
+     * @param {number} y the y coordinate of the top left corner
+     * @param {number} width the x coordinate
+     * @param {number} height the y coordinate
+     * @param {object} context the 2D Context object for the canvas we're drawing onto
+     * @param {object} style the style options to be used when drawing the rectangle
+     */
     static drawRectangle(x, y, width, height, context, style) {
         Object.assign(context, style);
         context.beginPath();
@@ -72,6 +105,15 @@ export default class Renderer {
         context.closePath();
     }
 
+    /*
+     * Draw an ellipse
+     * @param {number} x the x coordinate of the center of the ellipse
+     * @param {number} y the y coordinate of the center of the ellipse
+     * @param {number} radius the larger radius of the ellipse
+     * @param {number} minorRadius the smaller radius of the ellipse
+     * @param {object} context the 2D Context object for the canvas we're drawing onto
+     * @param {object} style the style options to be used when drawing the ellipse
+     */
     static drawEllipse(x, y, radius, minorRadius, context, style) {
         Object.assign(context, style);
         context.beginPath();
@@ -82,6 +124,14 @@ export default class Renderer {
         context.closePath();
     }
 
+    /*
+     * Draw a circle
+     * @param {number} x the x coordinate of the center of the circle
+     * @param {number} y the y coordinate of the center of the circle
+     * @param {number} radius of the circle
+     * @param {object} context the 2D Context object for the canvas we're drawing onto
+     * @param {object} style the style options to be used when drawing the circle
+     */
     static drawCircle(x, y, radius, context, style) {
         Object.assign(context, style);
         context.beginPath();
@@ -91,8 +141,15 @@ export default class Renderer {
         context.stroke();
         context.closePath();
     }
-
-    staticdrawText(x, y, text, context, style) {
+    /*
+     * Draw text
+     * @param {number} x the x coordinate of the top let corner
+     * @param {number} y the y coordinate of the top left corner
+     * @param {string} text the text to be drawn
+     * @param {object} context the 2D Context object for the canvas we're drawing onto
+     * @param {object} style the style options to be used when drawing the text
+     */
+    static drawText(x, y, text, context, style) {
         Object.assign(context, style);
         context.beginPath();
         context.fillText(text, x, y);
@@ -100,6 +157,14 @@ export default class Renderer {
         context.closePath();
     }
 
+    /*
+     * Draw an image
+     * @param {number} x the x coordinate of the top let corner
+     * @param {number} y the y coordinate of the top left corner
+     * @param {object} image the image to be drawn to the canvas
+     * @param {object} context the 2D Context object for the canvas we're drawing onto
+     * @param {object} style the style options to be used when drawing the image
+     */
     static drawImage(x, y, image, context, style) {
         Object.assign(context, style);
         //no reason to draw 0-sized images
@@ -111,6 +176,12 @@ export default class Renderer {
     }
 
     //TODO: this should probably be exposed elsewhere/differently
+    /*
+     * Measure the text
+     * @param {string} text the text to be measured
+     * @param {object} context the 2D Context object for a canvas - required for measurement to occur, but may be arbitrary
+     * @param {object} style the style options to be used when measuring the text
+     */
     static measureText(text, context, style) {
         Object.assign(context, style);
         return context.measureText(text);

@@ -1,8 +1,8 @@
 import { Primitive } from './Primitive';
 
 export default class Composition extends Primitive {
-    constructor(canvas, children, masks) {
-        super(canvas);
+    constructor(children, masks) {
+        super();
         this.children = children || [];
         this.masks = masks;
     }

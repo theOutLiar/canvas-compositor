@@ -1581,10 +1581,10 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var Composition = function (_Primitive) {
 	_inherits(Composition, _Primitive);
 
-	function Composition(canvas, children, masks) {
+	function Composition(children, masks) {
 		_classCallCheck(this, Composition);
 
-		var _this = _possibleConstructorReturn(this, (Composition.__proto__ || Object.getPrototypeOf(Composition)).call(this, canvas));
+		var _this = _possibleConstructorReturn(this, (Composition.__proto__ || Object.getPrototypeOf(Composition)).call(this));
 
 		_this.children = children || [];
 		_this.masks = masks;
@@ -1834,13 +1834,13 @@ exports.default = Composition;
 },{"./Primitive":5}],5:[function(require,module,exports){
 'use strict';
 
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 var _withoutblas = require('vectorious/withoutblas');
 
 var _withoutblas2 = _interopRequireDefault(_withoutblas);
 
 var _Renderer = require('./Renderer');
-
-var _Renderer2 = _interopRequireDefault(_Renderer);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1853,35 +1853,27 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
  * call this directly, although they may wish to extend their own
  * classes with it.
  */
-var Primitive = function Primitive(canvas) {
-	_classCallCheck(this, Primitive);
+var Primitive = function () {
+	function Primitive(options) {
+		_classCallCheck(this, Primitive);
 
-	this.canvas = canvas;
-};
+		this.d = new _withoutblas2.default([options.x || 0, options.y || 0]);
 
-exports.Primitive = Primitive;
+		this.style = _.assign({}, DEFAULTS, options.style);
 
-/*define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
-	'use strict';
-
-	function CanvasObject(options) {
-		this.d = new Vector([options.x || 0, options.y || 0]);
-
-		this.style = _.assign({}, Renderer.DEFAULTS, options.style);
-		this.unscaledLineWidth = this.style.lineWidth;
+		//this.unscaledLineWidth = this.style.lineWidth;
 
 		this.pressPassThrough = options.pressPassThrough || false;
 		this.draggable = options.draggable || false;
 
 		this.drawBoundingBox = false;
-		this.boundingBoxColor = '#cccccc';
+		//this.boundingBoxColor = '#cccccc';
 
 		this._needsUpdate = false;
-		this._needsRender = true;
-		this._scaleWidth = 1;
-		this._scaleHeight = 1;
+		//this._scaleWidth = 1;
+		//this._scaleHeight = 1;
 
-		this._prerenderedImage = document.createElement('canvas');
+		this._prerenderingCanvas = document.createElement('canvas');
 		this._prerenderingContext = this._prerenderedImage.getContext('2d');
 
 		this.parent = options.parent || null;
@@ -1891,39 +1883,36 @@ exports.Primitive = Primitive;
 
 		this.sticky = false;
 		this.stickyPosition = null;
+	}
 
-		//TODO: putting defineProperty in constructor to make inheritable on
-		//a tight schedule - would prefer to do this on the prototype, because
-		//doing it otherwise means each instance has to create a copy of the
-		//property/getters/setters, but properties on the prototype aren't
-		//copied by _'s `assign` funcion
-		Object.defineProperty(this, 'offset', {
-			configurable: true,
-			enumerable: true,
-			get: function () {
-				if (this.parent) {
-					return this.d
-						//.multiply(new Vector([this.parent.ScaleWidth, this.parent.ScaleHeight]))
-						.add(this.parent.offset);
-				} else {
-					return this.d;
-				}
+	_createClass(Primitive, [{
+		key: 'offset',
+		get: function get() {
+			return this.parent ? _withoutblas2.default.add(this.d, this.parent.offset) : this.d;
+		}
+	}, {
+		key: 'needsUpdate',
+		get: function get() {
+			return this._needsUpdate;
+		},
+		set: function set(val) {
+			if (this.parent && val) {
+				this.parent.needsUpdate = val;
 			}
-		});
+			this._needsUpdate = val;
+		}
+	}]);
 
-		Object.defineProperty(this, 'NeedsUpdate', {
-			configurable: true,
-			enumerable: true,
-			set: function (val) {
-				if (this.parent && val) { //only mark the parent for update if true
-					this.parent.NeedsUpdate = val;
-				}
-				return (this._needsUpdate = val);
-			},
-			get: function () {
-				return this._needsUpdate;
-			}
-		});
+	return Primitive;
+}();
+
+exports.Primitive = Primitive;
+
+/*define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
+	'use strict';
+
+	function CanvasObject(options) {
+
 
 		Object.defineProperty(this, 'NeedsRender', {
 			configurable: true,
@@ -2155,26 +2144,6 @@ exports.Primitive = Primitive;
 		}
 	};
 
-	CanvasObject.prototype.PinToFront = function _pinToFront(){
-		this.sticky = true;
-		this.stickyPosition = CanvasObject.STICKY_POSITION.FRONT;
-		this.NeedsUpdate = true;
-		this.NeedsRender = true;
-		if(this.parent){
-			this.parent.UpdateChildrenLists();
-		}
-	};
-
-	CanvasObject.prototype.PinToBack = function _pinToFront(){
-		this.sticky = true;
-		this.stickyPosition = CanvasObject.STICKY_POSITION.BACK;
-		this.NeedsUpdate = true;
-		this.NeedsRender = true;
-		if(this.parent){
-			this.parent.UpdateChildrenLists();
-		}
-	};
-
 	CanvasObject.prototype.MoveToFront = function _moveToFront() {
 		if (this.parent){
 			var index = this.parent.children.indexOf(this);
@@ -2249,6 +2218,9 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+/**
+ * Default style values for the renderer
+ */
 var DEFAULTS = exports.DEFAULTS = {
     //direction: 'inherit',
     fillStyle: 'black',
@@ -2263,27 +2235,40 @@ var DEFAULTS = exports.DEFAULTS = {
     textBaseline: 'alphabetic'
 };
 
-//TODO: masking? it looks like this is done in the Conposition, but that may be bugged out.
+//TODO: masking? it looks like this is done in the Composition, but that may be bugged out.
+
+/**
+ * A collection of high level static methods for drawing directly to canvas
+ *
+ */
 
 var Renderer = function () {
     function Renderer() {
         _classCallCheck(this, Renderer);
     }
 
-    _createClass(Renderer, [{
-        key: 'staticdrawText',
-        value: function staticdrawText(x, y, text, context, style) {
-            Object.assign(context, style);
-            context.beginPath();
-            context.fillText(text, x, y);
-            //TODO: implement stroke text if specified
-            context.closePath();
-        }
-    }], [{
+    _createClass(Renderer, null, [{
         key: 'clearRect',
+
+        /**
+         * Erase everything drawn on the supplied rectangle for the given context.
+         * @param {number} x the x coordinate of the top left corner
+         * @param {number} y the y coordinate of the top left corner
+         * @param {number} width the x coordinate
+         * @param {number} height the y coordinate
+         * @param {object} context the 2D Context object for the canvas we're drawing onto
+         */
         value: function clearRect(x, y, width, height, context) {
             context.clearRect(x, y, width, height);
         }
+
+        /**
+         * Draw a path, unclosed, with the given vertices
+         * @param {object} vertices the path of vertices to be drawn
+         * @param {object} context the 2D Context object for the canvas we're drawing onto
+         * @param {object} style the style options to be used when drawing the path
+         */
+
     }, {
         key: 'drawPath',
         value: function drawPath(vertices, context, style) {
@@ -2305,6 +2290,14 @@ var Renderer = function () {
             context.stroke();
             context.closePath();
         }
+
+        /**
+         * Draw a closed polygon with the given vertices
+         * @param {object} vertices the path of vertices to be drawn
+         * @param {object} context the 2D Context object for the canvas we're drawing onto
+         * @param {object} style the style options to be used when drawing the polygon
+         */
+
     }, {
         key: 'drawPolygon',
         value: function drawPolygon(vertices, context, style) {
@@ -2327,6 +2320,17 @@ var Renderer = function () {
             context.stroke();
             context.closePath();
         }
+
+        /**
+         * Draw a rectangle
+         * @param {number} x the x coordinate of the top let corner
+         * @param {number} y the y coordinate of the top left corner
+         * @param {number} width the x coordinate
+         * @param {number} height the y coordinate
+         * @param {object} context the 2D Context object for the canvas we're drawing onto
+         * @param {object} style the style options to be used when drawing the rectangle
+         */
+
     }, {
         key: 'drawRectangle',
         value: function drawRectangle(x, y, width, height, context, style) {
@@ -2337,6 +2341,17 @@ var Renderer = function () {
             context.stroke();
             context.closePath();
         }
+
+        /*
+         * Draw an ellipse
+         * @param {number} x the x coordinate of the center of the ellipse
+         * @param {number} y the y coordinate of the center of the ellipse
+         * @param {number} radius the larger radius of the ellipse
+         * @param {number} minorRadius the smaller radius of the ellipse
+         * @param {object} context the 2D Context object for the canvas we're drawing onto
+         * @param {object} style the style options to be used when drawing the ellipse
+         */
+
     }, {
         key: 'drawEllipse',
         value: function drawEllipse(x, y, radius, minorRadius, context, style) {
@@ -2348,6 +2363,16 @@ var Renderer = function () {
             context.stroke();
             context.closePath();
         }
+
+        /*
+         * Draw a circle
+         * @param {number} x the x coordinate of the center of the circle
+         * @param {number} y the y coordinate of the center of the circle
+         * @param {number} radius of the circle
+         * @param {object} context the 2D Context object for the canvas we're drawing onto
+         * @param {object} style the style options to be used when drawing the circle
+         */
+
     }, {
         key: 'drawCircle',
         value: function drawCircle(x, y, radius, context, style) {
@@ -2359,6 +2384,34 @@ var Renderer = function () {
             context.stroke();
             context.closePath();
         }
+        /*
+         * Draw text
+         * @param {number} x the x coordinate of the top let corner
+         * @param {number} y the y coordinate of the top left corner
+         * @param {string} text the text to be drawn
+         * @param {object} context the 2D Context object for the canvas we're drawing onto
+         * @param {object} style the style options to be used when drawing the text
+         */
+
+    }, {
+        key: 'drawText',
+        value: function drawText(x, y, text, context, style) {
+            Object.assign(context, style);
+            context.beginPath();
+            context.fillText(text, x, y);
+            //TODO: implement stroke text if specified
+            context.closePath();
+        }
+
+        /*
+         * Draw an image
+         * @param {number} x the x coordinate of the top let corner
+         * @param {number} y the y coordinate of the top left corner
+         * @param {object} image the image to be drawn to the canvas
+         * @param {object} context the 2D Context object for the canvas we're drawing onto
+         * @param {object} style the style options to be used when drawing the image
+         */
+
     }, {
         key: 'drawImage',
         value: function drawImage(x, y, image, context, style) {
@@ -2372,6 +2425,12 @@ var Renderer = function () {
         }
 
         //TODO: this should probably be exposed elsewhere/differently
+        /*
+         * Measure the text
+         * @param {string} text the text to be measured
+         * @param {object} context the 2D Context object for a canvas - required for measurement to occur, but may be arbitrary
+         * @param {object} style the style options to be used when measuring the text
+         */
 
     }, {
         key: 'measureText',
@@ -2392,7 +2451,6 @@ exports.default = Renderer;
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-exports.CanvasCompositor = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -2436,8 +2494,6 @@ var _Primitive2 = _interopRequireDefault(_Primitive);
 
 var _Composition2 = _interopRequireDefault(_Composition);
 
-var _Renderer2 = _interopRequireDefault(_Renderer);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -2451,7 +2507,7 @@ var DEFAULT_TARGET_FPS = 1000 / 60; //amount of time that must pass before rende
  * context to the high-level classes and methods exposed by CanvasCompositor.
  */
 
-var CanvasCompositor = exports.CanvasCompositor = function () {
+var CanvasCompositor = function () {
 	/**
   * The CanvasCompositor class provides a context in which to
   * @param canvas {Object} This should be a canvas, either from the DOM or from the `canvas` package
@@ -2485,18 +2541,16 @@ var CanvasCompositor = exports.CanvasCompositor = function () {
 			window.requestAnimationFrame(animationLoop);
 			this._currentTime = +new Date();
 			//set maximum of 60 fps and only redraw if necessary
-			if (this._currentTime - this._lastRenderTime >= this._targetFPS && this.Scene.NeedsUpdate) {
+			if (this._currentTime - this._lastRenderTime >= this._targetFPS && this.scene.NeedsUpdate) {
 				this._lastRenderTime = +new Date();
-				_Renderer2.default.clearRect(this._context, 0, 0, this._canvas.width, this._canvas.height);
-				this.Scene.draw(this._context);
+				_Renderer.Renderer.clearRect(this.context, 0, 0, this.canvas.width, this.canvas.height);
+				this.Scene.draw(this.context);
 			}
 		}
 	}]);
 
 	return CanvasCompositor;
 }();
-
-exports.default = CanvasCompositor;
 
 /*
 define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'ellipse', 'circle', 'text', 'image', 'container'], function (_, Renderer, CanvasObject, Path, Rectangle, Ellipse, Circle, Text, Image, Container) {
@@ -2814,6 +2868,9 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
 	return CanvasCompositor;
 });
 */
+
+
+exports.default = CanvasCompositor;
 
 },{"./Composition":4,"./Primitive":5,"./Renderer":6}]},{},[])
 

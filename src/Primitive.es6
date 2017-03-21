@@ -1,5 +1,8 @@
 import Vector from 'vectorious/withoutblas';
-import Renderer from './Renderer';
+import {
+    DEFAUTLS,
+    Renderer
+} from './Renderer';
 
 /*
  * The base class for things that may be drawn on the canvas.
@@ -9,9 +12,49 @@ import Renderer from './Renderer';
  * classes with it.
  */
 class Primitive {
-    constructor(canvas) {
-        this.canvas = canvas;
+    constructor(options) {
+        this.d = new Vector([options.x || 0, options.y || 0]);
+
+        this.style = _.assign({}, DEFAULTS, options.style);
+
+        //this.unscaledLineWidth = this.style.lineWidth;
+
+        this.pressPassThrough = options.pressPassThrough || false;
+        this.draggable = options.draggable || false;
+
+        this.drawBoundingBox = false;
+        //this.boundingBoxColor = '#cccccc';
+
+        this._needsUpdate = false;
+        //this._scaleWidth = 1;
+        //this._scaleHeight = 1;
+
+        this._prerenderingCanvas = document.createElement('canvas');
+        this._prerenderingContext = this._prerenderedImage.getContext('2d');
+
+        this.parent = options.parent || null;
+        if (this.draggable) {
+            this.enableDragging();
+        }
+
+        this.sticky = false;
+        this.stickyPosition = null;
     }
+
+    get offset() {
+        return (this.parent ? Vector.add(this.d, this.parent.offset) : this.d);
+    }
+
+    get needsUpdate(){
+        return this._needsUpdate;
+    }
+    set needsUpdate(val){
+        if(this.parent && val){
+            this.parent.needsUpdate = val;
+        }
+        this._needsUpdate = val;
+    }
+
 }
 
 exports.Primitive = Primitive;
@@ -20,65 +63,7 @@ exports.Primitive = Primitive;
 	'use strict';
 
 	function CanvasObject(options) {
-		this.d = new Vector([options.x || 0, options.y || 0]);
 
-		this.style = _.assign({}, Renderer.DEFAULTS, options.style);
-		this.unscaledLineWidth = this.style.lineWidth;
-
-		this.pressPassThrough = options.pressPassThrough || false;
-		this.draggable = options.draggable || false;
-
-		this.drawBoundingBox = false;
-		this.boundingBoxColor = '#cccccc';
-
-		this._needsUpdate = false;
-		this._needsRender = true;
-		this._scaleWidth = 1;
-		this._scaleHeight = 1;
-
-		this._prerenderedImage = document.createElement('canvas');
-		this._prerenderingContext = this._prerenderedImage.getContext('2d');
-
-		this.parent = options.parent || null;
-		if (this.draggable) {
-			this.enableDragging();
-		}
-
-		this.sticky = false;
-		this.stickyPosition = null;
-
-		//TODO: putting defineProperty in constructor to make inheritable on
-		//a tight schedule - would prefer to do this on the prototype, because
-		//doing it otherwise means each instance has to create a copy of the
-		//property/getters/setters, but properties on the prototype aren't
-		//copied by _'s `assign` funcion
-		Object.defineProperty(this, 'offset', {
-			configurable: true,
-			enumerable: true,
-			get: function () {
-				if (this.parent) {
-					return this.d
-						//.multiply(new Vector([this.parent.ScaleWidth, this.parent.ScaleHeight]))
-						.add(this.parent.offset);
-				} else {
-					return this.d;
-				}
-			}
-		});
-
-		Object.defineProperty(this, 'NeedsUpdate', {
-			configurable: true,
-			enumerable: true,
-			set: function (val) {
-				if (this.parent && val) { //only mark the parent for update if true
-					this.parent.NeedsUpdate = val;
-				}
-				return (this._needsUpdate = val);
-			},
-			get: function () {
-				return this._needsUpdate;
-			}
-		});
 
 		Object.defineProperty(this, 'NeedsRender', {
 			configurable: true,
@@ -303,26 +288,6 @@ exports.Primitive = Primitive;
 	CanvasObject.prototype.UnPin = function _unpin(){
 		this.sticky = false;
 		this.stickyPosition = null;
-		this.NeedsUpdate = true;
-		this.NeedsRender = true;
-		if(this.parent){
-			this.parent.UpdateChildrenLists();
-		}
-	};
-
-	CanvasObject.prototype.PinToFront = function _pinToFront(){
-		this.sticky = true;
-		this.stickyPosition = CanvasObject.STICKY_POSITION.FRONT;
-		this.NeedsUpdate = true;
-		this.NeedsRender = true;
-		if(this.parent){
-			this.parent.UpdateChildrenLists();
-		}
-	};
-
-	CanvasObject.prototype.PinToBack = function _pinToFront(){
-		this.sticky = true;
-		this.stickyPosition = CanvasObject.STICKY_POSITION.BACK;
 		this.NeedsUpdate = true;
 		this.NeedsRender = true;
 		if(this.parent){

@@ -1,7 +1,7 @@
 import Primitive from './Primitive';
 import Composition from './Composition';
 
-import Renderer from './Renderer';
+import {DEFAULTS, Renderer} from './Renderer';
 
 export * from './Primitive';
 export * from './Composition';
@@ -15,7 +15,7 @@ const DEFAULT_TARGET_FPS = 1000 / 60; //amount of time that must pass before ren
  * The application programmer is expected to hand over low-level control of the canvas
  * context to the high-level classes and methods exposed by CanvasCompositor.
  */
-export class CanvasCompositor {
+export default class CanvasCompositor {
     /**
      * The CanvasCompositor class provides a context in which to
      * @param canvas {Object} This should be a canvas, either from the DOM or from the `canvas` package
@@ -43,15 +43,13 @@ export class CanvasCompositor {
         window.requestAnimationFrame(animationLoop);
         this._currentTime = +new Date();
         //set maximum of 60 fps and only redraw if necessary
-        if (this._currentTime - this._lastRenderTime >= this._targetFPS && this.Scene.NeedsUpdate) {
+        if (this._currentTime - this._lastRenderTime >= this._targetFPS && this.scene.NeedsUpdate) {
             this._lastRenderTime = +new Date();
-            Renderer.clearRect(this._context, 0, 0, this._canvas.width, this._canvas.height);
-            this.Scene.draw(this._context);
+            Renderer.clearRect(this.context, 0, 0, this.canvas.width, this.canvas.height);
+            this.Scene.draw(this.context);
         }
     }
 }
-
-export default CanvasCompositor;
 
 /*
 define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'ellipse', 'circle', 'text', 'image', 'container'], function (_, Renderer, CanvasObject, Path, Rectangle, Ellipse, Circle, Text, Image, Container) {
