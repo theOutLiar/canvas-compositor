@@ -11,5 +11,7 @@
     "unused": true,
     "strict": true,
     "esnext": true,
-    "predef": true
+    "predef": true,
+    "globals": true,
+    "esnext": true
 }

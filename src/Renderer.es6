@@ -1,7 +1,7 @@
 /**
  * Default style values for the renderer
  */
-export const DEFAULTS = {
+const DEFAULTS = {
     //direction: 'inherit',
     fillStyle: 'black',
     //filter: 'none',
@@ -136,11 +136,13 @@ export default class Renderer {
         Object.assign(context, style);
         context.beginPath();
         //TODO: 2015-03-12 this is currently only supported by chrome & opera
-        context.arc(x, y, radius, 0, 2 * Math.PI);
+        //context.arc(x, y, radius, 0, 2 * Math.PI);
+        context.ellipse(x, y, radius, radius, 0, 0, 2 * Math.PI);
         context.fill();
         context.stroke();
         context.closePath();
     }
+
     /*
      * Draw text
      * @param {number} x the x coordinate of the top let corner
@@ -187,3 +189,8 @@ export default class Renderer {
         return context.measureText(text);
     }
 }
+
+export {
+    Renderer,
+    DEFAULTS
+};

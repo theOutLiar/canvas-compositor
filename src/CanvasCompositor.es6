@@ -1,35 +1,109 @@
-import Primitive from './Primitive';
+import {
+    DEFAULTS,
+    Renderer
+} from './Renderer';
+
 import Composition from './Composition';
-
-import {DEFAULTS, Renderer} from './Renderer';
-
-export * from './Primitive';
-export * from './Composition';
-export * from './Renderer';
+import Primitive from './Primitive';
+import Circle from './Circle';
 
 //const FPS_EPSILON = 10; // +/- 10ms for animation loop to determine if enough time has passed to render
 const DEFAULT_TARGET_FPS = 1000 / 60; //amount of time that must pass before rendering
+
+const EVENTS = {
+    MOUSEUP: 'onmouseup',
+    MOUSEDOWN: 'onmousedown',
+    MOUSEMOVE: 'onmousemove',
+    MOUSEOUT: 'onmouseout',
+    CLICK: 'onclick'
+};
 
 /**
  * The CanvasCompositor class is the entry-point to usage of the `canvas-compositor`.
  * The application programmer is expected to hand over low-level control of the canvas
  * context to the high-level classes and methods exposed by CanvasCompositor.
+ *
+ * The CanvasCompositor class establishes an event dispatcher, animation loop, and scene graph for
+ * compositions.
  */
 export default class CanvasCompositor {
     /**
-     * The CanvasCompositor class provides a context in which to
-     * @param canvas {Object} This should be a canvas, either from the DOM or from the `canvas` package
+     * The CanvasCompositor class establishes an event dispatcher, animation loop, and scene graph for
+     * compositions
+     *
+     * @param {object} canvas This should be a canvas, either from the DOM or an equivalent API
+     *
      * @example
      * let cc = new CanvasCompositor(document.getElementById('myCanvas'));
      */
     constructor(canvas) {
-        this.canvas = canvas;
-        this.context = this.canvas.getContext('2d');
+        this._canvas = canvas;
+        this._context = this._canvas.getContext('2d');
 
-        this._targetFPS = DEFAULT_TARGET_FPS;
-        this._currentTime = 0;
-        this._lastRenderTime = 0;
-        this.scene = new Composition(this.canvas);
+        //acquire the padding on the canvas – this is necessary to properly
+        //locate the mouse position
+        //TODO: determine if border-box affects this, and adjust accordingly
+        let style = window.getComputedStyle(this._canvas);
+
+        /**
+         * @type {number} _leftPadding the padding on the left of the canvas, which
+         * affects the offset of the mouse position
+         */
+        this._leftPadding = parseFloat(style.getPropertyValue('border-left')) +
+            parseFloat(style.getPropertyValue('padding-left'));
+
+        /**
+         * @type {number} _topPadding the padding on the top of the canvas, which
+         * affects the offset of the mouse position
+         */
+        this._topPadding = parseFloat(style.getPropertyValue('border-top')) +
+            parseFloat(style.getPropertyValue('padding-top'));
+
+        //this._currentTime = 0;
+        //this._lastRenderTime = 0;
+
+        this._targetObject = null;
+
+
+        this._scene = new Composition(this.canvas);
+
+        this._bindEvents();
+
+        this._eventRegistry = {
+            onmouseup: [],
+            onmousedown: [],
+            onmousemove: [],
+            onmouseout: [],
+            onclick: []
+        };
+
+        this._animationLoop();
+    }
+
+
+    //TODO: multiple target objects?
+    /**
+     * the object currently selected for interaction
+     * @type {object}
+     */
+    get targetObject() {
+        return this._targetObject;
+    }
+    /**
+     * the object currently selected for interaction
+     * @param {object} val
+     * @type {object}
+     */
+    set targetObject(val) {
+        this._targetObject = val;
+    }
+
+    /**
+     * the root of the scene graph. add primitives to this to compose an image
+     * @type {object}
+     */
+    get scene() {
+        return this._scene;
     }
 
     /**
@@ -40,79 +114,182 @@ export default class CanvasCompositor {
      * There is no need to invoke this directly, the constructor will do it.
      */
     _animationLoop() {
-        window.requestAnimationFrame(animationLoop);
-        this._currentTime = +new Date();
+        //console.log(this);
+        //console.log();
+        window.requestAnimationFrame(this._animationLoop.bind(this));
+        //this._currentTime = +new Date();
         //set maximum of 60 fps and only redraw if necessary
-        if (this._currentTime - this._lastRenderTime >= this._targetFPS && this.scene.NeedsUpdate) {
-            this._lastRenderTime = +new Date();
-            Renderer.clearRect(this.context, 0, 0, this.canvas.width, this.canvas.height);
-            this.Scene.draw(this.context);
+        if ( /*this._currentTime - this._lastRenderTime >= this._targetFPS &&*/ this.scene.needsDraw) {
+            //this._lastRenderTime = +new Date();
+            console.log('blah');
+            Renderer.clearRect(0, 0, this._canvas.width, this._canvas.height, this._context);
+            this.scene.draw(this._context);
         }
     }
+
+    /**
+     * add an event to the event registry
+     *
+     * @param {string} eventType the name of the type of event
+     * @param {function} callback the callback to be triggered when the event occurs
+     */
+    registerEvent(eventType, callback) {
+        if (this._eventRegistry[eventType]) {
+            this._eventRegistry[eventType].push(callback);
+        }
+    };
+
+    /**
+     * remove an event to the event registry
+     *
+     * @param {string} eventType the name of the type of event
+     * @param {function} callback the callback to be removed from the event
+     * @returns {function} the callback that was removed
+     */
+    removeEvent(eventType, callback) {
+        if (this._eventRegistry[eventType]) {
+            let index = this._eventRegistry[eventType].indexOf(callback);
+            if (index >= 0) {
+                return this._eventRegistry[eventType].splice(index, 1);
+            }
+        }
+    };
+
+    /**
+     * attach interaction events to the canvas. the canvas compositor dispatches
+     * events to relevant objects through bridges to the scene graph
+     */
+    _bindEvents() {
+        //TODO: reimplement touch events
+        //must bind to `this` to retain reference
+        this._canvas.addEventListener('mousedown', this._handleMouseDown.bind(this));
+        this._canvas.addEventListener('mouseup', this._handleMouseUp.bind(this));
+        this._canvas.addEventListener('mousemove', this._handleMouseMove.bind(this));
+        this._canvas.addEventListener('mouseout', this._handleMouseOut.bind(this));
+        this._canvas.addEventListener('click', this._handleClick.bind(this));
+    }
+
+    /**
+     * bridge the mouse down event on the canvas to the
+     * the objects in the scene graph
+     */
+    _handleMouseDown(e) {
+        e.preventDefault();
+
+        let x = e.offsetX - this._leftPadding;
+        let y = e.offsetY - this._topPadding;
+
+        //pass through x and y to propagated events
+        e.canvasX = x;
+        e.canvasY = y;
+
+        for (let callback of this._eventRegistry[EVENTS.MOUSEDOWN]) {
+            callback(e);
+        };
+
+        var clickedObject = this.scene.childAt(x, y);
+
+        if (clickedObject && clickedObject.onmousedown) {
+            clickedObject.onmousedown(e);
+        }
+    }
+
+    /**
+     * bridge the mouse up event on the canvas to the
+     * the objects in the scene graph
+     */
+    _handleMouseUp(e) {
+        e.preventDefault();
+
+        let x = e.offsetX - this._leftPadding;
+        let y = e.offsetY - this._topPadding;
+
+        //pass through x and y to propagated events
+        e.canvasX = x;
+        e.canvasY = y;
+
+        for (let c of this.scene.children) {
+            if (c.draggable && c.onmouseup) {
+                c.onmouseup(e);
+            }
+        };
+
+        for (let callback of this._eventRegistry[EVENTS.MOUSEUP]) {
+            callback(e);
+        };
+
+        var clickedObject = this.scene.childAt(x, y);
+
+        if (clickedObject && clickedObject.onmouseup) {
+            clickedObject.onmouseup(e);
+        }
+    };
+
+    /**
+     * bridge the mouse move event on the canvas to the
+     * the objects in the scene graph
+     */
+    _handleMouseMove(e) {
+        e.preventDefault();
+        let objects = this.scene.children.filter((c) => !!(c.onmousemove));
+
+        for (let callback of this._eventRegistry[EVENTS.MOUSEMOVE]) {
+            callback(e);
+        };
+
+        for (let o of objects) {
+            o.onmousemove(e);
+        };
+    };
+
+    /**
+     * bridge the click event on the canvas to the
+     * the objects in the scene graph
+     */
+    _handleClick(e) {
+        e.preventDefault();
+
+        let x = e.offsetX - this._leftPadding;
+        let y = e.offsetY - this._topPadding;
+
+        //pass through x and y to propagated events
+        e.canvasX = x;
+        e.canvasY = y;
+
+        let objects = this.scene.children.filter((c) => !!(c.onclick));
+
+        for (let callback of this._eventRegistry[EVENTS.CLICK]) {
+            callback(e);
+        };
+
+        for (let o of objects) {
+            o.onclick(e);
+        };
+    };
+
+    /**
+     * bridge the mouse out event on the canvas to the
+     * the objects in the scene graph
+     */
+    _handleMouseOut(e) {
+        e.preventDefault();
+
+        var objects = this.scene.children.filter((c) => !!(c.onmouseout));
+
+        for (let o of objects) {
+            o.onmouseout(e);
+        };
+
+        for (let callback of this._eventRegistry[EVENTS.MOUSEOUT]) {
+            callback(e);
+        };
+    };
 }
 
 /*
-define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'ellipse', 'circle', 'text', 'image', 'container'], function (_, Renderer, CanvasObject, Path, Rectangle, Ellipse, Circle, Text, Image, Container) {
-	'use strict';
 
-	var _events = {
-		PRESS_UP: 'onpressup',
-		PRESS_DOWN: 'onpressdown',
-		PRESS_MOVE: 'onpressmove',
-		PRESS_CANCEL: 'onpresscancel',
-		PRESS: 'onpress'
-	};
-
-	var _lastKnownTouchLocation;
-
-	function CanvasCompositor(canvas, options) {
-		this._canvas = canvas;
-		this._context = this._canvas.getContext('2d');
-		this._targetObject = null;
-
-		this._updateThreshhold = 1000 / 60; //amount of time that must pass before rendering
-		this._lastRenderTime = 0; //set to 0 to make sure first render happens right away
-		this._currentTime = 0;
-		this.style = _.extend({}, Renderer.DEFAULTS, options);
-
-		this.Scene = new Container({
-			x: 0,
-			y: 0
-		});
-
-		this._bindEvents();
-		this._eventRegistry = {
-			onpressup: [],
-			onpressdown: [],
-			onpressmove: [],
-			onpresscancel: [],
-			onpress: []
-		};
-
-		this._animationLoop();
-	}
-
-	CanvasCompositor.prototype.registerEvent = function _registerEvent(eventType, callback) {
-		if (this._eventRegistry[eventType]) {
-			this._eventRegistry[eventType].push(callback);
-		}
-	};
-
-	CanvasCompositor.prototype.removeEvent = function _removeEvent(eventType, callback) {
-		if (this._eventRegistry[eventType]) {
-			var index = this._eventRegistry[eventType].indexOf(callback);
-			if (index >= 0) {
-				return this._eventRegistry[eventType].splice(index, 1);
-			}
-		}
-	};
 
 	CanvasCompositor.prototype._bindEvents = function () {
-		this._canvas.addEventListener('mousedown', _.bind(this._handlePressDown, this));
-		this._canvas.addEventListener('mouseup', _.bind(this._handlePressUp, this));
-		this._canvas.addEventListener('mousemove', _.bind(this._handlePressMove, this));
-		this._canvas.addEventListener('mouseout', _.bind(this._handlePressCancel, this));
-		this._canvas.addEventListener('click', _.bind(this._handlePress, this));
 
         //TODO: typically, usage of stopPropagation() is a sign that things were done wrong.
 		this._canvas.addEventListener('touchstart', function (e) {
@@ -159,211 +336,16 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
 		var evt = new window.MouseEvent(type, mouseEventInit);
 		e.target.dispatchEvent(evt);
 	}
-
-	CanvasCompositor.prototype._handlePressDown = function (e) {
-		e.preventDefault();
-
-		var style = window.getComputedStyle(this._canvas);
-		var leftPadding = parseFloat(style.getPropertyValue('border-left')) +
-			parseFloat(style.getPropertyValue('padding-left'));
-		var topPadding = parseFloat(style.getPropertyValue('border-top')) +
-			parseFloat(style.getPropertyValue('padding-top'));
-
-		var x = e.offsetX - leftPadding;
-		var y = e.offsetY - topPadding;
-
-		//pass through x and y to propagated events
-		e.canvasX = x;
-		e.canvasY = y;
-
-		_.each(this._eventRegistry[_events.PRESS_DOWN], function (callback) {
-			callback(e);
-		});
-
-		var clickedObject = this.Scene.PressableChildAt(x, y);
-
-		if (clickedObject && clickedObject.onpressdown) {
-			clickedObject.onpressdown(e);
-		}
-	};
-
-	CanvasCompositor.prototype._handlePressUp = function (e) {
-		e.preventDefault();
-
-		var style = window.getComputedStyle(this._canvas);
-		var leftPadding = parseFloat(style.getPropertyValue('border-left')) +
-			parseFloat(style.getPropertyValue('padding-left'));
-		var topPadding = parseFloat(style.getPropertyValue('border-top')) +
-			parseFloat(style.getPropertyValue('padding-top'));
-
-		var x = e.offsetX - leftPadding;
-		var y = e.offsetY - topPadding;
-
-		//pass through x and y to propagated events
-		e.canvasX = x;
-		e.canvasY = y;
-
-		_.each(this.Scene.children, function (c) {
-			if (c.draggable && c.onpressup) {
-				c.onpressup(e);
-			}
-		});
-
-		_.each(this._eventRegistry[_events.PRESS_UP], function (callback) {
-			callback(e);
-		});
-
-		var clickedObject = this.Scene.PressableChildAt(x, y);
-
-		if (clickedObject && clickedObject.onpressup) {
-			clickedObject.onpressup(e);
-		}
-	};
-
-	CanvasCompositor.prototype._handlePressMove = function (e) {
-		e.preventDefault();
-		var objects = _.filter(this.Scene.children, function (c) {
-			// `!!` is a quick hack to convert to a bool
-			return !!(c.onpressmove);
-		});
-
-		_.each(this._eventRegistry[_events.PRESS_MOVE], function (callback) {
-			callback(e);
-		});
-
-		_.each(objects, function (o) {
-			o.onpressmove(e);
-		});
-	};
-
-	CanvasCompositor.prototype._handlePress = function (e) {
-		e.preventDefault();
-
-		var style = window.getComputedStyle(this._canvas);
-		var leftPadding = parseFloat(style.getPropertyValue('border-left')) +
-			parseFloat(style.getPropertyValue('padding-left'));
-		var topPadding = parseFloat(style.getPropertyValue('border-top')) +
-			parseFloat(style.getPropertyValue('padding-top'));
-
-		var x = e.offsetX - leftPadding;
-		var y = e.offsetY - topPadding;
-
-		//pass through x and y to propagated events
-		e.canvasX = x;
-		e.canvasY = y;
-
-		var objects = _.filter(this.Scene.children, function (c) {
-			// `!!` is a quick hack to convert to a bool
-			return !!(c.onpress);
-		});
-
-		_.each(this._eventRegistry[_events.PRESS], function (callback) {
-			callback(e);
-		});
-
-		_.each(objects, function (o) {
-			o.onpress(e);
-		});
-	};
-
-	CanvasCompositor.prototype._handlePressCancel = function (e) {
-		e.preventDefault();
-
-		var objects = _.filter(this.Scene.children, function (c) {
-			// `!!` is a quick hack to convert to a bool
-			return !!(c.onpresscancel);
-		});
-
-		_.each(objects, function (o) {
-			o.onpresscancel(e);
-		});
-
-		_.each(this._eventRegistry[_events.PRESS_CANCEL], function (callback) {
-			callback(e);
-		});
-	};
-
-	Object.defineProperty(CanvasCompositor.prototype, 'targetObject', {
-		configurable: true,
-		enumerable: true,
-		get: function _getTargetObject() {
-			return this._targetObject;
-		},
-		set: function _setTargetObject(o) {
-			this._targetObject = o;
-		}
-	});
-
-	CanvasCompositor.prototype._animationLoop = function _animationLoop() {
-		window.requestAnimationFrame(_.bind(this._animationLoop, this));
-		this._currentTime = +new Date();
-		//set maximum of 60 fps and only redraw if necessary
-		if (this._currentTime - this._lastRenderTime >= this._updateThreshhold && this.Scene.NeedsUpdate) {
-			this._lastRenderTime = +new Date();
-			Renderer.clearRect(this._context, 0, 0, this._canvas.width, this._canvas.height);
-			this.Scene.draw(this._context);
-		}
-	};
-
-	//expose primitive canvas functions at high level
-	CanvasCompositor.prototype.drawPath = function _drawPath(vertices) {
-		Renderer.drawPath(this._context, vertices, this.style);
-	};
-
-	//expose primitive canvas functions at high level
-	CanvasCompositor.prototype.drawRectangle = function _drawRectangle(x, y, width, height) {
-		Renderer.drawRectangle(this._context, x, y, width, height || width, this.style);
-	};
-
-	//expose primitive canvas functions at high level
-	CanvasCompositor.prototype.drawEllipse = function _drawEllipse(x, y, radius, minorRadius) {
-		Renderer.drawEllipse(this._context, x, y, radius, (minorRadius || radius), this.style);
-	};
-
-	//expose primitive canvas functions at high level
-	CanvasCompositor.prototype.drawCircle = function _drawCircle(x, y, radius) {
-		Renderer.drawEllipse(this._context, x, y, radius, this.style);
-	};
-
-	//expose primitive canvas functions at high level
-	CanvasCompositor.prototype.drawText = function _drawText(x, y, text) {
-		Renderer.drawText(this._context, x, y, text, this.style);
-	};
-
-	//expose primitive canvas functions at high level
-	CanvasCompositor.prototype.measureText = function _measureText(text) {
-		Renderer.measureText(this._context, text, this.style);
-	};
-
-	//expose primitive canvas functions at high level
-	CanvasCompositor.prototype.drawImage = function _drawImage(x, y, image) {
-		Renderer.drawImage(this._context, x, y, image, this.style);
-	};
-
-	CanvasCompositor.prototype.draw = function _draw(canvasObject) {
-		if (canvasObject) {
-			canvasObject.draw();
-			return;
-		}
-	};
-
-	//get the context for direct drawing to the canvas
-	CanvasCompositor.prototype.getContext = function _getContext() {
-		return this._context;
-	};
-
-	CanvasCompositor.Path = Path;
-	CanvasCompositor.Rectangle = Rectangle;
-	CanvasCompositor.Ellipse = Ellipse;
-	CanvasCompositor.Text = Text;
-	CanvasCompositor.Image = Image;
-	CanvasCompositor.Circle = Circle;
-	CanvasCompositor.Container = Container;
-
-	CanvasCompositor.Events = _events;
-
-	CanvasCompositor.prototype.Scene = null;
-
-	return CanvasCompositor;
-});
 */
+
+export {
+    CanvasCompositor,
+    Renderer,
+    Primitive,
+    Composition,
+    Circle,
+    DEFAULTS
+};
+//export Primitive;
+//export Composition
+//export Circle;

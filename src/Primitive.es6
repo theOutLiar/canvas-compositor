@@ -1,359 +1,522 @@
-import Vector from 'vectorious/withoutblas';
 import {
-    DEFAUTLS,
+    Vector
+} from 'vectorious/withoutblas';
+import {
+    DEFAULTS,
     Renderer
 } from './Renderer';
 
-/*
- * The base class for things that may be drawn on the canvas.
+/**
+ * The base class of things that may be drawn on the canvas.
  * All drawable objects should inherit from this class.
  * Typically, it is unnecessary for application programmers to
  * call this directly, although they may wish to extend their own
  * classes with it.
  */
-class Primitive {
+export default class Primitive {
+    /**
+     * @param {object} options
+     */
     constructor(options) {
-        this.d = new Vector([options.x || 0, options.y || 0]);
 
-        this.style = _.assign({}, DEFAULTS, options.style);
+        if (!options) {
+            options = {};
+        }
+        /**
+         * does the object need to be redrawn?
+         * @type {boolean} _needsDraw
+         */
+        this._needsDraw = true;
 
-        //this.unscaledLineWidth = this.style.lineWidth;
+        /**
+         * does the object need to be rendered?
+         * @type {boolean} _needsRender
+         */
+        this._needsRender = true;
 
-        this.pressPassThrough = options.pressPassThrough || false;
+        /**
+         * the horizontal scale of the object. defaults to 1
+         * @type {number} _scaleWidth
+         */
+        this._scaleWidth = 1;
+
+        /**
+         * the vertical scale of the object. defaults to 1
+         * @type {number} _scaleHeight
+         */
+        this._scaleHeight = 1;
+
+        /**
+         * d is for "displacement": a 2D Vector object representing cartesian coordinate
+         * position relative to its parent composition (or [0,0] if this is the scene composition)
+         * @type {object} d
+         */
+        this._d = new Vector([options.x || 0, options.y || 0]);
+
+        /**
+         * style options for this particular object. these are standard context styles
+         * @type {object} style
+         */
+        this.style = Object.assign({}, DEFAULTS, options.style);
+
+        /**
+         * objects with pressPassThrough set to true will allow mouse clicks to pass
+         * through to objects behind them
+         * @type {boolean} pressPassThrough
+         */
+        //this.pressPassThrough = options.pressPassThrough || false;
+
+        /**
+         * if true, the object can be dragged around the canvas
+         * @type {boolean} draggable
+         */
         this.draggable = options.draggable || false;
 
-        this.drawBoundingBox = false;
+        /**
+         * if true, the bounding box of the object will be draw
+         * @type {boolean} drawBoundingBox
+         */
+        //this.drawBoundingBox = false;
         //this.boundingBoxColor = '#cccccc';
 
-        this._needsUpdate = false;
-        //this._scaleWidth = 1;
-        //this._scaleHeight = 1;
-
+        /**
+         * the prerendering canvas is used to avoid performing mutliple draw operations on the
+         * visible, main canvas. this minimizes the time needed to render by prerendering on a
+         * canvas only as large as necessary for the object
+         * @type {object} _prerenderingCanvas
+         */
         this._prerenderingCanvas = document.createElement('canvas');
-        this._prerenderingContext = this._prerenderedImage.getContext('2d');
 
-        this.parent = options.parent || null;
+        /**
+         * the 2D context of the prerendering canvas.
+         * @type {object} _prerenderingCanvas
+         */
+        this._prerenderingContext = this._prerenderingCanvas.getContext('2d');
+
+        /**
+         * the parent object of this object. with the exception of the scene composition itself,
+         * the root of all objects ancestry should be the scene composition
+         * @type {object} parent
+         */
+        this._parent = options.parent || null;
+
         if (this.draggable) {
             this.enableDragging();
         }
 
-        this.sticky = false;
-        this.stickyPosition = null;
+        /**
+         * a callback for the mousedown event.
+         * @type {function} onmousedown
+         */
+        this.onmousedown = null;
+
+        /**
+         * a callback for the mouseup event.
+         * @type {function} onmouseup
+         */
+        this.onmouseup = null;
+
+        /**
+         * a callback for the mousemove event.
+         * @type {function} onmousemove
+         */
+        this.onmousemove = null;
+
+        /**
+         * a callback for the mouseout event.
+         * @type {function} onmouseout
+         */
+        this.onmouseout = null;
+
+        /**
+         * a callback for the click event.
+         * @type {function} onclick
+         */
+        this.onclick = null;
     }
 
+    /**
+     * the global offset of the object on the canvas.
+     * this is the sum of this object's displacement
+     * and all of its ancestry.
+     * @type {object} offset a 2D Vector representing displacement from [0, 0]
+     */
     get offset() {
         return (this.parent ? Vector.add(this.d, this.parent.offset) : this.d);
     }
 
-    get needsUpdate(){
-        return this._needsUpdate;
+    /**
+     * returns true whenever the object needs to be re-drawn to canvas.
+     * when true, this will indicate to the parent tree of composing objects that
+     * the object needs to be re-drawn on the next animation loop.
+     *
+     * objects need to be updated when their displacement changes, or when any thing
+     * that requires a rerender occurs.
+     *
+     * @type {boolean} needsDraw
+     */
+    get needsDraw() {
+        return this._needsDraw;
     }
-    set needsUpdate(val){
-        if(this.parent && val){
-            this.parent.needsUpdate = val;
+
+    /**
+     * set to true whenever the object needs to be re-drawn to canvas.
+     * when true, this will indicate to the parent tree of composing objects that
+     * the object needs to be re-drawn on the next animation loop.
+     *
+     * objects need to be updated when their displacement changes, or when any thing
+     * that requires a rerender occurs.
+     *
+     * @type {boolean} needsDraw
+     */
+    set needsDraw(val) {
+        if (this.parent && val) {
+            this.parent.needsDraw = val;
+            this.parent.needsRender = true; // if this needs to be redrawn, then the parent needs a full rerender
         }
-        this._needsUpdate = val;
+        this._needsDraw = val;
     }
 
+    /**
+     * returns true whenever the object's properties have changed such that
+     * it needs to be rendered differently
+     *
+     * 1. scale change
+     * 1. physical property change (height, width, radius, etc.)
+     * 1. color change
+     *
+     * @type {boolean} needsRender
+     */
+    get needsRender() {
+        return this._needsRender;
+    }
+
+    /**
+     * set to true whenever the object's properties have changed such that
+     * it needs to be rendered differently
+     *
+     * 1. scale change
+     * 1. physical property change (height, width, radius, etc.)
+     * 1. color change
+     *
+     * @type {boolean} needsRender
+     */
+    set needsRender(val) {
+        if (this.parent && val) {
+            this.parent.needsRender = val;
+        }
+        this._needsRender = val;
+    }
+
+    /**
+     * return the horizontal scale of the object - defaults to 1
+     * @type {number} scaleWidth
+     */
+    get scaleWidth() {
+        return this._scaleWidth;
+    }
+    /**
+     * set the horizontal scale of the object - defaults to 1
+     * @type {number} scaleWidth
+     */
+    set scaleWidth(val) {
+        this._scaleWidth = val;
+        this.needsRender = true;
+        this.needsDraw = true;
+        for (let c of this.children) {
+            c.needsRender = true;
+            c.needsDraw = true;
+        }
+    }
+
+    /**
+     * return the vertical scale of the object - defaults to 1
+     * @type {number} scaleHeight
+     */
+    get scaleHeight() {
+        return this._scaleHeight;
+    }
+    /**
+     * set the vertical scale of the object - defaults to 1
+     * @type {number} scaleHeight
+     */
+    set scaleHeight(val) {
+        this._scaleHeight = val;
+        this.needsRender = true;
+        this.needsDraw = true;
+        for (let c of this.children) {
+            c.needsRender = true;
+            c.needsDraw = true;
+        }
+    }
+
+    /**
+     * return an object containing the vertical and horizontal scale
+     * @type {object} scale
+     */
+    get scale() {
+        return {
+            scaleWidth: this.scaleWidth,
+            scaleHeight: this.scaleHeight
+        };
+    }
+    /**
+     * set the scale width and height in one go
+     * @type {number} scale
+     */
+    set scale(val) {
+        this.scaleHeight = val;
+        this.scaleWidth = val;
+    }
+
+    /**
+     * return the scale of the object, compounded with the parent object's scale
+     * @type {object} compoundScale
+     */
+    get compoundScale() {
+        return {
+            scaleWidth: this.parent ? this.scaleWidth * this.parent.compoundScale.scaleWidth : this.scaleWidth,
+            scaleHeight: this.parent ? this.scaleHeight * this.parent.compoundScale.scaleHeight : this.scaleHeight
+        };
+    }
+
+    /**
+     * d is for displacement - returns a vector
+     * @type {object} d
+     */
+    get d() {
+        return this._d;
+    }
+
+    /**
+     * d is for displacement - accepts a vector
+     * @type {object} d
+     * @param {object} val a vector
+     */
+    set d(val) {
+        this._d = val;
+    }
+
+    /**
+     * get the parent of the object. all objects except the scene graph should have a parent
+     * @type {object} parent
+     */
+    get parent() {
+        return this._parent;
+    }
+    /**
+     * set the parent of the object. all objects except the scene graph should have a parent
+     * @type {object} parent
+     * @param {object} val an composition
+     */
+    set parent(val) {
+        this._parent = val;
+    }
+
+    /**
+     * enable dragging by setting the onmousedown event callback
+     */
+    enableDragging() {
+        //TODO: should probably be using an event registry so
+        //multiple event callbacks can be registered
+        this.onmousedown = this.dragStart;
+    }
+
+    /**
+     * disable dragging by removing event callbacks
+     */
+    disableDragging() {
+        //TODO: should probably be using an event registry so
+        //multiple event callbacks can be registered
+        this.onmousedown = null;
+        this.onmousemove = null;
+        this.onmouseup = null;
+        this.onmouseout = null;
+        this.needsDraw = true;
+    }
+
+    /**
+     * when dragging starts, update events
+     * @param {object} e the event object
+     */
+    dragStart(e) {
+        //TODO: should probably be using an event registry so
+        //multiple event callbacks can be registered
+        this._mouseOffset = new Vector([e.offsetX, e.offsetY]).subtract(this.offset);
+        this.onmousedown = null;
+        this.onmousemove = this.drag;
+        this.onmouseup = this.dragEnd;
+        this.onmouseout = this.dragEnd;
+    }
+
+    /**
+     * update d as the object is moved around
+     * @param {object} e the event object
+     */
+    drag(e) {
+        this.d = new Vector([e.offsetX, e.offsetY]).subtract(this._mouseOffset);
+        this.needsDraw = true;
+    }
+
+    /**
+     * when dragging ends, update events
+     * @param {object} e the event object
+     */
+    dragEnd(e) {
+        this.onmousedown = this.dragStart;
+        this.onmousemove = null;
+        this.onmouseup = null;
+        this.onmouseout = null;
+        this.needsDraw = true;
+    }
+
+    /**
+     * draw the object to canvas, render it if necessary
+     * @param {object} context the final canvas context where this will be drawn
+     * @param {object} offset the offset on the canvas - optional, used for prerendering
+     */
+    draw(context, offset) {
+        this.needsDraw = false;
+
+        if (this.needsRender && this.render) {
+            //ditch any old rendering artifacts - they are no longer viable
+            delete this._prerenderingCanvas;
+            delete this._prerenderingContext;
+
+            //create a new canvas and context for rendering
+            this._prerenderingCanvas = document.createElement('canvas');
+            this._prerenderingContext = this._prerenderingCanvas.getContext('2d'); //text needs prerendering context defined for boundingBox measurements
+
+            //make sure the new canvas has the appropriate dimensions
+            this._prerenderingCanvas.width = this.boundingBox.right - this.boundingBox.left;
+            this._prerenderingCanvas.height = this.boundingBox.bottom - this.boundingBox.top;
+
+            //TODO: make sure line width is properly handled
+            //this.style.lineWidth = this.unscaledLineWidth * this.GlobalLineScale;
+            this.render();
+            this.needsRender = false;
+        }
+
+        //TODO: handle debug options
+        //draw bounding boxes
+        /*if (this.flags.DEBUG) {
+        	this._prerenderingContext.beginPath();
+        	this._prerenderingContext.lineWidth=2.0;
+        	this._prerenderingContext.strokeStyle='#FF0000';
+        	this._prerenderingContext.strokeRect(0,0,this._prerenderedImage.width, this._prerenderedImage.height);
+        	this._prerenderingContext.closePath();
+        }*/
+
+        //TODO: handle bounding box drawing
+        /*if (this.drawBoundingBox){
+        	this._prerenderingContext.beginPath();
+        	this._prerenderingContext.lineWidth=2.0;
+        	this._prerenderingContext.strokeStyle=this.boundingBoxColor;
+        	this._prerenderingContext.strokeRect(0,0,this._prerenderedImage.width, this._prerenderedImage.height);
+        	this._prerenderingContext.closePath();
+        }*/
+
+        //offsets are for prerendering context
+        let x = this.boundingBox.left + (offset && offset.left ? offset.left : 0);
+        let y = this.boundingBox.top + (offset && offset.top ? offset.top : 0);
+        Renderer.drawImage(x, y, this._prerenderingCanvas, context, this.style);
+    }
+
+    //TODO: provide more doc details around this
+    /**
+     * this method must be overridden by a subclass.
+     *
+     * the render method should be implemented by subclasses
+     * @abstract
+     */
+    render() {}
+
+    /**
+     * check whether the point specified lies *inside* this objects bounding box
+     *
+     * @param {number} x the x coordinate
+     * @param {number} y the y coordinate
+     * @returns {boolean} whether the point is within the bounding box
+     */
+    pointIsInBoundingBox(x, y) {
+        return (
+            x > this.boundingBox.left &&
+            y > this.boundingBox.top &&
+            x < this.boundingBox.right &&
+            y < this.boundingBox.bottom
+        );
+    }
+
+    /**
+     * check whether the point is within the object.
+     * this method should be overridden by subclassess
+     *
+     * @param {number} x the x coordinate
+     * @param {number} y the y coordinate
+     * @returns {boolean} whether the point is in the object, as implemented by inheriting classes
+     */
+    pointIsInObject(x, y) {
+        return this.pointIsInBoundingBox(x, y);
+    }
+
+    /**
+     * move the object on top of other objects (render last)
+     */
+    moveToFront() {
+        if (this.parent) {
+            let index = this.parent.children.indexOf(this);
+            if (index >= 0) {
+                this.parent.children.splice(index, 1);
+                this.parent.children.splice(this.parent.children.length, 0, this);
+                this.needsDraw = true;
+            }
+        }
+    }
+
+    /**
+     * move the object below the other objects (render first)
+     */
+    moveToBack() {
+        if (this.parent) {
+            let index = this.parent.children.indexOf(this);
+            if (index >= 0) {
+                this.parent.children.splice(index, 1);
+                this.parent.children.splice(0, 0, this);
+                this.needsDraw = true;
+            }
+        }
+    }
+
+
+    /**
+     * move the object forward in the stack (drawn later)
+     */
+    moveForward() {
+        if (this.parent) {
+            let index = this.parent.children.indexOf(this);
+            if (index >= 0 && index < this.parent.children.length - 1) {
+                this.parent.children.splice(index, 1);
+                this.parent.children.splice(index + 1, 0, this); //if index + 1 > siblings.length, inserts it at end
+                this.parent.UpdateChildrenLists();
+                this.needsRender = true;
+                this.needsDraw = true;
+            }
+        }
+    }
+
+    /**
+     * move the object backward in the stack (drawn sooner)
+     */
+    moveBackward() {
+        if (this.parent) {
+            let index = this.parent.children.indexOf(this);
+            if (index > 0) {
+                this.parent.children.splice(index, 1);
+                this.parent.children.splice(index - 1, 0, this);
+                this.parent.UpdateChildrenLists();
+                this.needsRender = true;
+                this.needsDraw = true;
+            }
+        }
+    }
 }
-
-exports.Primitive = Primitive;
-
-/*define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
-	'use strict';
-
-	function CanvasObject(options) {
-
-
-		Object.defineProperty(this, 'NeedsRender', {
-			configurable: true,
-			enumerable: true,
-			set: function (val) {
-				if (this.parent && val) { //only mark the parent for update if true
-					this.parent.NeedsRender = val;
-				}
-				return (this._needsRender = val);
-			},
-			get: function () {
-				return this._needsRender;
-			}
-		});
-
-		Object.defineProperty(this, 'Scale', {
-			configurable: true,
-			enumerable: true,
-			set: function (val) {
-				this.ScaleWidth = val;
-				this.ScaleHeight = val;
-			},
-			get: function () {
-				return {
-					scaleWidth: this.ScaleWidth,
-					scaleHeight: this.ScaleHeight
-				};
-			}
-		});
-
-		Object.defineProperty(this, 'ScaleWidth', {
-			configurable: true,
-			enumerable: true,
-			set: function (val) {
-				this.NeedsUpdate = true;
-				this.NeedsRender = true;
-				if (this.children){
-					_.each(this.children, function (c){
-						c.NeedsUpdate = true;
-						c.NeedsRender = true;
-					});
-					_.each(this.masks, function (m){
-						m.NeedsUpdate = true;
-						m.NeedsRender = true;
-					});
-				}
-				this._scaleWidth = val;
-			},
-			get: function () {
-				return this._scaleWidth;
-			}
-		});
-
-		Object.defineProperty(this, 'ScaleHeight', {
-			configurable: true,
-			enumerable: true,
-			set: function (val) {
-				this.NeedsUpdate = true;
-				this.NeedsRender = true;
-				if (this.children){
-					_.each(this.children, function (c){
-						c.NeedsUpdate = true;
-						c.NeedsRender = true;
-					});
-					_.each(this.masks, function (m){
-						m.NeedsUpdate = true;
-						m.NeedsRender = true;
-					});
-				}
-				this._scaleHeight = val;
-			},
-			get: function () {
-				return this._scaleHeight;
-			}
-		});
-
-		Object.defineProperty(this, 'GlobalScale', {
-			configurable: true,
-			enumerable: true,
-			get: function () {
-				var width = this._scaleWidth;
-				var height = this._scaleHeight;
-
-				if(this.parent){
-					var parentScale = this.parent.GlobalScale;
-					width *= parentScale.scaleWidth;
-					height *= parentScale.scaleHeight;
-				}
-
-				return {
-					scaleHeight: width,
-					scaleWidth: height
-				};
-			}
-		});
-
-		Object.defineProperty(this, 'GlobalLineScale', {
-			configurable: true,
-			enumerable: true,
-			get: function (){
-				//not sure what the best approach for line scale is...
-				return Math.min(this.GlobalScale.scaleWidth, this.GlobalScale.scaleHeight);
-			}
-		});
-
-		Object.defineProperty(this, 'GlobalFontScale', {
-			configurable: true,
-			enumerable: true,
-			get: function (){
-				//not sure what the best approach for font scale is...
-				return Math.min(this.GlobalScale.scaleWidth, this.GlobalScale.scaleHeight);
-			}
-		});
-	}
-
-	CanvasObject.prototype.enableDragging = function _enableDragging() {
-		this.onpressdown = this.dragStart;
-	};
-
-	CanvasObject.prototype.disableDragging = function _disableDragging() {
-		this.onpressdown = null;
-		this.onpressmove = null;
-		this.onpressup = null;
-		this.onpresscancel = null;
-		this.NeedsRender = true;
-		this.NeedsUpdate = true;
-	};
-
-	CanvasObject.prototype.dragStart = function _dragStart(e) {
-		this.mouseOffset = new Vector([e.offsetX, e.offsetY]).subtract(this.offset);
-		this.onpressdown = null;
-		this.onpressmove = this.drag;
-		this.onpressup = this.dragEnd;
-		this.onpresscancel = this.dragEnd;
-	};
-
-	CanvasObject.prototype.drag = function _drag(e) {
-		this.d = new Vector([e.offsetX,e.offsetY]).subtract(this.mouseOffset);
-		this.NeedsRender = true;
-		this.NeedsUpdate = true;
-	};
-
-	CanvasObject.prototype.dragEnd = function _dragEnd(e) {
-		this.onpressdown = this.dragStart;
-		this.onpressmove = null;
-		this.onpressup = null;
-		this.onpresscancel = null;
-		this.NeedsRender = true;
-		this.NeedsUpdate = true;
-	};
-
-	CanvasObject.prototype.draggable = false;
-	CanvasObject.prototype.context = null;
-	CanvasObject.prototype.style = null;
-	CanvasObject.prototype.scale = 1;
-
-	CanvasObject.prototype.flags = {
-		DEBUG: false
-	};
-
-	CanvasObject.prototype.draw = function _draw(context, contextOffset) {
-		this.NeedsUpdate = false;
-
-		if (this.NeedsRender && this.render) {
-			delete this._prerenderedImage;
-			delete this._prerenderingContext;
-			this._prerenderedImage = document.createElement('canvas');
-			// text needs prerendering context defined for boundingBox measurements
-			this._prerenderingContext = this._prerenderedImage.getContext('2d');
-			this._prerenderedImage.width = this.boundingBox.right - this.boundingBox.left;
-			this._prerenderedImage.height = this.boundingBox.bottom - this.boundingBox.top;
-
-			this.style.lineWidth = this.unscaledLineWidth * this.GlobalLineScale;
-			this.render();
-			this.NeedsRender = false;
-		}
-		//draw bounding boxes
-		if (this.flags.DEBUG) {
-			this._prerenderingContext.beginPath();
-			this._prerenderingContext.lineWidth=2.0;
-			this._prerenderingContext.strokeStyle='#FF0000';
-			this._prerenderingContext.strokeRect(0,0,this._prerenderedImage.width, this._prerenderedImage.height);
-			this._prerenderingContext.closePath();
-		}
-
-		if (this.drawBoundingBox){
-			this._prerenderingContext.beginPath();
-			this._prerenderingContext.lineWidth=2.0;
-			this._prerenderingContext.strokeStyle=this.boundingBoxColor;
-			this._prerenderingContext.strokeRect(0,0,this._prerenderedImage.width, this._prerenderedImage.height);
-			this._prerenderingContext.closePath();
-		}
-
-		var x = this.boundingBox.left + (contextOffset && contextOffset.left ? contextOffset.left : 0);
-		var y = this.boundingBox.top + (contextOffset && contextOffset.top ? contextOffset.top : 0);
-		Renderer.drawImage(context, x, y, this._prerenderedImage, this.style);
-	};
-
-	CanvasObject.prototype.render = function _render() {}; //should be overridden by implementors
-
-	CanvasObject.prototype.PointIsInBoundingBox = function _pointIsInBoundingBox(x, y){
-		return (
-			x > this.boundingBox.left &&
-			y > this.boundingBox.top &&
-			x < this.boundingBox.right &&
-			y < this.boundingBox.bottom
-		);
-	};
-
-	CanvasObject.prototype.PointIsInObject = function _pointIsInObject(x, y) {
-		return this.PointIsInBoundingBox(x, y);
-	}; //can (and should) be overridden by implementors
-
-	CanvasObject.prototype.PressIsInObject = function _pressIsInObject(x, y) {
-		if (this.pressPassThrough){
-			return false;
-		}
-
-		return this.PointIsInObject(x, y);
-	}; //can (and should) be overridden by implementors
-
-	CanvasObject.prototype.UnPin = function _unpin(){
-		this.sticky = false;
-		this.stickyPosition = null;
-		this.NeedsUpdate = true;
-		this.NeedsRender = true;
-		if(this.parent){
-			this.parent.UpdateChildrenLists();
-		}
-	};
-
-	CanvasObject.prototype.MoveToFront = function _moveToFront() {
-		if (this.parent){
-			var index = this.parent.children.indexOf(this);
-			if( index >= 0 ){
-				this.parent.children.splice(index, 1);
-				this.parent.children.splice(this.parent.children.length, 0, this);
-				this.parent.UpdateChildrenLists();
-				this.NeedsUpdate = true;
-				this.NeedsRender = true;
-			}
-		}
-	};
-
-	CanvasObject.prototype.MoveToBack = function _moveToBack() {
-		if (this.parent){
-			var index = this.parent.children.indexOf(this);
-			if( index >= 0 ){
-				this.parent.children.splice(index, 1);
-				this.parent.children.splice(0, 0, this);
-				this.parent.UpdateChildrenLists();
-				this.NeedsUpdate = true;
-				this.NeedsRender = true;
-			}
-		}
-	};
-
-	CanvasObject.prototype.MoveForward = function _moveForward(){
-		if (this.parent){
-			var index = this.parent.children.indexOf(this);
-			if( index >= 0 ){
-				this.parent.children.splice(index, 1);
-				this.parent.children.splice(index + 1, 0, this); //if index + 1 > siblings.length, inserts it at end
-				this.parent.UpdateChildrenLists();
-				this.NeedsUpdate = true;
-				this.NeedsRender = true;
-			}
-		}
-	};
-
-	CanvasObject.prototype.MoveBackward = function _moveBackward(){
-		if (this.parent){
-			var index = this.parent.children.indexOf(this);
-			if( index > 0 ){
-				this.parent.children.splice(index, 1);
-				this.parent.children.splice(index - 1, 0, this);
-				this.parent.UpdateChildrenLists();
-				this.NeedsUpdate = true;
-				this.NeedsRender = true;
-			}
-		}
-	};
-
-	CanvasObject.STICKY_POSITION = { FRONT:'front', BACK: 'back' };
-
-	CanvasObject.prototype.onpressdown = null;
-	CanvasObject.prototype.onpressup = null;
-	CanvasObject.prototype.onpressmove = null;
-	CanvasObject.prototype.onpresscancel = null;
-
-	return CanvasObject;
-});
-*/

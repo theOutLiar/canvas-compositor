@@ -1565,12 +1565,184 @@ require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof requ
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
-	value: true
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+var _Renderer = require('./Renderer');
+
+var _Renderer2 = _interopRequireDefault(_Renderer);
+
+var _Primitive2 = require('./Primitive');
+
+var _Primitive3 = _interopRequireDefault(_Primitive2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Circle = function (_Primitive) {
+    _inherits(Circle, _Primitive);
+
+    function Circle(options) {
+        _classCallCheck(this, Circle);
+
+        var _this = _possibleConstructorReturn(this, (Circle.__proto__ || Object.getPrototypeOf(Circle)).call(this, options));
+
+        _this._radius = options.radius || 0;
+        return _this;
+    }
+
+    /**
+     * get the radius of the circle
+     * @type {number} radius
+     */
+
+
+    _createClass(Circle, [{
+        key: 'render',
+
+
+        /**
+         * override the render function for drawing cirtcles specifically
+         * @override
+         */
+        value: function render() {
+            _Renderer2.default.drawCircle(
+            //because prerendering happens on a canvas with dimensions equal to the diameter,
+            //the radius can serve as both x and y coordinates on that canvas
+            this.radius, this.radius, this.radius, this._prerenderingContext, this.style);
+
+            //the below is to ensure the proper placement when scaling/line widths are accounted for
+            /*
+                Renderer.drawCircle(
+                     (this.radius * this.GlobalScale.scaleWidth) + (this.unscaledLineWidth/2.0 * this.GlobalLineScale),
+                    (this.radius * this.GlobalScale.scaleHeight) + (this.unscaledLineWidth/2.0 * this.GlobalLineScale),
+                    (this.radius * this.GlobalScale.scaleWidth),
+                    this._prerenderingContext,
+                    this.style
+                );
+            */
+        }
+    }, {
+        key: 'pointIsInObject',
+        value: function pointIsInObject(x, y) {
+
+            //if it's not in the bounding box, don't bother with the math
+            if (_get(Circle.prototype.__proto__ || Object.getPrototypeOf(Circle.prototype), 'pointIsInObject', this).call(this, x, y)) {
+                var a = x - this.offset.x;
+                var b = y - this.offset.y;
+                var c = this.radius;
+
+                //thanks pythagoras~!
+                return a * a + b * b <= c * c;
+            }
+            return false;
+            //use the below when scaling is reimplemented
+            /*
+            return (
+            CanvasObject.prototype.PointIsInObject.call(this, x, y) &&
+            Math.pow((x - this.offset.x), 2) / Math.pow((this.radius * this.GlobalScale.scaleWidth), 2) + Math.pow((y - this.offset.y), 2) / Math.pow((this.radius * this.GlobalScale.scaleHeight), 2) <= 1
+            );*/
+        }
+    }, {
+        key: 'radius',
+        get: function get() {
+            return this._radius;
+        }
+        /**
+         * set the radius of the circle
+         * @type {number} radius
+         * @param {number} val the new value of the radius
+         */
+        ,
+        set: function set(val) {
+            this._radius = val;
+        }
+
+        /**
+         * get the bounding box of the circle;
+         */
+
+    }, {
+        key: 'boundingBox',
+        get: function get() {
+            return {
+                top: this.offset.y - this.radius,
+                left: this.offset.x - this.radius,
+                bottom: this.offset.y + this.radius,
+                right: this.offset.x + this.radius
+            };
+
+            //the below is for keeping the bounding box around the entirety of the object, including the drawing of the border path
+            /*return {
+                top: this.offset.y -
+                    ((this.radius * this.GlobalScale.scaleHeight) +
+                        (this.unscaledLineWidth / 2.0 * this.GlobalLineScale)),
+                left: this.offset.x -
+                    ((this.radius * this.GlobalScale.scaleWidth) +
+                        (this.unscaledLineWidth / 2.0 * this.GlobalLineScale)),
+                bottom: this.offset.y +
+                    (this.radius * this.GlobalScale.scaleHeight) +
+                    (this.unscaledLineWidth / 2.0 * this.GlobalLineScale),
+                right: this.offset.x +
+                    (this.radius * this.GlobalScale.scaleWidth) +
+                    (this.unscaledLineWidth / 2.0 * this.GlobalLineScale)
+            };*/
+        }
+    }]);
+
+    return Circle;
+}(_Primitive3.default);
+
+/*define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Renderer) {
+	'use strict';
+
+	function Circle(options) {
+		CanvasObject.call(this, options);
+		this.radius = options.radius || 0;
+	}
+
+	_.assign(Circle.prototype, CanvasObject.prototype);
+
+	Circle.prototype.render = function _render() {
+
+	};
+
+	Circle.prototype.PointIsInObject = function (x, y) {
+		return (
+			CanvasObject.prototype.PointIsInObject.call(this, x, y) &&
+			Math.pow((x - this.offset.x), 2) / Math.pow((this.radius * this.GlobalScale.scaleWidth), 2) + Math.pow((y - this.offset.y), 2) / Math.pow((this.radius * this.GlobalScale.scaleHeight), 2) <= 1
+		);
+	};
+
+	return Circle;
+});*/
+
+
+exports.default = Circle;
+
+},{"./Primitive":6,"./Renderer":7}],5:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
 });
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _Primitive2 = require('./Primitive');
+
+var _Primitive3 = _interopRequireDefault(_Primitive2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -1579,635 +1751,850 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var Composition = function (_Primitive) {
-	_inherits(Composition, _Primitive);
+    _inherits(Composition, _Primitive);
 
-	function Composition(children, masks) {
-		_classCallCheck(this, Composition);
+    function Composition(options) {
+        _classCallCheck(this, Composition);
 
-		var _this = _possibleConstructorReturn(this, (Composition.__proto__ || Object.getPrototypeOf(Composition)).call(this));
+        var _this = _possibleConstructorReturn(this, (Composition.__proto__ || Object.getPrototypeOf(Composition)).call(this, options));
 
-		_this.children = children || [];
-		_this.masks = masks;
-		return _this;
-	}
+        options = options || {};
+        _this._children = options.children || [];
+        return _this;
+    }
 
-	_createClass(Composition, [{
-		key: 'boundingBox',
-		get: function get() {
-			var top = null,
-			    left = null,
-			    bottom = null,
-			    right = null;
-
-			var _iteratorNormalCompletion = true;
-			var _didIteratorError = false;
-			var _iteratorError = undefined;
-
-			try {
-				for (var _iterator = this.children[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-					var c = _step.value;
-
-					top = top !== null && top < c.boundingBox.top ? top : c.boundingBox.top;
-					left = left !== null && left < c.boundingBox.left ? left : c.boundingBox.left;
-					bottom = bottom !== null && bottom > c.boundingBox.bottom ? bottom : c.boundingBox.bottom;
-					right = right !== null && right > c.boundingBox.right ? right : c.boundingBox.right;
-				}
-			} catch (err) {
-				_didIteratorError = true;
-				_iteratorError = err;
-			} finally {
-				try {
-					if (!_iteratorNormalCompletion && _iterator.return) {
-						_iterator.return();
-					}
-				} finally {
-					if (_didIteratorError) {
-						throw _iteratorError;
-					}
-				}
-			}
-
-			;
-
-			return {
-				top: top,
-				left: left,
-				bottom: bottom,
-				right: right
-			};
-		}
-	}]);
-
-	return Composition;
-}(_Primitive2.Primitive);
-
-/*define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Renderer) {
-	'use strict';
-
-	function Container(options) {
-		CanvasObject.call(this, options);
-		this.children = options.children || [];
-		this.masks = options.masks || [];
-	}
-
-	_.assign(Container.prototype, CanvasObject.prototype);
-
-	Container.prototype.masks = [];
-	Container.prototype.children = [];
-	Container.prototype.frontChildren = [];
-	Container.prototype.backChildren = [];
-	Container.prototype.middleChildren = [];
-	Container.prototype.mostRecentlyAddedChild = null;
-
-	Container.prototype.ChildrenAt = function _childrenAt(x, y) {
-		return _.filter(this.children, function (c) {
-			return c.PointIsInObject(x, y);
-		});
-	};
-
-	Container.prototype.PressableChildrenAt = function _pressableChildrenAt(x, y) {
-		return _.filter(this.children, function (c) {
-			return c.PressIsInObject(x, y);
-		});
-	};
-
-	Container.prototype.UpdateChildrenLists = function _updateChildrenLists() {
-		this.frontChildren = _.filter(this.children, function (c) {
-			return c.sticky && c.stickyPosition === CanvasObject.STICKY_POSITION.FRONT;
-		});
-		this.backChildren = _.filter(this.children, function (c) {
-			return c.sticky && c.stickyPosition === CanvasObject.STICKY_POSITION.BACK;
-		});
-		this.middleChildren = _.filter(this.children, function (c) {
-			return !c.sticky;
-		});
-	};
-
-	Container.prototype.ChildAt = function _childAt(x, y) {
-		//loop over the children in reverse because drawing order
-
-		for (var fc = this.frontChildren.length - 1; fc >= 0; fc--) {
-			if (this.frontChildren[fc].PointIsInObject(x, y)) {
-				return this.frontChildren[fc];
-			}
-		}
-
-		for (var mc = this.middleChildren.length - 1; mc >= 0; mc--) {
-			if (this.middleChildren[mc].PointIsInObject(x, y)) {
-				return this.middleChildren[mc];
-			}
-		}
-
-		for (var bc = this.backChildren.length - 1; bc >= 0; bc--) {
-			if (this.backChildren[bc].PointIsInObject(x, y)) {
-				return this.backChildren[bc];
-			}
-		}
-
-		return null;
-	};
-
-	Container.prototype.PressableChildAt = function _pressableChildAt(x, y) {
-		if (this.pressPassThrough){
-			return null;
-		}
-
-		//loop over the children in reverse because drawing order
-		for (var fc = this.frontChildren.length - 1; fc >= 0; fc--) {
-			if (this.frontChildren[fc].PressIsInObject(x, y)) {
-				return this.frontChildren[fc];
-			}
-		}
-
-		for (var mc = this.middleChildren.length - 1; mc >= 0; mc--) {
-			if (this.middleChildren[mc].PressIsInObject(x, y)) {
-				return this.middleChildren[mc];
-			}
-		}
-
-		for (var bc = this.backChildren.length - 1; bc >= 0; bc--) {
-			if (this.backChildren[bc].PressIsInObject(x, y)) {
-				return this.backChildren[bc];
-			}
-		}
-
-		return null;
-	};
-
-	Container.prototype.PointIsInObject = function _pointIsInObject(x, y) {
-		//don't even bother checking the children
-		//if the point isn't in the bounding box
-		if (CanvasObject.prototype.PointIsInObject.call(this, x, y)) {
-			for (var fc in this.frontChildren) {
-				if (this.frontChildren[fc].PointIsInObject(x, y)) {
-					return true;
-				}
-			}
-
-			for (var mc in this.middleChildren) {
-				if (this.middleChildren[mc].PointIsInObject(x, y)) {
-					return true;
-				}
-			}
-
-			for (var bc in this.backChildren) {
-				if (this.backChildren[bc].PointIsInObject(x, y)) {
-					return true;
-				}
-			}
-		}
-		return false;
-	};
-
-	Container.prototype.addChild = function _addChild(child) {
-		child.parent = this;
-		this.children.push(child);
-		this.mostRecentlyAddedChild = child;
-		this.UpdateChildrenLists();
-		this.NeedsUpdate = true;
-		this.NeedsRender = true;
-		//TODO: make this hook more generic
-		if (this.onchildadded) {
-			this.onchildadded();
-		}
-	};
-
-	Container.prototype.removeChild = function _removeChild(child) {
-		if (child) {
-			var index = this.children.indexOf(child);
-			if (index >= 0) {
-				this.children.splice(index, 1);
-				this.UpdateChildrenLists();
-				this.NeedsUpdate = true;
-				this.NeedsRender = true;
-			}
-		}
-	};
-
-	Container.prototype.addMask = function _addMask(mask) {
-		mask.parent = this;
-		this.masks.push(mask);
-		this.NeedsUpdate = true;
-		this.NeedsRender = true;
-	};
+    /**
+     * @type {object} children the which compose this object
+     */
 
 
-	//TODO: need to account for translation... should re-work math for this...
-	Container.prototype.render = function _render() {
-		var renderContext = this._prerenderingContext;
-		var contextOffset = {
-			top: -this.boundingBox.top,
-			left: -this.boundingBox.left,
-			bottom: -this.boundingBox.bottom,
-			right: -this.boundingBox.right
-		};
+    _createClass(Composition, [{
+        key: 'childrenAt',
 
-		_.each(this.backChildren, function (c) {
-			c.draw(renderContext, contextOffset);
-		});
 
-		_.each(this.middleChildren, function (c) {
-			c.draw(renderContext, contextOffset);
-		});
+        /**
+         * the an array of children that are found at (x, y)
+         * @returns {object} childrenAt
+         */
+        value: function childrenAt(x, y) {
+            return this.children.filter(function (c) {
+                return c.PointIsInObject(x, y);
+            });
+        }
 
-		_.each(this.frontChildren, function (c) {
-			c.draw(renderContext, contextOffset);
-		});
+        /**
+         * get the top-most child at the (x, y)
+         * @returns {object} childAt
+         */
 
-		renderContext.globalCompositeOperation = 'destination-out';
+    }, {
+        key: 'childAt',
+        value: function childAt(x, y) {
+            //loop over the children in reverse because drawing order
+            for (var c = this.children.length - 1; c >= 0; c--) {
+                if (this.children[c].pointIsInObject(x, y)) {
+                    return this.children[c];
+                }
+            }
+        }
 
-		_.each(this.masks, function (m) {
-			m.draw(renderContext, contextOffset);
-		});
-		renderContext.globalCompositeOperation = 'normal';
-	}; //should be overridden by implementors
+        /**
+         * add a child to this composition
+         * @param {object} child the child to be added
+         */
 
-	Container.prototype.parent = null;
-	Container.prototype.children = [];
+    }, {
+        key: 'addChild',
+        value: function addChild(child) {
+            child.parent = this;
+            this.children.push(child);
+            this.needsRender = true;
+            this.needsDraw = true;
+            //TODO: make this hook more generic
+            //if (this.onchildadded) {
+            //  this.onchildadded();
+            //}
+        }
 
-	return Container;
-});*/
+        /**
+         * remove a child from this composition
+         * @param {object} child the child to be removed
+         * @returns {object} the child removed
+         */
 
+    }, {
+        key: 'removeChild',
+        value: function removeChild(child) {
+            if (child) {
+                var index = this.children.indexOf(child);
+                if (index >= 0) {
+                    this.needsRender = true;
+                    this.needsDraw = true;
+                    return this.children.splice(index, 1);
+                }
+            }
+        }
+    }, {
+        key: 'render',
+
+
+        /**
+         * @override
+         * override the render functiont to render the children onto this compositions prerendering canvas
+         */
+        value: function render() {
+            // required to make sure that the drawing occurs within the bounds of this composition
+            var offset = {
+                top: -this.boundingBox.top,
+                left: -this.boundingBox.left,
+                bottom: -this.boundingBox.bottom,
+                right: -this.boundingBox.right
+            };
+
+            var _iteratorNormalCompletion = true;
+            var _didIteratorError = false;
+            var _iteratorError = undefined;
+
+            try {
+                for (var _iterator = this.children[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                    var c = _step.value;
+
+                    c.draw(this._prerenderingContext, offset);
+                }
+            } catch (err) {
+                _didIteratorError = true;
+                _iteratorError = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion && _iterator.return) {
+                        _iterator.return();
+                    }
+                } finally {
+                    if (_didIteratorError) {
+                        throw _iteratorError;
+                    }
+                }
+            }
+
+            ;
+
+            // `destination-out` will erase things
+            //this._prerenderingContext.globalCompositeOperation = 'destination-out';
+            //_.each(this.masks, function (m) {
+            //m.draw(renderContext, contextOffset);
+            //});
+            //renderContext.globalCompositeOperation = 'normal';
+        }
+    }, {
+        key: 'children',
+        get: function get() {
+            return this._children;
+        }
+
+        /**
+         * the bounding box of the composition (i.e., the containing bounds of all the children of this composition)
+         * @type {object} boundingBox
+         */
+
+    }, {
+        key: 'boundingBox',
+        get: function get() {
+            var top = null,
+                left = null,
+                bottom = null,
+                right = null;
+
+            var _iteratorNormalCompletion2 = true;
+            var _didIteratorError2 = false;
+            var _iteratorError2 = undefined;
+
+            try {
+                for (var _iterator2 = this.children[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                    var c = _step2.value;
+
+                    top = top !== null && top < c.boundingBox.top ? top : c.boundingBox.top;
+                    left = left !== null && left < c.boundingBox.left ? left : c.boundingBox.left;
+                    bottom = bottom !== null && bottom > c.boundingBox.bottom ? bottom : c.boundingBox.bottom;
+                    right = right !== null && right > c.boundingBox.right ? right : c.boundingBox.right;
+                }
+            } catch (err) {
+                _didIteratorError2 = true;
+                _iteratorError2 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                        _iterator2.return();
+                    }
+                } finally {
+                    if (_didIteratorError2) {
+                        throw _iteratorError2;
+                    }
+                }
+            }
+
+            ;
+
+            return {
+                top: top,
+                left: left,
+                bottom: bottom,
+                right: right
+            };
+        }
+    }]);
+
+    return Composition;
+}(_Primitive3.default);
 
 exports.default = Composition;
 
-},{"./Primitive":5}],5:[function(require,module,exports){
+},{"./Primitive":6}],6:[function(require,module,exports){
 'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _withoutblas = require('vectorious/withoutblas');
 
-var _withoutblas2 = _interopRequireDefault(_withoutblas);
-
 var _Renderer = require('./Renderer');
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-/*
- * The base class for things that may be drawn on the canvas.
+/**
+ * The base class of things that may be drawn on the canvas.
  * All drawable objects should inherit from this class.
  * Typically, it is unnecessary for application programmers to
  * call this directly, although they may wish to extend their own
  * classes with it.
  */
 var Primitive = function () {
-	function Primitive(options) {
-		_classCallCheck(this, Primitive);
+    /**
+     * @param {object} options
+     */
+    function Primitive(options) {
+        _classCallCheck(this, Primitive);
 
-		this.d = new _withoutblas2.default([options.x || 0, options.y || 0]);
+        if (!options) {
+            options = {};
+        }
+        /**
+         * does the object need to be redrawn?
+         * @type {boolean} _needsDraw
+         */
+        this._needsDraw = true;
 
-		this.style = _.assign({}, DEFAULTS, options.style);
+        /**
+         * does the object need to be rendered?
+         * @type {boolean} _needsRender
+         */
+        this._needsRender = true;
 
-		//this.unscaledLineWidth = this.style.lineWidth;
+        /**
+         * the horizontal scale of the object. defaults to 1
+         * @type {number} _scaleWidth
+         */
+        this._scaleWidth = 1;
 
-		this.pressPassThrough = options.pressPassThrough || false;
-		this.draggable = options.draggable || false;
+        /**
+         * the vertical scale of the object. defaults to 1
+         * @type {number} _scaleHeight
+         */
+        this._scaleHeight = 1;
 
-		this.drawBoundingBox = false;
-		//this.boundingBoxColor = '#cccccc';
+        /**
+         * d is for "displacement": a 2D Vector object representing cartesian coordinate
+         * position relative to its parent composition (or [0,0] if this is the scene composition)
+         * @type {object} d
+         */
+        this._d = new _withoutblas.Vector([options.x || 0, options.y || 0]);
 
-		this._needsUpdate = false;
-		//this._scaleWidth = 1;
-		//this._scaleHeight = 1;
+        /**
+         * style options for this particular object. these are standard context styles
+         * @type {object} style
+         */
+        this.style = Object.assign({}, _Renderer.DEFAULTS, options.style);
 
-		this._prerenderingCanvas = document.createElement('canvas');
-		this._prerenderingContext = this._prerenderedImage.getContext('2d');
+        /**
+         * objects with pressPassThrough set to true will allow mouse clicks to pass
+         * through to objects behind them
+         * @type {boolean} pressPassThrough
+         */
+        //this.pressPassThrough = options.pressPassThrough || false;
 
-		this.parent = options.parent || null;
-		if (this.draggable) {
-			this.enableDragging();
-		}
+        /**
+         * if true, the object can be dragged around the canvas
+         * @type {boolean} draggable
+         */
+        this.draggable = options.draggable || false;
 
-		this.sticky = false;
-		this.stickyPosition = null;
-	}
+        /**
+         * if true, the bounding box of the object will be draw
+         * @type {boolean} drawBoundingBox
+         */
+        //this.drawBoundingBox = false;
+        //this.boundingBoxColor = '#cccccc';
 
-	_createClass(Primitive, [{
-		key: 'offset',
-		get: function get() {
-			return this.parent ? _withoutblas2.default.add(this.d, this.parent.offset) : this.d;
-		}
-	}, {
-		key: 'needsUpdate',
-		get: function get() {
-			return this._needsUpdate;
-		},
-		set: function set(val) {
-			if (this.parent && val) {
-				this.parent.needsUpdate = val;
-			}
-			this._needsUpdate = val;
-		}
-	}]);
+        /**
+         * the prerendering canvas is used to avoid performing mutliple draw operations on the
+         * visible, main canvas. this minimizes the time needed to render by prerendering on a
+         * canvas only as large as necessary for the object
+         * @type {object} _prerenderingCanvas
+         */
+        this._prerenderingCanvas = document.createElement('canvas');
 
-	return Primitive;
+        /**
+         * the 2D context of the prerendering canvas.
+         * @type {object} _prerenderingCanvas
+         */
+        this._prerenderingContext = this._prerenderingCanvas.getContext('2d');
+
+        /**
+         * the parent object of this object. with the exception of the scene composition itself,
+         * the root of all objects ancestry should be the scene composition
+         * @type {object} parent
+         */
+        this._parent = options.parent || null;
+
+        if (this.draggable) {
+            this.enableDragging();
+        }
+
+        /**
+         * a callback for the mousedown event.
+         * @type {function} onmousedown
+         */
+        this.onmousedown = null;
+
+        /**
+         * a callback for the mouseup event.
+         * @type {function} onmouseup
+         */
+        this.onmouseup = null;
+
+        /**
+         * a callback for the mousemove event.
+         * @type {function} onmousemove
+         */
+        this.onmousemove = null;
+
+        /**
+         * a callback for the mouseout event.
+         * @type {function} onmouseout
+         */
+        this.onmouseout = null;
+
+        /**
+         * a callback for the click event.
+         * @type {function} onclick
+         */
+        this.onclick = null;
+    }
+
+    /**
+     * the global offset of the object on the canvas.
+     * this is the sum of this object's displacement
+     * and all of its ancestry.
+     * @type {object} offset a 2D Vector representing displacement from [0, 0]
+     */
+
+
+    _createClass(Primitive, [{
+        key: 'enableDragging',
+
+
+        /**
+         * enable dragging by setting the onmousedown event callback
+         */
+        value: function enableDragging() {
+            //TODO: should probably be using an event registry so
+            //multiple event callbacks can be registered
+            this.onmousedown = this.dragStart;
+        }
+
+        /**
+         * disable dragging by removing event callbacks
+         */
+
+    }, {
+        key: 'disableDragging',
+        value: function disableDragging() {
+            //TODO: should probably be using an event registry so
+            //multiple event callbacks can be registered
+            this.onmousedown = null;
+            this.onmousemove = null;
+            this.onmouseup = null;
+            this.onmouseout = null;
+            this.needsDraw = true;
+        }
+
+        /**
+         * when dragging starts, update events
+         * @param {object} e the event object
+         */
+
+    }, {
+        key: 'dragStart',
+        value: function dragStart(e) {
+            //TODO: should probably be using an event registry so
+            //multiple event callbacks can be registered
+            this._mouseOffset = new _withoutblas.Vector([e.offsetX, e.offsetY]).subtract(this.offset);
+            this.onmousedown = null;
+            this.onmousemove = this.drag;
+            this.onmouseup = this.dragEnd;
+            this.onmouseout = this.dragEnd;
+        }
+
+        /**
+         * update d as the object is moved around
+         * @param {object} e the event object
+         */
+
+    }, {
+        key: 'drag',
+        value: function drag(e) {
+            this.d = new _withoutblas.Vector([e.offsetX, e.offsetY]).subtract(this._mouseOffset);
+            this.needsDraw = true;
+        }
+
+        /**
+         * when dragging ends, update events
+         * @param {object} e the event object
+         */
+
+    }, {
+        key: 'dragEnd',
+        value: function dragEnd(e) {
+            this.onmousedown = this.dragStart;
+            this.onmousemove = null;
+            this.onmouseup = null;
+            this.onmouseout = null;
+            this.needsDraw = true;
+        }
+
+        /**
+         * draw the object to canvas, render it if necessary
+         * @param {object} context the final canvas context where this will be drawn
+         * @param {object} offset the offset on the canvas - optional, used for prerendering
+         */
+
+    }, {
+        key: 'draw',
+        value: function draw(context, offset) {
+            this.needsDraw = false;
+
+            if (this.needsRender && this.render) {
+                //ditch any old rendering artifacts - they are no longer viable
+                delete this._prerenderingCanvas;
+                delete this._prerenderingContext;
+
+                //create a new canvas and context for rendering
+                this._prerenderingCanvas = document.createElement('canvas');
+                this._prerenderingContext = this._prerenderingCanvas.getContext('2d'); //text needs prerendering context defined for boundingBox measurements
+
+                //make sure the new canvas has the appropriate dimensions
+                this._prerenderingCanvas.width = this.boundingBox.right - this.boundingBox.left;
+                this._prerenderingCanvas.height = this.boundingBox.bottom - this.boundingBox.top;
+
+                //TODO: make sure line width is properly handled
+                //this.style.lineWidth = this.unscaledLineWidth * this.GlobalLineScale;
+                this.render();
+                this.needsRender = false;
+            }
+
+            //TODO: handle debug options
+            //draw bounding boxes
+            /*if (this.flags.DEBUG) {
+            	this._prerenderingContext.beginPath();
+            	this._prerenderingContext.lineWidth=2.0;
+            	this._prerenderingContext.strokeStyle='#FF0000';
+            	this._prerenderingContext.strokeRect(0,0,this._prerenderedImage.width, this._prerenderedImage.height);
+            	this._prerenderingContext.closePath();
+            }*/
+
+            //TODO: handle bounding box drawing
+            /*if (this.drawBoundingBox){
+            	this._prerenderingContext.beginPath();
+            	this._prerenderingContext.lineWidth=2.0;
+            	this._prerenderingContext.strokeStyle=this.boundingBoxColor;
+            	this._prerenderingContext.strokeRect(0,0,this._prerenderedImage.width, this._prerenderedImage.height);
+            	this._prerenderingContext.closePath();
+            }*/
+
+            //offsets are for prerendering context
+            var x = this.boundingBox.left + (offset && offset.left ? offset.left : 0);
+            var y = this.boundingBox.top + (offset && offset.top ? offset.top : 0);
+            _Renderer.Renderer.drawImage(x, y, this._prerenderingCanvas, context, this.style);
+        }
+
+        //TODO: provide more doc details around this
+        /**
+         * this method must be overridden by a subclass.
+         *
+         * the render method should be implemented by subclasses
+         * @abstract
+         */
+
+    }, {
+        key: 'render',
+        value: function render() {}
+
+        /**
+         * check whether the point specified lies *inside* this objects bounding box
+         *
+         * @param {number} x the x coordinate
+         * @param {number} y the y coordinate
+         * @returns {boolean} whether the point is within the bounding box
+         */
+
+    }, {
+        key: 'pointIsInBoundingBox',
+        value: function pointIsInBoundingBox(x, y) {
+            return x > this.boundingBox.left && y > this.boundingBox.top && x < this.boundingBox.right && y < this.boundingBox.bottom;
+        }
+
+        /**
+         * check whether the point is within the object.
+         * this method should be overridden by subclassess
+         *
+         * @param {number} x the x coordinate
+         * @param {number} y the y coordinate
+         * @returns {boolean} whether the point is in the object, as implemented by inheriting classes
+         */
+
+    }, {
+        key: 'pointIsInObject',
+        value: function pointIsInObject(x, y) {
+            return this.pointIsInBoundingBox(x, y);
+        }
+
+        /**
+         * move the object on top of other objects (render last)
+         */
+
+    }, {
+        key: 'moveToFront',
+        value: function moveToFront() {
+            if (this.parent) {
+                var index = this.parent.children.indexOf(this);
+                if (index >= 0) {
+                    this.parent.children.splice(index, 1);
+                    this.parent.children.splice(this.parent.children.length, 0, this);
+                    this.needsDraw = true;
+                }
+            }
+        }
+
+        /**
+         * move the object below the other objects (render first)
+         */
+
+    }, {
+        key: 'moveToBack',
+        value: function moveToBack() {
+            if (this.parent) {
+                var index = this.parent.children.indexOf(this);
+                if (index >= 0) {
+                    this.parent.children.splice(index, 1);
+                    this.parent.children.splice(0, 0, this);
+                    this.needsDraw = true;
+                }
+            }
+        }
+
+        /**
+         * move the object forward in the stack (drawn later)
+         */
+
+    }, {
+        key: 'moveForward',
+        value: function moveForward() {
+            if (this.parent) {
+                var index = this.parent.children.indexOf(this);
+                if (index >= 0 && index < this.parent.children.length - 1) {
+                    this.parent.children.splice(index, 1);
+                    this.parent.children.splice(index + 1, 0, this); //if index + 1 > siblings.length, inserts it at end
+                    this.parent.UpdateChildrenLists();
+                    this.needsRender = true;
+                    this.needsDraw = true;
+                }
+            }
+        }
+
+        /**
+         * move the object backward in the stack (drawn sooner)
+         */
+
+    }, {
+        key: 'moveBackward',
+        value: function moveBackward() {
+            if (this.parent) {
+                var index = this.parent.children.indexOf(this);
+                if (index > 0) {
+                    this.parent.children.splice(index, 1);
+                    this.parent.children.splice(index - 1, 0, this);
+                    this.parent.UpdateChildrenLists();
+                    this.needsRender = true;
+                    this.needsDraw = true;
+                }
+            }
+        }
+    }, {
+        key: 'offset',
+        get: function get() {
+            return this.parent ? _withoutblas.Vector.add(this.d, this.parent.offset) : this.d;
+        }
+
+        /**
+         * returns true whenever the object needs to be re-drawn to canvas.
+         * when true, this will indicate to the parent tree of composing objects that
+         * the object needs to be re-drawn on the next animation loop.
+         *
+         * objects need to be updated when their displacement changes, or when any thing
+         * that requires a rerender occurs.
+         *
+         * @type {boolean} needsDraw
+         */
+
+    }, {
+        key: 'needsDraw',
+        get: function get() {
+            return this._needsDraw;
+        }
+
+        /**
+         * set to true whenever the object needs to be re-drawn to canvas.
+         * when true, this will indicate to the parent tree of composing objects that
+         * the object needs to be re-drawn on the next animation loop.
+         *
+         * objects need to be updated when their displacement changes, or when any thing
+         * that requires a rerender occurs.
+         *
+         * @type {boolean} needsDraw
+         */
+        ,
+        set: function set(val) {
+            if (this.parent && val) {
+                this.parent.needsDraw = val;
+                this.parent.needsRender = true; // if this needs to be redrawn, then the parent needs a full rerender
+            }
+            this._needsDraw = val;
+        }
+
+        /**
+         * returns true whenever the object's properties have changed such that
+         * it needs to be rendered differently
+         *
+         * 1. scale change
+         * 1. physical property change (height, width, radius, etc.)
+         * 1. color change
+         *
+         * @type {boolean} needsRender
+         */
+
+    }, {
+        key: 'needsRender',
+        get: function get() {
+            return this._needsRender;
+        }
+
+        /**
+         * set to true whenever the object's properties have changed such that
+         * it needs to be rendered differently
+         *
+         * 1. scale change
+         * 1. physical property change (height, width, radius, etc.)
+         * 1. color change
+         *
+         * @type {boolean} needsRender
+         */
+        ,
+        set: function set(val) {
+            if (this.parent && val) {
+                this.parent.needsRender = val;
+            }
+            this._needsRender = val;
+        }
+
+        /**
+         * return the horizontal scale of the object - defaults to 1
+         * @type {number} scaleWidth
+         */
+
+    }, {
+        key: 'scaleWidth',
+        get: function get() {
+            return this._scaleWidth;
+        }
+        /**
+         * set the horizontal scale of the object - defaults to 1
+         * @type {number} scaleWidth
+         */
+        ,
+        set: function set(val) {
+            this._scaleWidth = val;
+            this.needsRender = true;
+            this.needsDraw = true;
+            var _iteratorNormalCompletion = true;
+            var _didIteratorError = false;
+            var _iteratorError = undefined;
+
+            try {
+                for (var _iterator = this.children[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                    var c = _step.value;
+
+                    c.needsRender = true;
+                    c.needsDraw = true;
+                }
+            } catch (err) {
+                _didIteratorError = true;
+                _iteratorError = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion && _iterator.return) {
+                        _iterator.return();
+                    }
+                } finally {
+                    if (_didIteratorError) {
+                        throw _iteratorError;
+                    }
+                }
+            }
+        }
+
+        /**
+         * return the vertical scale of the object - defaults to 1
+         * @type {number} scaleHeight
+         */
+
+    }, {
+        key: 'scaleHeight',
+        get: function get() {
+            return this._scaleHeight;
+        }
+        /**
+         * set the vertical scale of the object - defaults to 1
+         * @type {number} scaleHeight
+         */
+        ,
+        set: function set(val) {
+            this._scaleHeight = val;
+            this.needsRender = true;
+            this.needsDraw = true;
+            var _iteratorNormalCompletion2 = true;
+            var _didIteratorError2 = false;
+            var _iteratorError2 = undefined;
+
+            try {
+                for (var _iterator2 = this.children[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                    var c = _step2.value;
+
+                    c.needsRender = true;
+                    c.needsDraw = true;
+                }
+            } catch (err) {
+                _didIteratorError2 = true;
+                _iteratorError2 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                        _iterator2.return();
+                    }
+                } finally {
+                    if (_didIteratorError2) {
+                        throw _iteratorError2;
+                    }
+                }
+            }
+        }
+
+        /**
+         * return an object containing the vertical and horizontal scale
+         * @type {object} scale
+         */
+
+    }, {
+        key: 'scale',
+        get: function get() {
+            return {
+                scaleWidth: this.scaleWidth,
+                scaleHeight: this.scaleHeight
+            };
+        }
+        /**
+         * set the scale width and height in one go
+         * @type {number} scale
+         */
+        ,
+        set: function set(val) {
+            this.scaleHeight = val;
+            this.scaleWidth = val;
+        }
+
+        /**
+         * return the scale of the object, compounded with the parent object's scale
+         * @type {object} compoundScale
+         */
+
+    }, {
+        key: 'compoundScale',
+        get: function get() {
+            return {
+                scaleWidth: this.parent ? this.scaleWidth * this.parent.compoundScale.scaleWidth : this.scaleWidth,
+                scaleHeight: this.parent ? this.scaleHeight * this.parent.compoundScale.scaleHeight : this.scaleHeight
+            };
+        }
+
+        /**
+         * d is for displacement - returns a vector
+         * @type {object} d
+         */
+
+    }, {
+        key: 'd',
+        get: function get() {
+            return this._d;
+        }
+
+        /**
+         * d is for displacement - accepts a vector
+         * @type {object} d
+         * @param {object} val a vector
+         */
+        ,
+        set: function set(val) {
+            this._d = val;
+        }
+
+        /**
+         * get the parent of the object. all objects except the scene graph should have a parent
+         * @type {object} parent
+         */
+
+    }, {
+        key: 'parent',
+        get: function get() {
+            return this._parent;
+        }
+        /**
+         * set the parent of the object. all objects except the scene graph should have a parent
+         * @type {object} parent
+         * @param {object} val an composition
+         */
+        ,
+        set: function set(val) {
+            this._parent = val;
+        }
+    }]);
+
+    return Primitive;
 }();
 
-exports.Primitive = Primitive;
+exports.default = Primitive;
 
-/*define(['lodash', 'vector', 'renderer'], function (_, Vector, Renderer) {
-	'use strict';
-
-	function CanvasObject(options) {
-
-
-		Object.defineProperty(this, 'NeedsRender', {
-			configurable: true,
-			enumerable: true,
-			set: function (val) {
-				if (this.parent && val) { //only mark the parent for update if true
-					this.parent.NeedsRender = val;
-				}
-				return (this._needsRender = val);
-			},
-			get: function () {
-				return this._needsRender;
-			}
-		});
-
-		Object.defineProperty(this, 'Scale', {
-			configurable: true,
-			enumerable: true,
-			set: function (val) {
-				this.ScaleWidth = val;
-				this.ScaleHeight = val;
-			},
-			get: function () {
-				return {
-					scaleWidth: this.ScaleWidth,
-					scaleHeight: this.ScaleHeight
-				};
-			}
-		});
-
-		Object.defineProperty(this, 'ScaleWidth', {
-			configurable: true,
-			enumerable: true,
-			set: function (val) {
-				this.NeedsUpdate = true;
-				this.NeedsRender = true;
-				if (this.children){
-					_.each(this.children, function (c){
-						c.NeedsUpdate = true;
-						c.NeedsRender = true;
-					});
-					_.each(this.masks, function (m){
-						m.NeedsUpdate = true;
-						m.NeedsRender = true;
-					});
-				}
-				this._scaleWidth = val;
-			},
-			get: function () {
-				return this._scaleWidth;
-			}
-		});
-
-		Object.defineProperty(this, 'ScaleHeight', {
-			configurable: true,
-			enumerable: true,
-			set: function (val) {
-				this.NeedsUpdate = true;
-				this.NeedsRender = true;
-				if (this.children){
-					_.each(this.children, function (c){
-						c.NeedsUpdate = true;
-						c.NeedsRender = true;
-					});
-					_.each(this.masks, function (m){
-						m.NeedsUpdate = true;
-						m.NeedsRender = true;
-					});
-				}
-				this._scaleHeight = val;
-			},
-			get: function () {
-				return this._scaleHeight;
-			}
-		});
-
-		Object.defineProperty(this, 'GlobalScale', {
-			configurable: true,
-			enumerable: true,
-			get: function () {
-				var width = this._scaleWidth;
-				var height = this._scaleHeight;
-
-				if(this.parent){
-					var parentScale = this.parent.GlobalScale;
-					width *= parentScale.scaleWidth;
-					height *= parentScale.scaleHeight;
-				}
-
-				return {
-					scaleHeight: width,
-					scaleWidth: height
-				};
-			}
-		});
-
-		Object.defineProperty(this, 'GlobalLineScale', {
-			configurable: true,
-			enumerable: true,
-			get: function (){
-				//not sure what the best approach for line scale is...
-				return Math.min(this.GlobalScale.scaleWidth, this.GlobalScale.scaleHeight);
-			}
-		});
-
-		Object.defineProperty(this, 'GlobalFontScale', {
-			configurable: true,
-			enumerable: true,
-			get: function (){
-				//not sure what the best approach for font scale is...
-				return Math.min(this.GlobalScale.scaleWidth, this.GlobalScale.scaleHeight);
-			}
-		});
-	}
-
-	CanvasObject.prototype.enableDragging = function _enableDragging() {
-		this.onpressdown = this.dragStart;
-	};
-
-	CanvasObject.prototype.disableDragging = function _disableDragging() {
-		this.onpressdown = null;
-		this.onpressmove = null;
-		this.onpressup = null;
-		this.onpresscancel = null;
-		this.NeedsRender = true;
-		this.NeedsUpdate = true;
-	};
-
-	CanvasObject.prototype.dragStart = function _dragStart(e) {
-		this.mouseOffset = new Vector([e.offsetX, e.offsetY]).subtract(this.offset);
-		this.onpressdown = null;
-		this.onpressmove = this.drag;
-		this.onpressup = this.dragEnd;
-		this.onpresscancel = this.dragEnd;
-	};
-
-	CanvasObject.prototype.drag = function _drag(e) {
-		this.d = new Vector([e.offsetX,e.offsetY]).subtract(this.mouseOffset);
-		this.NeedsRender = true;
-		this.NeedsUpdate = true;
-	};
-
-	CanvasObject.prototype.dragEnd = function _dragEnd(e) {
-		this.onpressdown = this.dragStart;
-		this.onpressmove = null;
-		this.onpressup = null;
-		this.onpresscancel = null;
-		this.NeedsRender = true;
-		this.NeedsUpdate = true;
-	};
-
-	CanvasObject.prototype.draggable = false;
-	CanvasObject.prototype.context = null;
-	CanvasObject.prototype.style = null;
-	CanvasObject.prototype.scale = 1;
-
-	CanvasObject.prototype.flags = {
-		DEBUG: false
-	};
-
-	CanvasObject.prototype.draw = function _draw(context, contextOffset) {
-		this.NeedsUpdate = false;
-
-		if (this.NeedsRender && this.render) {
-			delete this._prerenderedImage;
-			delete this._prerenderingContext;
-			this._prerenderedImage = document.createElement('canvas');
-			// text needs prerendering context defined for boundingBox measurements
-			this._prerenderingContext = this._prerenderedImage.getContext('2d');
-			this._prerenderedImage.width = this.boundingBox.right - this.boundingBox.left;
-			this._prerenderedImage.height = this.boundingBox.bottom - this.boundingBox.top;
-
-			this.style.lineWidth = this.unscaledLineWidth * this.GlobalLineScale;
-			this.render();
-			this.NeedsRender = false;
-		}
-		//draw bounding boxes
-		if (this.flags.DEBUG) {
-			this._prerenderingContext.beginPath();
-			this._prerenderingContext.lineWidth=2.0;
-			this._prerenderingContext.strokeStyle='#FF0000';
-			this._prerenderingContext.strokeRect(0,0,this._prerenderedImage.width, this._prerenderedImage.height);
-			this._prerenderingContext.closePath();
-		}
-
-		if (this.drawBoundingBox){
-			this._prerenderingContext.beginPath();
-			this._prerenderingContext.lineWidth=2.0;
-			this._prerenderingContext.strokeStyle=this.boundingBoxColor;
-			this._prerenderingContext.strokeRect(0,0,this._prerenderedImage.width, this._prerenderedImage.height);
-			this._prerenderingContext.closePath();
-		}
-
-		var x = this.boundingBox.left + (contextOffset && contextOffset.left ? contextOffset.left : 0);
-		var y = this.boundingBox.top + (contextOffset && contextOffset.top ? contextOffset.top : 0);
-		Renderer.drawImage(context, x, y, this._prerenderedImage, this.style);
-	};
-
-	CanvasObject.prototype.render = function _render() {}; //should be overridden by implementors
-
-	CanvasObject.prototype.PointIsInBoundingBox = function _pointIsInBoundingBox(x, y){
-		return (
-			x > this.boundingBox.left &&
-			y > this.boundingBox.top &&
-			x < this.boundingBox.right &&
-			y < this.boundingBox.bottom
-		);
-	};
-
-	CanvasObject.prototype.PointIsInObject = function _pointIsInObject(x, y) {
-		return this.PointIsInBoundingBox(x, y);
-	}; //can (and should) be overridden by implementors
-
-	CanvasObject.prototype.PressIsInObject = function _pressIsInObject(x, y) {
-		if (this.pressPassThrough){
-			return false;
-		}
-
-		return this.PointIsInObject(x, y);
-	}; //can (and should) be overridden by implementors
-
-	CanvasObject.prototype.UnPin = function _unpin(){
-		this.sticky = false;
-		this.stickyPosition = null;
-		this.NeedsUpdate = true;
-		this.NeedsRender = true;
-		if(this.parent){
-			this.parent.UpdateChildrenLists();
-		}
-	};
-
-	CanvasObject.prototype.MoveToFront = function _moveToFront() {
-		if (this.parent){
-			var index = this.parent.children.indexOf(this);
-			if( index >= 0 ){
-				this.parent.children.splice(index, 1);
-				this.parent.children.splice(this.parent.children.length, 0, this);
-				this.parent.UpdateChildrenLists();
-				this.NeedsUpdate = true;
-				this.NeedsRender = true;
-			}
-		}
-	};
-
-	CanvasObject.prototype.MoveToBack = function _moveToBack() {
-		if (this.parent){
-			var index = this.parent.children.indexOf(this);
-			if( index >= 0 ){
-				this.parent.children.splice(index, 1);
-				this.parent.children.splice(0, 0, this);
-				this.parent.UpdateChildrenLists();
-				this.NeedsUpdate = true;
-				this.NeedsRender = true;
-			}
-		}
-	};
-
-	CanvasObject.prototype.MoveForward = function _moveForward(){
-		if (this.parent){
-			var index = this.parent.children.indexOf(this);
-			if( index >= 0 ){
-				this.parent.children.splice(index, 1);
-				this.parent.children.splice(index + 1, 0, this); //if index + 1 > siblings.length, inserts it at end
-				this.parent.UpdateChildrenLists();
-				this.NeedsUpdate = true;
-				this.NeedsRender = true;
-			}
-		}
-	};
-
-	CanvasObject.prototype.MoveBackward = function _moveBackward(){
-		if (this.parent){
-			var index = this.parent.children.indexOf(this);
-			if( index > 0 ){
-				this.parent.children.splice(index, 1);
-				this.parent.children.splice(index - 1, 0, this);
-				this.parent.UpdateChildrenLists();
-				this.NeedsUpdate = true;
-				this.NeedsRender = true;
-			}
-		}
-	};
-
-	CanvasObject.STICKY_POSITION = { FRONT:'front', BACK: 'back' };
-
-	CanvasObject.prototype.onpressdown = null;
-	CanvasObject.prototype.onpressup = null;
-	CanvasObject.prototype.onpressmove = null;
-	CanvasObject.prototype.onpresscancel = null;
-
-	return CanvasObject;
-});
-*/
-
-},{"./Renderer":6,"vectorious/withoutblas":3}],6:[function(require,module,exports){
+},{"./Renderer":7,"vectorious/withoutblas":3}],7:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2221,7 +2608,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 /**
  * Default style values for the renderer
  */
-var DEFAULTS = exports.DEFAULTS = {
+var DEFAULTS = {
     //direction: 'inherit',
     fillStyle: 'black',
     //filter: 'none',
@@ -2379,11 +2766,13 @@ var Renderer = function () {
             Object.assign(context, style);
             context.beginPath();
             //TODO: 2015-03-12 this is currently only supported by chrome & opera
-            context.arc(x, y, radius, 0, 2 * Math.PI);
+            //context.arc(x, y, radius, 0, 2 * Math.PI);
+            context.ellipse(x, y, radius, radius, 0, 0, 2 * Math.PI);
             context.fill();
             context.stroke();
             context.closePath();
         }
+
         /*
          * Draw text
          * @param {number} x the x coordinate of the top let corner
@@ -2444,55 +2833,32 @@ var Renderer = function () {
 }();
 
 exports.default = Renderer;
+exports.Renderer = Renderer;
+exports.DEFAULTS = DEFAULTS;
 
 },{}],"canvas-compositor":[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
-	value: true
+    value: true
 });
+exports.DEFAULTS = exports.Circle = exports.Composition = exports.Primitive = exports.Renderer = exports.CanvasCompositor = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Primitive = require('./Primitive');
-
-Object.keys(_Primitive).forEach(function (key) {
-	if (key === "default" || key === "__esModule") return;
-	Object.defineProperty(exports, key, {
-		enumerable: true,
-		get: function get() {
-			return _Primitive[key];
-		}
-	});
-});
+var _Renderer = require('./Renderer');
 
 var _Composition = require('./Composition');
 
-Object.keys(_Composition).forEach(function (key) {
-	if (key === "default" || key === "__esModule") return;
-	Object.defineProperty(exports, key, {
-		enumerable: true,
-		get: function get() {
-			return _Composition[key];
-		}
-	});
-});
+var _Composition2 = _interopRequireDefault(_Composition);
 
-var _Renderer = require('./Renderer');
-
-Object.keys(_Renderer).forEach(function (key) {
-	if (key === "default" || key === "__esModule") return;
-	Object.defineProperty(exports, key, {
-		enumerable: true,
-		get: function get() {
-			return _Renderer[key];
-		}
-	});
-});
+var _Primitive = require('./Primitive');
 
 var _Primitive2 = _interopRequireDefault(_Primitive);
 
-var _Composition2 = _interopRequireDefault(_Composition);
+var _Circle = require('./Circle');
+
+var _Circle2 = _interopRequireDefault(_Circle);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -2501,119 +2867,536 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 //const FPS_EPSILON = 10; // +/- 10ms for animation loop to determine if enough time has passed to render
 var DEFAULT_TARGET_FPS = 1000 / 60; //amount of time that must pass before rendering
 
+var EVENTS = {
+    MOUSEUP: 'onmouseup',
+    MOUSEDOWN: 'onmousedown',
+    MOUSEMOVE: 'onmousemove',
+    MOUSEOUT: 'onmouseout',
+    CLICK: 'onclick'
+};
+
 /**
  * The CanvasCompositor class is the entry-point to usage of the `canvas-compositor`.
  * The application programmer is expected to hand over low-level control of the canvas
  * context to the high-level classes and methods exposed by CanvasCompositor.
+ *
+ * The CanvasCompositor class establishes an event dispatcher, animation loop, and scene graph for
+ * compositions.
  */
 
 var CanvasCompositor = function () {
-	/**
-  * The CanvasCompositor class provides a context in which to
-  * @param canvas {Object} This should be a canvas, either from the DOM or from the `canvas` package
-  * @example
-  * let cc = new CanvasCompositor(document.getElementById('myCanvas'));
-  */
-	function CanvasCompositor(canvas) {
-		_classCallCheck(this, CanvasCompositor);
+    /**
+     * The CanvasCompositor class establishes an event dispatcher, animation loop, and scene graph for
+     * compositions
+     *
+     * @param {object} canvas This should be a canvas, either from the DOM or an equivalent API
+     *
+     * @example
+     * let cc = new CanvasCompositor(document.getElementById('myCanvas'));
+     */
+    function CanvasCompositor(canvas) {
+        _classCallCheck(this, CanvasCompositor);
 
-		this.canvas = canvas;
-		this.context = this.canvas.getContext('2d');
+        this._canvas = canvas;
+        this._context = this._canvas.getContext('2d');
 
-		this._targetFPS = DEFAULT_TARGET_FPS;
-		this._currentTime = 0;
-		this._lastRenderTime = 0;
-		this.scene = new _Composition2.default(this.canvas);
-	}
+        //acquire the padding on the canvas – this is necessary to properly
+        //locate the mouse position
+        //TODO: determine if border-box affects this, and adjust accordingly
+        var style = window.getComputedStyle(this._canvas);
 
-	/**
-  * The animation loop for this instance of CanvasCompositor.
-  * Upon receipt of the animation frame from `requestAnimationFrame`, the loop will check
-  * whether enough time has passed to redraw for the target framerate.
-  * It will only draw if somewhere along the scene graph, an object needs updating.
-  * There is no need to invoke this directly, the constructor will do it.
-  */
+        /**
+         * @type {number} _leftPadding the padding on the left of the canvas, which
+         * affects the offset of the mouse position
+         */
+        this._leftPadding = parseFloat(style.getPropertyValue('border-left')) + parseFloat(style.getPropertyValue('padding-left'));
+
+        /**
+         * @type {number} _topPadding the padding on the top of the canvas, which
+         * affects the offset of the mouse position
+         */
+        this._topPadding = parseFloat(style.getPropertyValue('border-top')) + parseFloat(style.getPropertyValue('padding-top'));
+
+        //this._currentTime = 0;
+        //this._lastRenderTime = 0;
+
+        this._targetObject = null;
+
+        this._scene = new _Composition2.default(this.canvas);
+
+        this._bindEvents();
+
+        this._eventRegistry = {
+            onmouseup: [],
+            onmousedown: [],
+            onmousemove: [],
+            onmouseout: [],
+            onclick: []
+        };
+
+        this._animationLoop();
+    }
+
+    //TODO: multiple target objects?
+    /**
+     * the object currently selected for interaction
+     * @type {object}
+     */
 
 
-	_createClass(CanvasCompositor, [{
-		key: '_animationLoop',
-		value: function _animationLoop() {
-			window.requestAnimationFrame(animationLoop);
-			this._currentTime = +new Date();
-			//set maximum of 60 fps and only redraw if necessary
-			if (this._currentTime - this._lastRenderTime >= this._targetFPS && this.scene.NeedsUpdate) {
-				this._lastRenderTime = +new Date();
-				_Renderer.Renderer.clearRect(this.context, 0, 0, this.canvas.width, this.canvas.height);
-				this.Scene.draw(this.context);
-			}
-		}
-	}]);
+    _createClass(CanvasCompositor, [{
+        key: '_animationLoop',
 
-	return CanvasCompositor;
+
+        /**
+         * The animation loop for this instance of CanvasCompositor.
+         * Upon receipt of the animation frame from `requestAnimationFrame`, the loop will check
+         * whether enough time has passed to redraw for the target framerate.
+         * It will only draw if somewhere along the scene graph, an object needs updating.
+         * There is no need to invoke this directly, the constructor will do it.
+         */
+        value: function _animationLoop() {
+            //console.log(this);
+            //console.log();
+            window.requestAnimationFrame(this._animationLoop.bind(this));
+            //this._currentTime = +new Date();
+            //set maximum of 60 fps and only redraw if necessary
+            if ( /*this._currentTime - this._lastRenderTime >= this._targetFPS &&*/this.scene.needsDraw) {
+                //this._lastRenderTime = +new Date();
+                console.log('blah');
+                _Renderer.Renderer.clearRect(0, 0, this._canvas.width, this._canvas.height, this._context);
+                this.scene.draw(this._context);
+            }
+        }
+
+        /**
+         * add an event to the event registry
+         *
+         * @param {string} eventType the name of the type of event
+         * @param {function} callback the callback to be triggered when the event occurs
+         */
+
+    }, {
+        key: 'registerEvent',
+        value: function registerEvent(eventType, callback) {
+            if (this._eventRegistry[eventType]) {
+                this._eventRegistry[eventType].push(callback);
+            }
+        }
+    }, {
+        key: 'removeEvent',
+
+
+        /**
+         * remove an event to the event registry
+         *
+         * @param {string} eventType the name of the type of event
+         * @param {function} callback the callback to be removed from the event
+         * @returns {function} the callback that was removed
+         */
+        value: function removeEvent(eventType, callback) {
+            if (this._eventRegistry[eventType]) {
+                var index = this._eventRegistry[eventType].indexOf(callback);
+                if (index >= 0) {
+                    return this._eventRegistry[eventType].splice(index, 1);
+                }
+            }
+        }
+    }, {
+        key: '_bindEvents',
+
+
+        /**
+         * attach interaction events to the canvas. the canvas compositor dispatches
+         * events to relevant objects through bridges to the scene graph
+         */
+        value: function _bindEvents() {
+            //TODO: reimplement touch events
+            //must bind to `this` to retain reference
+            this._canvas.addEventListener('mousedown', this._handleMouseDown.bind(this));
+            this._canvas.addEventListener('mouseup', this._handleMouseUp.bind(this));
+            this._canvas.addEventListener('mousemove', this._handleMouseMove.bind(this));
+            this._canvas.addEventListener('mouseout', this._handleMouseOut.bind(this));
+            this._canvas.addEventListener('click', this._handleClick.bind(this));
+        }
+
+        /**
+         * bridge the mouse down event on the canvas to the
+         * the objects in the scene graph
+         */
+
+    }, {
+        key: '_handleMouseDown',
+        value: function _handleMouseDown(e) {
+            e.preventDefault();
+
+            var x = e.offsetX - this._leftPadding;
+            var y = e.offsetY - this._topPadding;
+
+            //pass through x and y to propagated events
+            e.canvasX = x;
+            e.canvasY = y;
+
+            var _iteratorNormalCompletion = true;
+            var _didIteratorError = false;
+            var _iteratorError = undefined;
+
+            try {
+                for (var _iterator = this._eventRegistry[EVENTS.MOUSEDOWN][Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                    var callback = _step.value;
+
+                    callback(e);
+                }
+            } catch (err) {
+                _didIteratorError = true;
+                _iteratorError = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion && _iterator.return) {
+                        _iterator.return();
+                    }
+                } finally {
+                    if (_didIteratorError) {
+                        throw _iteratorError;
+                    }
+                }
+            }
+
+            ;
+
+            var clickedObject = this.scene.childAt(x, y);
+
+            if (clickedObject && clickedObject.onmousedown) {
+                clickedObject.onmousedown(e);
+            }
+        }
+
+        /**
+         * bridge the mouse up event on the canvas to the
+         * the objects in the scene graph
+         */
+
+    }, {
+        key: '_handleMouseUp',
+        value: function _handleMouseUp(e) {
+            e.preventDefault();
+
+            var x = e.offsetX - this._leftPadding;
+            var y = e.offsetY - this._topPadding;
+
+            //pass through x and y to propagated events
+            e.canvasX = x;
+            e.canvasY = y;
+
+            var _iteratorNormalCompletion2 = true;
+            var _didIteratorError2 = false;
+            var _iteratorError2 = undefined;
+
+            try {
+                for (var _iterator2 = this.scene.children[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                    var c = _step2.value;
+
+                    if (c.draggable && c.onmouseup) {
+                        c.onmouseup(e);
+                    }
+                }
+            } catch (err) {
+                _didIteratorError2 = true;
+                _iteratorError2 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                        _iterator2.return();
+                    }
+                } finally {
+                    if (_didIteratorError2) {
+                        throw _iteratorError2;
+                    }
+                }
+            }
+
+            ;
+
+            var _iteratorNormalCompletion3 = true;
+            var _didIteratorError3 = false;
+            var _iteratorError3 = undefined;
+
+            try {
+                for (var _iterator3 = this._eventRegistry[EVENTS.MOUSEUP][Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+                    var callback = _step3.value;
+
+                    callback(e);
+                }
+            } catch (err) {
+                _didIteratorError3 = true;
+                _iteratorError3 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion3 && _iterator3.return) {
+                        _iterator3.return();
+                    }
+                } finally {
+                    if (_didIteratorError3) {
+                        throw _iteratorError3;
+                    }
+                }
+            }
+
+            ;
+
+            var clickedObject = this.scene.childAt(x, y);
+
+            if (clickedObject && clickedObject.onmouseup) {
+                clickedObject.onmouseup(e);
+            }
+        }
+    }, {
+        key: '_handleMouseMove',
+
+
+        /**
+         * bridge the mouse move event on the canvas to the
+         * the objects in the scene graph
+         */
+        value: function _handleMouseMove(e) {
+            e.preventDefault();
+            var objects = this.scene.children.filter(function (c) {
+                return !!c.onmousemove;
+            });
+
+            var _iteratorNormalCompletion4 = true;
+            var _didIteratorError4 = false;
+            var _iteratorError4 = undefined;
+
+            try {
+                for (var _iterator4 = this._eventRegistry[EVENTS.MOUSEMOVE][Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+                    var callback = _step4.value;
+
+                    callback(e);
+                }
+            } catch (err) {
+                _didIteratorError4 = true;
+                _iteratorError4 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion4 && _iterator4.return) {
+                        _iterator4.return();
+                    }
+                } finally {
+                    if (_didIteratorError4) {
+                        throw _iteratorError4;
+                    }
+                }
+            }
+
+            ;
+
+            var _iteratorNormalCompletion5 = true;
+            var _didIteratorError5 = false;
+            var _iteratorError5 = undefined;
+
+            try {
+                for (var _iterator5 = objects[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+                    var o = _step5.value;
+
+                    o.onmousemove(e);
+                }
+            } catch (err) {
+                _didIteratorError5 = true;
+                _iteratorError5 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion5 && _iterator5.return) {
+                        _iterator5.return();
+                    }
+                } finally {
+                    if (_didIteratorError5) {
+                        throw _iteratorError5;
+                    }
+                }
+            }
+
+            ;
+        }
+    }, {
+        key: '_handleClick',
+
+
+        /**
+         * bridge the click event on the canvas to the
+         * the objects in the scene graph
+         */
+        value: function _handleClick(e) {
+            e.preventDefault();
+
+            var x = e.offsetX - this._leftPadding;
+            var y = e.offsetY - this._topPadding;
+
+            //pass through x and y to propagated events
+            e.canvasX = x;
+            e.canvasY = y;
+
+            var objects = this.scene.children.filter(function (c) {
+                return !!c.onclick;
+            });
+
+            var _iteratorNormalCompletion6 = true;
+            var _didIteratorError6 = false;
+            var _iteratorError6 = undefined;
+
+            try {
+                for (var _iterator6 = this._eventRegistry[EVENTS.CLICK][Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+                    var callback = _step6.value;
+
+                    callback(e);
+                }
+            } catch (err) {
+                _didIteratorError6 = true;
+                _iteratorError6 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion6 && _iterator6.return) {
+                        _iterator6.return();
+                    }
+                } finally {
+                    if (_didIteratorError6) {
+                        throw _iteratorError6;
+                    }
+                }
+            }
+
+            ;
+
+            var _iteratorNormalCompletion7 = true;
+            var _didIteratorError7 = false;
+            var _iteratorError7 = undefined;
+
+            try {
+                for (var _iterator7 = objects[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
+                    var o = _step7.value;
+
+                    o.onclick(e);
+                }
+            } catch (err) {
+                _didIteratorError7 = true;
+                _iteratorError7 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion7 && _iterator7.return) {
+                        _iterator7.return();
+                    }
+                } finally {
+                    if (_didIteratorError7) {
+                        throw _iteratorError7;
+                    }
+                }
+            }
+
+            ;
+        }
+    }, {
+        key: '_handleMouseOut',
+
+
+        /**
+         * bridge the mouse out event on the canvas to the
+         * the objects in the scene graph
+         */
+        value: function _handleMouseOut(e) {
+            e.preventDefault();
+
+            var objects = this.scene.children.filter(function (c) {
+                return !!c.onmouseout;
+            });
+
+            var _iteratorNormalCompletion8 = true;
+            var _didIteratorError8 = false;
+            var _iteratorError8 = undefined;
+
+            try {
+                for (var _iterator8 = objects[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
+                    var o = _step8.value;
+
+                    o.onmouseout(e);
+                }
+            } catch (err) {
+                _didIteratorError8 = true;
+                _iteratorError8 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion8 && _iterator8.return) {
+                        _iterator8.return();
+                    }
+                } finally {
+                    if (_didIteratorError8) {
+                        throw _iteratorError8;
+                    }
+                }
+            }
+
+            ;
+
+            var _iteratorNormalCompletion9 = true;
+            var _didIteratorError9 = false;
+            var _iteratorError9 = undefined;
+
+            try {
+                for (var _iterator9 = this._eventRegistry[EVENTS.MOUSEOUT][Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
+                    var callback = _step9.value;
+
+                    callback(e);
+                }
+            } catch (err) {
+                _didIteratorError9 = true;
+                _iteratorError9 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion9 && _iterator9.return) {
+                        _iterator9.return();
+                    }
+                } finally {
+                    if (_didIteratorError9) {
+                        throw _iteratorError9;
+                    }
+                }
+            }
+
+            ;
+        }
+    }, {
+        key: 'targetObject',
+        get: function get() {
+            return this._targetObject;
+        }
+        /**
+         * the object currently selected for interaction
+         * @param {object} val
+         * @type {object}
+         */
+        ,
+        set: function set(val) {
+            this._targetObject = val;
+        }
+
+        /**
+         * the root of the scene graph. add primitives to this to compose an image
+         * @type {object}
+         */
+
+    }, {
+        key: 'scene',
+        get: function get() {
+            return this._scene;
+        }
+    }]);
+
+    return CanvasCompositor;
 }();
 
 /*
-define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'ellipse', 'circle', 'text', 'image', 'container'], function (_, Renderer, CanvasObject, Path, Rectangle, Ellipse, Circle, Text, Image, Container) {
-	'use strict';
 
-	var _events = {
-		PRESS_UP: 'onpressup',
-		PRESS_DOWN: 'onpressdown',
-		PRESS_MOVE: 'onpressmove',
-		PRESS_CANCEL: 'onpresscancel',
-		PRESS: 'onpress'
-	};
-
-	var _lastKnownTouchLocation;
-
-	function CanvasCompositor(canvas, options) {
-		this._canvas = canvas;
-		this._context = this._canvas.getContext('2d');
-		this._targetObject = null;
-
-		this._updateThreshhold = 1000 / 60; //amount of time that must pass before rendering
-		this._lastRenderTime = 0; //set to 0 to make sure first render happens right away
-		this._currentTime = 0;
-		this.style = _.extend({}, Renderer.DEFAULTS, options);
-
-		this.Scene = new Container({
-			x: 0,
-			y: 0
-		});
-
-		this._bindEvents();
-		this._eventRegistry = {
-			onpressup: [],
-			onpressdown: [],
-			onpressmove: [],
-			onpresscancel: [],
-			onpress: []
-		};
-
-		this._animationLoop();
-	}
-
-	CanvasCompositor.prototype.registerEvent = function _registerEvent(eventType, callback) {
-		if (this._eventRegistry[eventType]) {
-			this._eventRegistry[eventType].push(callback);
-		}
-	};
-
-	CanvasCompositor.prototype.removeEvent = function _removeEvent(eventType, callback) {
-		if (this._eventRegistry[eventType]) {
-			var index = this._eventRegistry[eventType].indexOf(callback);
-			if (index >= 0) {
-				return this._eventRegistry[eventType].splice(index, 1);
-			}
-		}
-	};
 
 	CanvasCompositor.prototype._bindEvents = function () {
-		this._canvas.addEventListener('mousedown', _.bind(this._handlePressDown, this));
-		this._canvas.addEventListener('mouseup', _.bind(this._handlePressUp, this));
-		this._canvas.addEventListener('mousemove', _.bind(this._handlePressMove, this));
-		this._canvas.addEventListener('mouseout', _.bind(this._handlePressCancel, this));
-		this._canvas.addEventListener('click', _.bind(this._handlePress, this));
 
         //TODO: typically, usage of stopPropagation() is a sign that things were done wrong.
 		this._canvas.addEventListener('touchstart', function (e) {
@@ -2660,218 +3443,19 @@ define(['lodash', 'renderer', 'canvas-object', 'vector-path', 'rectangle', 'elli
 		var evt = new window.MouseEvent(type, mouseEventInit);
 		e.target.dispatchEvent(evt);
 	}
-
-	CanvasCompositor.prototype._handlePressDown = function (e) {
-		e.preventDefault();
-
-		var style = window.getComputedStyle(this._canvas);
-		var leftPadding = parseFloat(style.getPropertyValue('border-left')) +
-			parseFloat(style.getPropertyValue('padding-left'));
-		var topPadding = parseFloat(style.getPropertyValue('border-top')) +
-			parseFloat(style.getPropertyValue('padding-top'));
-
-		var x = e.offsetX - leftPadding;
-		var y = e.offsetY - topPadding;
-
-		//pass through x and y to propagated events
-		e.canvasX = x;
-		e.canvasY = y;
-
-		_.each(this._eventRegistry[_events.PRESS_DOWN], function (callback) {
-			callback(e);
-		});
-
-		var clickedObject = this.Scene.PressableChildAt(x, y);
-
-		if (clickedObject && clickedObject.onpressdown) {
-			clickedObject.onpressdown(e);
-		}
-	};
-
-	CanvasCompositor.prototype._handlePressUp = function (e) {
-		e.preventDefault();
-
-		var style = window.getComputedStyle(this._canvas);
-		var leftPadding = parseFloat(style.getPropertyValue('border-left')) +
-			parseFloat(style.getPropertyValue('padding-left'));
-		var topPadding = parseFloat(style.getPropertyValue('border-top')) +
-			parseFloat(style.getPropertyValue('padding-top'));
-
-		var x = e.offsetX - leftPadding;
-		var y = e.offsetY - topPadding;
-
-		//pass through x and y to propagated events
-		e.canvasX = x;
-		e.canvasY = y;
-
-		_.each(this.Scene.children, function (c) {
-			if (c.draggable && c.onpressup) {
-				c.onpressup(e);
-			}
-		});
-
-		_.each(this._eventRegistry[_events.PRESS_UP], function (callback) {
-			callback(e);
-		});
-
-		var clickedObject = this.Scene.PressableChildAt(x, y);
-
-		if (clickedObject && clickedObject.onpressup) {
-			clickedObject.onpressup(e);
-		}
-	};
-
-	CanvasCompositor.prototype._handlePressMove = function (e) {
-		e.preventDefault();
-		var objects = _.filter(this.Scene.children, function (c) {
-			// `!!` is a quick hack to convert to a bool
-			return !!(c.onpressmove);
-		});
-
-		_.each(this._eventRegistry[_events.PRESS_MOVE], function (callback) {
-			callback(e);
-		});
-
-		_.each(objects, function (o) {
-			o.onpressmove(e);
-		});
-	};
-
-	CanvasCompositor.prototype._handlePress = function (e) {
-		e.preventDefault();
-
-		var style = window.getComputedStyle(this._canvas);
-		var leftPadding = parseFloat(style.getPropertyValue('border-left')) +
-			parseFloat(style.getPropertyValue('padding-left'));
-		var topPadding = parseFloat(style.getPropertyValue('border-top')) +
-			parseFloat(style.getPropertyValue('padding-top'));
-
-		var x = e.offsetX - leftPadding;
-		var y = e.offsetY - topPadding;
-
-		//pass through x and y to propagated events
-		e.canvasX = x;
-		e.canvasY = y;
-
-		var objects = _.filter(this.Scene.children, function (c) {
-			// `!!` is a quick hack to convert to a bool
-			return !!(c.onpress);
-		});
-
-		_.each(this._eventRegistry[_events.PRESS], function (callback) {
-			callback(e);
-		});
-
-		_.each(objects, function (o) {
-			o.onpress(e);
-		});
-	};
-
-	CanvasCompositor.prototype._handlePressCancel = function (e) {
-		e.preventDefault();
-
-		var objects = _.filter(this.Scene.children, function (c) {
-			// `!!` is a quick hack to convert to a bool
-			return !!(c.onpresscancel);
-		});
-
-		_.each(objects, function (o) {
-			o.onpresscancel(e);
-		});
-
-		_.each(this._eventRegistry[_events.PRESS_CANCEL], function (callback) {
-			callback(e);
-		});
-	};
-
-	Object.defineProperty(CanvasCompositor.prototype, 'targetObject', {
-		configurable: true,
-		enumerable: true,
-		get: function _getTargetObject() {
-			return this._targetObject;
-		},
-		set: function _setTargetObject(o) {
-			this._targetObject = o;
-		}
-	});
-
-	CanvasCompositor.prototype._animationLoop = function _animationLoop() {
-		window.requestAnimationFrame(_.bind(this._animationLoop, this));
-		this._currentTime = +new Date();
-		//set maximum of 60 fps and only redraw if necessary
-		if (this._currentTime - this._lastRenderTime >= this._updateThreshhold && this.Scene.NeedsUpdate) {
-			this._lastRenderTime = +new Date();
-			Renderer.clearRect(this._context, 0, 0, this._canvas.width, this._canvas.height);
-			this.Scene.draw(this._context);
-		}
-	};
-
-	//expose primitive canvas functions at high level
-	CanvasCompositor.prototype.drawPath = function _drawPath(vertices) {
-		Renderer.drawPath(this._context, vertices, this.style);
-	};
-
-	//expose primitive canvas functions at high level
-	CanvasCompositor.prototype.drawRectangle = function _drawRectangle(x, y, width, height) {
-		Renderer.drawRectangle(this._context, x, y, width, height || width, this.style);
-	};
-
-	//expose primitive canvas functions at high level
-	CanvasCompositor.prototype.drawEllipse = function _drawEllipse(x, y, radius, minorRadius) {
-		Renderer.drawEllipse(this._context, x, y, radius, (minorRadius || radius), this.style);
-	};
-
-	//expose primitive canvas functions at high level
-	CanvasCompositor.prototype.drawCircle = function _drawCircle(x, y, radius) {
-		Renderer.drawEllipse(this._context, x, y, radius, this.style);
-	};
-
-	//expose primitive canvas functions at high level
-	CanvasCompositor.prototype.drawText = function _drawText(x, y, text) {
-		Renderer.drawText(this._context, x, y, text, this.style);
-	};
-
-	//expose primitive canvas functions at high level
-	CanvasCompositor.prototype.measureText = function _measureText(text) {
-		Renderer.measureText(this._context, text, this.style);
-	};
-
-	//expose primitive canvas functions at high level
-	CanvasCompositor.prototype.drawImage = function _drawImage(x, y, image) {
-		Renderer.drawImage(this._context, x, y, image, this.style);
-	};
-
-	CanvasCompositor.prototype.draw = function _draw(canvasObject) {
-		if (canvasObject) {
-			canvasObject.draw();
-			return;
-		}
-	};
-
-	//get the context for direct drawing to the canvas
-	CanvasCompositor.prototype.getContext = function _getContext() {
-		return this._context;
-	};
-
-	CanvasCompositor.Path = Path;
-	CanvasCompositor.Rectangle = Rectangle;
-	CanvasCompositor.Ellipse = Ellipse;
-	CanvasCompositor.Text = Text;
-	CanvasCompositor.Image = Image;
-	CanvasCompositor.Circle = Circle;
-	CanvasCompositor.Container = Container;
-
-	CanvasCompositor.Events = _events;
-
-	CanvasCompositor.prototype.Scene = null;
-
-	return CanvasCompositor;
-});
 */
 
-
 exports.default = CanvasCompositor;
+exports.CanvasCompositor = CanvasCompositor;
+exports.Renderer = _Renderer.Renderer;
+exports.Primitive = _Primitive2.default;
+exports.Composition = _Composition2.default;
+exports.Circle = _Circle2.default;
+exports.DEFAULTS = _Renderer.DEFAULTS;
+//export Primitive;
+//export Composition
+//export Circle;
 
-},{"./Composition":4,"./Primitive":5,"./Renderer":6}]},{},[])
+},{"./Circle":4,"./Composition":5,"./Primitive":6,"./Renderer":7}]},{},[])
 
 //# sourceMappingURL=canvas-compositor.js.map

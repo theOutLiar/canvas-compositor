@@ -4,7 +4,7 @@
   "description": "a light and performant canvas compositing engine",
   "main": "index.js",
   "scripts": {
-    "getdeps":"npm prune && bower prune && npm install && bower install",
+    "getdeps": "npm prune && bower prune && npm install && bower install",
     "test": "test",
     "predev": "npm run getdeps",
     "dev": "gulp dev",
@@ -30,6 +30,7 @@
     "babelify": "^7.3.0",
     "browserify": "^14.1.0",
     "esdoc": "^0.5.2",
+    "eslint": "^3.18.0",
     "gulp": "^3.9.1",
     "gulp-rename": "^1.2.2",
     "gulp-sourcemaps": "^2.4.1",
