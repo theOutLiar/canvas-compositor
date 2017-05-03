@@ -135,9 +135,9 @@ export default class Renderer {
     static drawCircle(x, y, radius, context, style) {
         Object.assign(context, style);
         context.beginPath();
+        context.arc(x, y, radius, 0, 2 * Math.PI);
         //TODO: 2015-03-12 this is currently only supported by chrome & opera
-        //context.arc(x, y, radius, 0, 2 * Math.PI);
-        context.ellipse(x, y, radius, radius, 0, 0, 2 * Math.PI);
+        //context.ellipse(x, y, radius, radius, 0, 0, 2 * Math.PI);
         context.fill();
         context.stroke();
         context.closePath();

@@ -1,6 +1,18 @@
-import Primitive from './Primitive';
+import PrimitiveComponent from './PrimitiveComponent';
 
-export default class Composition extends Primitive {
+/**
+ * The Composition class is an extension of the Primitive that is
+ * composed of other extensions of the Primitive. The Composition
+ * is used to establish the Scene graph as the parent of all other
+ * objects on screen. This is the key abstraction of the [composite
+ * pattern](https://en.wikipedia.org/wiki/Composite_pattern): an
+ * action taken on the parent element acts upon all of the children,
+ * and transatively, all of their children.
+ */
+export default class Composition extends PrimitiveComponent {
+    /**
+     * @param {object} options
+     */
     constructor(options) {
         super(options);
         options = options || {}
@@ -8,7 +20,7 @@ export default class Composition extends Primitive {
     }
 
     /**
-     * @type {object} children the which compose this object
+     * @type {Array} children the which compose this object
      */
     get children() {
         return this._children;
@@ -16,7 +28,7 @@ export default class Composition extends Primitive {
 
     /**
      * the bounding box of the composition (i.e., the containing bounds of all the children of this composition)
-     * @type {object} boundingBox
+     * @type {{top:number, left:number, right:number, bottom:number}} boundingBox
      */
     get boundingBox() {
         let top = null,
@@ -42,7 +54,9 @@ export default class Composition extends Primitive {
 
     /**
      * the an array of children that are found at (x, y)
-     * @returns {object} childrenAt
+     * @return {object} childrenAt all the children below the point
+     * @param {number} x the x coordinate
+     * @param {number} y the y coordinate
      */
     childrenAt(x, y) {
         return this.children.filter((c) => c.PointIsInObject(x, y));
@@ -50,7 +64,9 @@ export default class Composition extends Primitive {
 
     /**
      * get the top-most child at the (x, y)
-     * @returns {object} childAt
+     * @return {object} childAt the first child below the point
+     * @param {number} x
+     * @param {number} y
      */
     childAt(x, y) {
         //loop over the children in reverse because drawing order
@@ -71,6 +87,7 @@ export default class Composition extends Primitive {
         this.needsRender = true;
         this.needsDraw = true;
         //TODO: make this hook more generic
+        //by using a registry
         //if (this.onchildadded) {
         //  this.onchildadded();
         //}
@@ -79,7 +96,7 @@ export default class Composition extends Primitive {
     /**
      * remove a child from this composition
      * @param {object} child the child to be removed
-     * @returns {object} the child removed
+     * @return {object} the child removed
      */
     removeChild(child) {
         if (child) {

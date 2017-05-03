@@ -1576,9 +1576,9 @@ var _Renderer = require('./Renderer');
 
 var _Renderer2 = _interopRequireDefault(_Renderer);
 
-var _Primitive2 = require('./Primitive');
+var _PrimitiveComponent2 = require('./PrimitiveComponent');
 
-var _Primitive3 = _interopRequireDefault(_Primitive2);
+var _PrimitiveComponent3 = _interopRequireDefault(_PrimitiveComponent2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1588,21 +1588,32 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var Circle = function (_Primitive) {
-    _inherits(Circle, _Primitive);
+/**
+ * A circle
+ */
+var Circle = function (_PrimitiveComponent) {
+    _inherits(Circle, _PrimitiveComponent);
 
+    //TODO: provide details about options for docs - link to a separate page
+    /**
+     * @param {object} options object settings
+     * PrimitiveComponent constructor
+     */
     function Circle(options) {
         _classCallCheck(this, Circle);
 
+        /**
+         * the radius of the circle
+         * @type {number} radius
+         */
         var _this = _possibleConstructorReturn(this, (Circle.__proto__ || Object.getPrototypeOf(Circle)).call(this, options));
 
-        _this._radius = options.radius || 0;
+        _this.radius = options.radius || 0;
         return _this;
     }
 
     /**
-     * get the radius of the circle
-     * @type {number} radius
+     * get the bounding box of the circle;
      */
 
 
@@ -1615,22 +1626,28 @@ var Circle = function (_Primitive) {
          * @override
          */
         value: function render() {
-            _Renderer2.default.drawCircle(
-            //because prerendering happens on a canvas with dimensions equal to the diameter,
-            //the radius can serve as both x and y coordinates on that canvas
-            this.radius, this.radius, this.radius, this._prerenderingContext, this.style);
+            /*Renderer.drawCircle(
+                //because prerendering happens on a canvas with dimensions equal to the diameter,
+                //the radius can serve as both x and y coordinates on that canvas
+                this.radius,
+                this.radius,
+                this.radius,
+                this._prerenderingContext,
+                this.style
+            );*/
 
             //the below is to ensure the proper placement when scaling/line widths are accounted for
-            /*
-                Renderer.drawCircle(
-                     (this.radius * this.GlobalScale.scaleWidth) + (this.unscaledLineWidth/2.0 * this.GlobalLineScale),
-                    (this.radius * this.GlobalScale.scaleHeight) + (this.unscaledLineWidth/2.0 * this.GlobalLineScale),
-                    (this.radius * this.GlobalScale.scaleWidth),
-                    this._prerenderingContext,
-                    this.style
-                );
-            */
+            _Renderer2.default.drawCircle(this.radius * this.compoundScale.scaleWidth + this.style.lineWidth, this.radius * this.compoundScale.scaleHeight + this.style.lineWidth, this.radius * this.compoundScale.scaleWidth, this._prerenderingContext, this.style);
         }
+
+        /**
+         * determine whether the point is in the object
+         * basically just the pythagorean theorem
+         * @param {number} x the x coordinate
+         * @param {number} y the y coordinate
+         * @return {boolean} whether or not the point is in the object
+         */
+
     }, {
         key: 'pointIsInObject',
         value: function pointIsInObject(x, y) {
@@ -1653,83 +1670,38 @@ var Circle = function (_Primitive) {
             );*/
         }
     }, {
-        key: 'radius',
-        get: function get() {
-            return this._radius;
-        }
-        /**
-         * set the radius of the circle
-         * @type {number} radius
-         * @param {number} val the new value of the radius
-         */
-        ,
-        set: function set(val) {
-            this._radius = val;
-        }
-
-        /**
-         * get the bounding box of the circle;
-         */
-
-    }, {
         key: 'boundingBox',
         get: function get() {
-            return {
+            /*return {
                 top: this.offset.y - this.radius,
                 left: this.offset.x - this.radius,
                 bottom: this.offset.y + this.radius,
                 right: this.offset.x + this.radius
-            };
-
-            //the below is for keeping the bounding box around the entirety of the object, including the drawing of the border path
-            /*return {
-                top: this.offset.y -
-                    ((this.radius * this.GlobalScale.scaleHeight) +
-                        (this.unscaledLineWidth / 2.0 * this.GlobalLineScale)),
-                left: this.offset.x -
-                    ((this.radius * this.GlobalScale.scaleWidth) +
-                        (this.unscaledLineWidth / 2.0 * this.GlobalLineScale)),
-                bottom: this.offset.y +
-                    (this.radius * this.GlobalScale.scaleHeight) +
-                    (this.unscaledLineWidth / 2.0 * this.GlobalLineScale),
-                right: this.offset.x +
-                    (this.radius * this.GlobalScale.scaleWidth) +
-                    (this.unscaledLineWidth / 2.0 * this.GlobalLineScale)
             };*/
+
+            //TODO: possibly memory inefficient - need to research:
+            //strokes are centered over the mathematical perimeter -
+            //so half the stroke laid within the perimeter, and the
+            //other half laid outside. for some reason, this doesn't
+            //work for (0 < lineWidth < 2.0).
+            //
+            //it's just a pixel, but when a thousand objects are on screen,
+            //that'll make a difference
+            return {
+                top: this.offset.y - (this.radius * this.compoundScale.scaleHeight + this.style.lineWidth),
+                left: this.offset.x - (this.radius * this.compoundScale.scaleWidth + this.style.lineWidth),
+                bottom: this.offset.y + this.radius * this.compoundScale.scaleHeight + this.style.lineWidth,
+                right: this.offset.x + this.radius * this.compoundScale.scaleWidth + this.style.lineWidth
+            };
         }
     }]);
 
     return Circle;
-}(_Primitive3.default);
-
-/*define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Renderer) {
-	'use strict';
-
-	function Circle(options) {
-		CanvasObject.call(this, options);
-		this.radius = options.radius || 0;
-	}
-
-	_.assign(Circle.prototype, CanvasObject.prototype);
-
-	Circle.prototype.render = function _render() {
-
-	};
-
-	Circle.prototype.PointIsInObject = function (x, y) {
-		return (
-			CanvasObject.prototype.PointIsInObject.call(this, x, y) &&
-			Math.pow((x - this.offset.x), 2) / Math.pow((this.radius * this.GlobalScale.scaleWidth), 2) + Math.pow((y - this.offset.y), 2) / Math.pow((this.radius * this.GlobalScale.scaleHeight), 2) <= 1
-		);
-	};
-
-	return Circle;
-});*/
-
+}(_PrimitiveComponent3.default);
 
 exports.default = Circle;
 
-},{"./Primitive":6,"./Renderer":7}],5:[function(require,module,exports){
+},{"./PrimitiveComponent":6,"./Renderer":8}],5:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1738,9 +1710,9 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Primitive2 = require('./Primitive');
+var _PrimitiveComponent2 = require('./PrimitiveComponent');
 
-var _Primitive3 = _interopRequireDefault(_Primitive2);
+var _PrimitiveComponent3 = _interopRequireDefault(_PrimitiveComponent2);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1750,9 +1722,21 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var Composition = function (_Primitive) {
-    _inherits(Composition, _Primitive);
+/**
+ * The Composition class is an extension of the Primitive that is
+ * composed of other extensions of the Primitive. The Composition
+ * is used to establish the Scene graph as the parent of all other
+ * objects on screen. This is the key abstraction of the [composite
+ * pattern](https://en.wikipedia.org/wiki/Composite_pattern): an
+ * action taken on the parent element acts upon all of the children,
+ * and transatively, all of their children.
+ */
+var Composition = function (_PrimitiveComponent) {
+    _inherits(Composition, _PrimitiveComponent);
 
+    /**
+     * @param {object} options
+     */
     function Composition(options) {
         _classCallCheck(this, Composition);
 
@@ -1764,7 +1748,7 @@ var Composition = function (_Primitive) {
     }
 
     /**
-     * @type {object} children the which compose this object
+     * @type {Array} children the which compose this object
      */
 
 
@@ -1774,7 +1758,9 @@ var Composition = function (_Primitive) {
 
         /**
          * the an array of children that are found at (x, y)
-         * @returns {object} childrenAt
+         * @return {object} childrenAt all the children below the point
+         * @param {number} x the x coordinate
+         * @param {number} y the y coordinate
          */
         value: function childrenAt(x, y) {
             return this.children.filter(function (c) {
@@ -1784,7 +1770,9 @@ var Composition = function (_Primitive) {
 
         /**
          * get the top-most child at the (x, y)
-         * @returns {object} childAt
+         * @return {object} childAt the first child below the point
+         * @param {number} x
+         * @param {number} y
          */
 
     }, {
@@ -1811,6 +1799,7 @@ var Composition = function (_Primitive) {
             this.needsRender = true;
             this.needsDraw = true;
             //TODO: make this hook more generic
+            //by using a registry
             //if (this.onchildadded) {
             //  this.onchildadded();
             //}
@@ -1819,7 +1808,7 @@ var Composition = function (_Primitive) {
         /**
          * remove a child from this composition
          * @param {object} child the child to be removed
-         * @returns {object} the child removed
+         * @return {object} the child removed
          */
 
     }, {
@@ -1893,7 +1882,7 @@ var Composition = function (_Primitive) {
 
         /**
          * the bounding box of the composition (i.e., the containing bounds of all the children of this composition)
-         * @type {object} boundingBox
+         * @type {{top:number, left:number, right:number, bottom:number}} boundingBox
          */
 
     }, {
@@ -1944,11 +1933,11 @@ var Composition = function (_Primitive) {
     }]);
 
     return Composition;
-}(_Primitive3.default);
+}(_PrimitiveComponent3.default);
 
 exports.default = Composition;
 
-},{"./Primitive":6}],6:[function(require,module,exports){
+},{"./PrimitiveComponent":6}],6:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1970,12 +1959,12 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
  * call this directly, although they may wish to extend their own
  * classes with it.
  */
-var Primitive = function () {
+var PrimitiveComponent = function () {
     /**
      * @param {object} options
      */
-    function Primitive(options) {
-        _classCallCheck(this, Primitive);
+    function PrimitiveComponent(options) {
+        _classCallCheck(this, PrimitiveComponent);
 
         if (!options) {
             options = {};
@@ -2058,10 +2047,6 @@ var Primitive = function () {
          */
         this._parent = options.parent || null;
 
-        if (this.draggable) {
-            this.enableDragging();
-        }
-
         /**
          * a callback for the mousedown event.
          * @type {function} onmousedown
@@ -2091,6 +2076,10 @@ var Primitive = function () {
          * @type {function} onclick
          */
         this.onclick = null;
+
+        if (this.draggable) {
+            this.enableDragging();
+        }
     }
 
     /**
@@ -2101,7 +2090,7 @@ var Primitive = function () {
      */
 
 
-    _createClass(Primitive, [{
+    _createClass(PrimitiveComponent, [{
         key: 'enableDragging',
 
 
@@ -2198,8 +2187,6 @@ var Primitive = function () {
                 this._prerenderingCanvas.width = this.boundingBox.right - this.boundingBox.left;
                 this._prerenderingCanvas.height = this.boundingBox.bottom - this.boundingBox.top;
 
-                //TODO: make sure line width is properly handled
-                //this.style.lineWidth = this.unscaledLineWidth * this.GlobalLineScale;
                 this.render();
                 this.needsRender = false;
             }
@@ -2246,7 +2233,7 @@ var Primitive = function () {
          *
          * @param {number} x the x coordinate
          * @param {number} y the y coordinate
-         * @returns {boolean} whether the point is within the bounding box
+         * @return {boolean} whether the point is within the bounding box
          */
 
     }, {
@@ -2261,7 +2248,7 @@ var Primitive = function () {
          *
          * @param {number} x the x coordinate
          * @param {number} y the y coordinate
-         * @returns {boolean} whether the point is in the object, as implemented by inheriting classes
+         * @return {boolean} whether the point is in the object, as implemented by inheriting classes
          */
 
     }, {
@@ -2477,6 +2464,7 @@ var Primitive = function () {
         /**
          * set the vertical scale of the object - defaults to 1
          * @type {number} scaleHeight
+         * @param {number} val the vertical scale
          */
         ,
         set: function set(val) {
@@ -2523,6 +2511,7 @@ var Primitive = function () {
                 scaleHeight: this.scaleHeight
             };
         }
+
         /**
          * set the scale width and height in one go
          * @type {number} scale
@@ -2535,7 +2524,7 @@ var Primitive = function () {
 
         /**
          * return the scale of the object, compounded with the parent object's scale
-         * @type {object} compoundScale
+         * @type {{scaleWidth: number, scaleHeight: number}} compoundScale the scale multiplied by the compound scale of its parent or 1
          */
 
     }, {
@@ -2578,10 +2567,11 @@ var Primitive = function () {
         get: function get() {
             return this._parent;
         }
+        //TODO: provide links to things
         /**
          * set the parent of the object. all objects except the scene graph should have a parent
          * @type {object} parent
-         * @param {object} val an composition
+         * @param {object} val a composition
          */
         ,
         set: function set(val) {
@@ -2589,12 +2579,97 @@ var Primitive = function () {
         }
     }]);
 
-    return Primitive;
+    return PrimitiveComponent;
 }();
 
-exports.default = Primitive;
+exports.default = PrimitiveComponent;
 
-},{"./Renderer":7,"vectorious/withoutblas":3}],7:[function(require,module,exports){
+},{"./Renderer":8,"vectorious/withoutblas":3}],7:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _Renderer = require('./Renderer');
+
+var _Renderer2 = _interopRequireDefault(_Renderer);
+
+var _PrimitiveComponent2 = require('./PrimitiveComponent');
+
+var _PrimitiveComponent3 = _interopRequireDefault(_PrimitiveComponent2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+/**
+ * A rectangle
+ */
+var Rectangle = function (_PrimitiveComponent) {
+  _inherits(Rectangle, _PrimitiveComponent);
+
+  /**
+   * @param {object} options the options for the object
+   */
+  function Rectangle(options) {
+    _classCallCheck(this, Rectangle);
+
+    /**
+     * the width of the rectangle
+     * @type {number} width
+     */
+    var _this = _possibleConstructorReturn(this, (Rectangle.__proto__ || Object.getPrototypeOf(Rectangle)).call(this, options));
+
+    _this.width = options.width || 0;
+
+    /**
+     * the height of the rectangle
+     * @type {number} height
+     */
+    _this.height = options.height || 0;
+    return _this;
+  }
+
+  /**
+   * get the bounding box of the rectangle
+   */
+
+
+  _createClass(Rectangle, [{
+    key: 'render',
+
+
+    /**
+     * render the rectangle
+     */
+    value: function render() {
+      _Renderer2.default.drawRectangle(this.style.lineWidth, this.style.lineWidth, this.width * this.compoundScale.scaleWidth, this.height * this.compoundScale.scaleHeight, this._prerenderingContext, this.style);
+    }
+  }, {
+    key: 'boundingBox',
+    get: function get() {
+      return {
+        top: this.offset.y - this.style.lineWidth,
+        left: this.offset.x - this.style.lineWidth,
+        bottom: this.offset.y + this.compoundScale.scaleHeight * this.height + this.style.lineWidth,
+        right: this.offset.x + this.compoundScale.scaleWidth * this.width + this.style.lineWidth
+      };
+    }
+  }]);
+
+  return Rectangle;
+}(_PrimitiveComponent3.default);
+
+exports.default = Rectangle;
+
+},{"./PrimitiveComponent":6,"./Renderer":8}],8:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2765,9 +2840,9 @@ var Renderer = function () {
         value: function drawCircle(x, y, radius, context, style) {
             Object.assign(context, style);
             context.beginPath();
+            context.arc(x, y, radius, 0, 2 * Math.PI);
             //TODO: 2015-03-12 this is currently only supported by chrome & opera
-            //context.arc(x, y, radius, 0, 2 * Math.PI);
-            context.ellipse(x, y, radius, radius, 0, 0, 2 * Math.PI);
+            //context.ellipse(x, y, radius, radius, 0, 0, 2 * Math.PI);
             context.fill();
             context.stroke();
             context.closePath();
@@ -2842,7 +2917,7 @@ exports.DEFAULTS = DEFAULTS;
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.DEFAULTS = exports.Circle = exports.Composition = exports.Primitive = exports.Renderer = exports.CanvasCompositor = undefined;
+exports.DEFAULTS = exports.Rectangle = exports.Circle = exports.Composition = exports.PrimitiveComponent = exports.Renderer = exports.CanvasCompositor = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -2852,13 +2927,17 @@ var _Composition = require('./Composition');
 
 var _Composition2 = _interopRequireDefault(_Composition);
 
-var _Primitive = require('./Primitive');
+var _PrimitiveComponent = require('./PrimitiveComponent');
 
-var _Primitive2 = _interopRequireDefault(_Primitive);
+var _PrimitiveComponent2 = _interopRequireDefault(_PrimitiveComponent);
 
 var _Circle = require('./Circle');
 
 var _Circle2 = _interopRequireDefault(_Circle);
+
+var _Rectangle = require('./Rectangle');
+
+var _Rectangle2 = _interopRequireDefault(_Rectangle);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -2905,17 +2984,23 @@ var CanvasCompositor = function () {
         //TODO: determine if border-box affects this, and adjust accordingly
         var style = window.getComputedStyle(this._canvas);
 
+        var borderLeft = style.getPropertyValue('border-left') ? parseFloat(style.getPropertyValue('border-left')) : 0;
+        var paddingLeft = style.getPropertyValue('padding-left') ? parseFloat(style.getPropertyValue('padding-left')) : 0;
+
         /**
          * @type {number} _leftPadding the padding on the left of the canvas, which
          * affects the offset of the mouse position
          */
-        this._leftPadding = parseFloat(style.getPropertyValue('border-left')) + parseFloat(style.getPropertyValue('padding-left'));
+        this._leftPadding = borderLeft + paddingLeft;
+
+        var borderTop = style.getPropertyValue('border-top') ? parseFloat(style.getPropertyValue('border-top')) : 0;
+        var paddingTop = style.getPropertyValue('padding-top') ? parseFloat(style.getPropertyValue('padding-top')) : 0;
 
         /**
          * @type {number} _topPadding the padding on the top of the canvas, which
          * affects the offset of the mouse position
          */
-        this._topPadding = parseFloat(style.getPropertyValue('border-top')) + parseFloat(style.getPropertyValue('padding-top'));
+        this._topPadding = borderTop + paddingTop;
 
         //this._currentTime = 0;
         //this._lastRenderTime = 0;
@@ -2935,9 +3020,19 @@ var CanvasCompositor = function () {
         };
 
         this._animationLoop();
+        //this._framerate = 0;
     }
 
-    //TODO: multiple target objects?
+    //TODO: expose the framerate
+    /*set framerate(val) {
+        this._framerate = val;
+    }
+     get framerate() {
+        var framerateUpdatedEvent = new Event();
+        return this._framerate;
+    }*/
+
+    //TODO: multiple target objects? in reverse order of render? in order of composition?
     /**
      * the object currently selected for interaction
      * @type {object}
@@ -2962,8 +3057,8 @@ var CanvasCompositor = function () {
             //this._currentTime = +new Date();
             //set maximum of 60 fps and only redraw if necessary
             if ( /*this._currentTime - this._lastRenderTime >= this._targetFPS &&*/this.scene.needsDraw) {
+                //this.framerate = 1 / (this._currentTime - this._lastRenderTime / 1000)
                 //this._lastRenderTime = +new Date();
-                console.log('blah');
                 _Renderer.Renderer.clearRect(0, 0, this._canvas.width, this._canvas.height, this._context);
                 this.scene.draw(this._context);
             }
@@ -2992,7 +3087,7 @@ var CanvasCompositor = function () {
          *
          * @param {string} eventType the name of the type of event
          * @param {function} callback the callback to be removed from the event
-         * @returns {function} the callback that was removed
+         * @return {function} the callback that was removed
          */
         value: function removeEvent(eventType, callback) {
             if (this._eventRegistry[eventType]) {
@@ -3011,7 +3106,7 @@ var CanvasCompositor = function () {
          * events to relevant objects through bridges to the scene graph
          */
         value: function _bindEvents() {
-            //TODO: reimplement touch events
+            //TODO: reimplement touch events?
             //must bind to `this` to retain reference
             this._canvas.addEventListener('mousedown', this._handleMouseDown.bind(this));
             this._canvas.addEventListener('mouseup', this._handleMouseUp.bind(this));
@@ -3236,6 +3331,7 @@ var CanvasCompositor = function () {
             e.canvasX = x;
             e.canvasY = y;
 
+            //TODO: FF doesn't get this
             var objects = this.scene.children.filter(function (c) {
                 return !!c.onclick;
             });
@@ -3448,14 +3544,15 @@ var CanvasCompositor = function () {
 exports.default = CanvasCompositor;
 exports.CanvasCompositor = CanvasCompositor;
 exports.Renderer = _Renderer.Renderer;
-exports.Primitive = _Primitive2.default;
+exports.PrimitiveComponent = _PrimitiveComponent2.default;
 exports.Composition = _Composition2.default;
 exports.Circle = _Circle2.default;
+exports.Rectangle = _Rectangle2.default;
 exports.DEFAULTS = _Renderer.DEFAULTS;
 //export Primitive;
 //export Composition
 //export Circle;
 
-},{"./Circle":4,"./Composition":5,"./Primitive":6,"./Renderer":7}]},{},[])
+},{"./Circle":4,"./Composition":5,"./PrimitiveComponent":6,"./Rectangle":7,"./Renderer":8}]},{},[])
 
 //# sourceMappingURL=canvas-compositor.js.map

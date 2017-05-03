@@ -4,8 +4,9 @@ import {
 } from './Renderer';
 
 import Composition from './Composition';
-import Primitive from './Primitive';
+import PrimitiveComponent from './PrimitiveComponent';
 import Circle from './Circle';
+import Rectangle from './Rectangle';
 
 //const FPS_EPSILON = 10; // +/- 10ms for animation loop to determine if enough time has passed to render
 const DEFAULT_TARGET_FPS = 1000 / 60; //amount of time that must pass before rendering
@@ -45,25 +46,29 @@ export default class CanvasCompositor {
         //TODO: determine if border-box affects this, and adjust accordingly
         let style = window.getComputedStyle(this._canvas);
 
+        let borderLeft = style.getPropertyValue('border-left') ? parseFloat(style.getPropertyValue('border-left')) : 0;
+        let paddingLeft = style.getPropertyValue('padding-left') ? parseFloat(style.getPropertyValue('padding-left')) : 0;
+
         /**
          * @type {number} _leftPadding the padding on the left of the canvas, which
          * affects the offset of the mouse position
          */
-        this._leftPadding = parseFloat(style.getPropertyValue('border-left')) +
-            parseFloat(style.getPropertyValue('padding-left'));
+        this._leftPadding = borderLeft + paddingLeft;
+
+
+        let borderTop = style.getPropertyValue('border-top') ? parseFloat(style.getPropertyValue('border-top')) : 0;
+        let paddingTop = style.getPropertyValue('padding-top') ? parseFloat(style.getPropertyValue('padding-top')) : 0;
 
         /**
          * @type {number} _topPadding the padding on the top of the canvas, which
          * affects the offset of the mouse position
          */
-        this._topPadding = parseFloat(style.getPropertyValue('border-top')) +
-            parseFloat(style.getPropertyValue('padding-top'));
+        this._topPadding = borderTop + paddingTop;
 
         //this._currentTime = 0;
         //this._lastRenderTime = 0;
 
         this._targetObject = null;
-
 
         this._scene = new Composition(this.canvas);
 
@@ -78,10 +83,20 @@ export default class CanvasCompositor {
         };
 
         this._animationLoop();
+        //this._framerate = 0;
     }
 
+    //TODO: expose the framerate
+    /*set framerate(val) {
+        this._framerate = val;
+    }
 
-    //TODO: multiple target objects?
+    get framerate() {
+        var framerateUpdatedEvent = new Event();
+        return this._framerate;
+    }*/
+
+    //TODO: multiple target objects? in reverse order of render? in order of composition?
     /**
      * the object currently selected for interaction
      * @type {object}
@@ -120,11 +135,12 @@ export default class CanvasCompositor {
         //this._currentTime = +new Date();
         //set maximum of 60 fps and only redraw if necessary
         if ( /*this._currentTime - this._lastRenderTime >= this._targetFPS &&*/ this.scene.needsDraw) {
+            //this.framerate = 1 / (this._currentTime - this._lastRenderTime / 1000)
             //this._lastRenderTime = +new Date();
-            console.log('blah');
             Renderer.clearRect(0, 0, this._canvas.width, this._canvas.height, this._context);
             this.scene.draw(this._context);
         }
+
     }
 
     /**
@@ -144,7 +160,7 @@ export default class CanvasCompositor {
      *
      * @param {string} eventType the name of the type of event
      * @param {function} callback the callback to be removed from the event
-     * @returns {function} the callback that was removed
+     * @return {function} the callback that was removed
      */
     removeEvent(eventType, callback) {
         if (this._eventRegistry[eventType]) {
@@ -160,7 +176,7 @@ export default class CanvasCompositor {
      * events to relevant objects through bridges to the scene graph
      */
     _bindEvents() {
-        //TODO: reimplement touch events
+        //TODO: reimplement touch events?
         //must bind to `this` to retain reference
         this._canvas.addEventListener('mousedown', this._handleMouseDown.bind(this));
         this._canvas.addEventListener('mouseup', this._handleMouseUp.bind(this));
@@ -256,6 +272,7 @@ export default class CanvasCompositor {
         e.canvasX = x;
         e.canvasY = y;
 
+        //TODO: FF doesn't get this
         let objects = this.scene.children.filter((c) => !!(c.onclick));
 
         for (let callback of this._eventRegistry[EVENTS.CLICK]) {
@@ -341,9 +358,10 @@ export default class CanvasCompositor {
 export {
     CanvasCompositor,
     Renderer,
-    Primitive,
+    PrimitiveComponent,
     Composition,
     Circle,
+    Rectangle,
     DEFAULTS
 };
 //export Primitive;

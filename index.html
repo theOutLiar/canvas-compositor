@@ -16,19 +16,35 @@
         var ccMod = require('canvas-compositor');
 
         var CanvasCompositor = ccMod.CanvasCompositor,
-            Circle = ccMod.Circle;
+            Circle = ccMod.Circle,
+            Rectangle = ccMod.Rectangle;
 
         var _myCC = new CanvasCompositor(document.getElementById('test-canvas'));
+
         var _circ = new Circle({
             radius: 50,
-            x: 50,
-            y: 50,
+            x: 100,
+            y: 100,
             style: {
                 fillStyle: '#ccccff'
-            }
-        })
-        _myCC.scene.addChild(_circ);
+            },
+            draggable: true
+        });
 
+        var _rect = new Rectangle({
+            width: 100,
+            height: 50,
+            x: 300,
+            y: 300,
+            style: {
+                fillStyle: '#ccffcc',
+                lineWidth:1.0
+            },
+            draggable: true
+        })
+
+        _myCC.scene.addChild(_circ);
+        _myCC.scene.addChild(_rect);
     </script>
 </body>
 

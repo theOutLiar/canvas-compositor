@@ -13,7 +13,7 @@ import {
  * call this directly, although they may wish to extend their own
  * classes with it.
  */
-export default class Primitive {
+export default class PrimitiveComponent {
     /**
      * @param {object} options
      */
@@ -100,10 +100,6 @@ export default class Primitive {
          */
         this._parent = options.parent || null;
 
-        if (this.draggable) {
-            this.enableDragging();
-        }
-
         /**
          * a callback for the mousedown event.
          * @type {function} onmousedown
@@ -133,6 +129,11 @@ export default class Primitive {
          * @type {function} onclick
          */
         this.onclick = null;
+
+
+        if (this.draggable) {
+            this.enableDragging();
+        }
     }
 
     /**
@@ -239,6 +240,7 @@ export default class Primitive {
     /**
      * set the vertical scale of the object - defaults to 1
      * @type {number} scaleHeight
+     * @param {number} val the vertical scale
      */
     set scaleHeight(val) {
         this._scaleHeight = val;
@@ -260,6 +262,7 @@ export default class Primitive {
             scaleHeight: this.scaleHeight
         };
     }
+
     /**
      * set the scale width and height in one go
      * @type {number} scale
@@ -271,7 +274,7 @@ export default class Primitive {
 
     /**
      * return the scale of the object, compounded with the parent object's scale
-     * @type {object} compoundScale
+     * @type {{scaleWidth: number, scaleHeight: number}} compoundScale the scale multiplied by the compound scale of its parent or 1
      */
     get compoundScale() {
         return {
@@ -304,10 +307,11 @@ export default class Primitive {
     get parent() {
         return this._parent;
     }
+    //TODO: provide links to things
     /**
      * set the parent of the object. all objects except the scene graph should have a parent
      * @type {object} parent
-     * @param {object} val an composition
+     * @param {object} val a composition
      */
     set parent(val) {
         this._parent = val;
@@ -391,8 +395,6 @@ export default class Primitive {
             this._prerenderingCanvas.width = this.boundingBox.right - this.boundingBox.left;
             this._prerenderingCanvas.height = this.boundingBox.bottom - this.boundingBox.top;
 
-            //TODO: make sure line width is properly handled
-            //this.style.lineWidth = this.unscaledLineWidth * this.GlobalLineScale;
             this.render();
             this.needsRender = false;
         }
@@ -436,7 +438,7 @@ export default class Primitive {
      *
      * @param {number} x the x coordinate
      * @param {number} y the y coordinate
-     * @returns {boolean} whether the point is within the bounding box
+     * @return {boolean} whether the point is within the bounding box
      */
     pointIsInBoundingBox(x, y) {
         return (
@@ -453,7 +455,7 @@ export default class Primitive {
      *
      * @param {number} x the x coordinate
      * @param {number} y the y coordinate
-     * @returns {boolean} whether the point is in the object, as implemented by inheriting classes
+     * @return {boolean} whether the point is in the object, as implemented by inheriting classes
      */
     pointIsInObject(x, y) {
         return this.pointIsInBoundingBox(x, y);
