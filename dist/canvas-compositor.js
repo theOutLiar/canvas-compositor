@@ -1614,6 +1614,7 @@ var Circle = function (_PrimitiveComponent) {
 
     /**
      * get the bounding box of the circle;
+     * @type {{top:number, left: number, bottom:number, right:number}}
      */
 
 
@@ -1622,20 +1623,10 @@ var Circle = function (_PrimitiveComponent) {
 
 
         /**
-         * override the render function for drawing cirtcles specifically
+         * override the render function for drawing circles specifically
          * @override
          */
         value: function render() {
-            /*Renderer.drawCircle(
-                //because prerendering happens on a canvas with dimensions equal to the diameter,
-                //the radius can serve as both x and y coordinates on that canvas
-                this.radius,
-                this.radius,
-                this.radius,
-                this._prerenderingContext,
-                this.style
-            );*/
-
             //the below is to ensure the proper placement when scaling/line widths are accounted for
             _Renderer2.default.drawCircle(this.radius * this.compoundScale.scaleWidth + this.style.lineWidth, this.radius * this.compoundScale.scaleHeight + this.style.lineWidth, this.radius * this.compoundScale.scaleWidth, this._prerenderingContext, this.style);
         }
@@ -1672,15 +1663,8 @@ var Circle = function (_PrimitiveComponent) {
     }, {
         key: 'boundingBox',
         get: function get() {
-            /*return {
-                top: this.offset.y - this.radius,
-                left: this.offset.x - this.radius,
-                bottom: this.offset.y + this.radius,
-                right: this.offset.x + this.radius
-            };*/
-
             //TODO: possibly memory inefficient - need to research:
-            //strokes are centered over the mathematical perimeter -
+            //strokes are (were?) centered over the mathematical perimeter -
             //so half the stroke laid within the perimeter, and the
             //other half laid outside. for some reason, this doesn't
             //work for (0 < lineWidth < 2.0).
@@ -1701,7 +1685,7 @@ var Circle = function (_PrimitiveComponent) {
 
 exports.default = Circle;
 
-},{"./PrimitiveComponent":6,"./Renderer":8}],5:[function(require,module,exports){
+},{"./PrimitiveComponent":7,"./Renderer":9}],5:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1709,6 +1693,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _set = function set(object, property, value, receiver) { var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent !== null) { set(parent, property, value, receiver); } } else if ("value" in desc && desc.writable) { desc.value = value; } else { var setter = desc.set; if (setter !== undefined) { setter.call(receiver, value); } } return value; };
 
 var _PrimitiveComponent2 = require('./PrimitiveComponent');
 
@@ -1735,7 +1721,7 @@ var Composition = function (_PrimitiveComponent) {
     _inherits(Composition, _PrimitiveComponent);
 
     /**
-     * @param {object} options
+     * @param {object} options object settings
      */
     function Composition(options) {
         _classCallCheck(this, Composition);
@@ -1748,6 +1734,7 @@ var Composition = function (_PrimitiveComponent) {
     }
 
     /**
+     * children of this composition
      * @type {Array} children the which compose this object
      */
 
@@ -1771,8 +1758,8 @@ var Composition = function (_PrimitiveComponent) {
         /**
          * get the top-most child at the (x, y)
          * @return {object} childAt the first child below the point
-         * @param {number} x
-         * @param {number} y
+         * @param {number} x the x coordinate
+         * @param {number} y the y coordinate
          */
 
     }, {
@@ -1796,8 +1783,8 @@ var Composition = function (_PrimitiveComponent) {
         value: function addChild(child) {
             child.parent = this;
             this.children.push(child);
-            this.needsRender = true;
-            this.needsDraw = true;
+            _set(Composition.prototype.__proto__ || Object.getPrototypeOf(Composition.prototype), 'needsRender', true, this);
+            _set(Composition.prototype.__proto__ || Object.getPrototypeOf(Composition.prototype), 'needsDraw', true, this);
             //TODO: make this hook more generic
             //by using a registry
             //if (this.onchildadded) {
@@ -1817,8 +1804,8 @@ var Composition = function (_PrimitiveComponent) {
             if (child) {
                 var index = this.children.indexOf(child);
                 if (index >= 0) {
-                    this.needsRender = true;
-                    this.needsDraw = true;
+                    _set(Composition.prototype.__proto__ || Object.getPrototypeOf(Composition.prototype), 'needsRender', true, this);
+                    _set(Composition.prototype.__proto__ || Object.getPrototypeOf(Composition.prototype), 'needsDraw', true, this);
                     return this.children.splice(index, 1);
                 }
             }
@@ -1937,7 +1924,98 @@ var Composition = function (_PrimitiveComponent) {
 
 exports.default = Composition;
 
-},{"./PrimitiveComponent":6}],6:[function(require,module,exports){
+},{"./PrimitiveComponent":7}],6:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _withoutblas = require('vectorious/withoutblas');
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/**
+ * A line
+ */
+var Line = function () {
+    /**
+     * A Line can be defined by two points, p1 and p2, through
+     * which it passes. Here, an anchor point is supplied for p1,
+     * and a unit vector, direction, is added to it to provided
+     * the second.
+     * @param {object} anchor
+     * @param {object} direction
+     */
+    function Line(anchor, direction) {
+        _classCallCheck(this, Line);
+
+        /**
+         * @type {object} p1 a vector describing a point through which the line passes
+         */
+        this.p1 = anchor;
+
+        /**
+         * @type {object} direction a unit vector describing the direction from p1
+         */
+        this.direction = direction;
+
+        /**
+         * @type {object} a vector describing a second point through which the line passes
+         */
+        this.p2 = _withoutblas.Vector.add(this.p1, this.direction);
+    }
+
+    /**
+     * determine the location that this line intersects with another, if at all
+     * @param {object} l the Line to test for intersection against this Line
+     * @return {object} the vector of the location of intersection, or null if the lines are parallel
+     */
+
+
+    _createClass(Line, [{
+        key: 'intersectionWith',
+        value: function intersectionWith(l) {
+            return Line.intersection(this, l);
+        }
+
+        /**
+         * determine the location that these lines intersect, if at all
+         * @param {object} l1 the first Line to test for intersection
+         * @param {object} l2 the second Line to test for intersection
+         * @return {object} the vector of the location of intersection, or null if the lines are parallel
+         */
+
+    }], [{
+        key: 'intersection',
+        value: function intersection(l1, l2) {
+            var x1 = l1.p1.x,
+                x2 = l1.p2.x,
+                x3 = l2.p1.x,
+                x4 = l2.p2.x;
+            var y1 = l1.p1.y,
+                y2 = l1.p2.y,
+                y3 = l2.p1.y,
+                y4 = l2.p2.y;
+            var denominator = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+            if (denominator === 0) {
+                return null;
+            }
+
+            var xNumerator = (x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4);
+            var yNumerator = (x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4);
+            return new _withoutblas.Vector([xNumerator / denominator, yNumerator / denominator]);
+        }
+    }]);
+
+    return Line;
+}();
+
+exports.default = Line;
+
+},{"vectorious/withoutblas":3}],7:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1966,9 +2044,8 @@ var PrimitiveComponent = function () {
     function PrimitiveComponent(options) {
         _classCallCheck(this, PrimitiveComponent);
 
-        if (!options) {
-            options = {};
-        }
+        options = options || {};
+
         /**
          * does the object need to be redrawn?
          * @type {boolean} _needsDraw
@@ -2584,7 +2661,7 @@ var PrimitiveComponent = function () {
 
 exports.default = PrimitiveComponent;
 
-},{"./Renderer":8,"vectorious/withoutblas":3}],7:[function(require,module,exports){
+},{"./Renderer":9,"vectorious/withoutblas":3}],8:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2639,6 +2716,7 @@ var Rectangle = function (_PrimitiveComponent) {
 
   /**
    * get the bounding box of the rectangle
+   * @type {{top:number, left:number, bottom:number, right:number}} boundingBox
    */
 
 
@@ -2648,6 +2726,7 @@ var Rectangle = function (_PrimitiveComponent) {
 
     /**
      * render the rectangle
+     * @override
      */
     value: function render() {
       _Renderer2.default.drawRectangle(this.style.lineWidth, this.style.lineWidth, this.width * this.compoundScale.scaleWidth, this.height * this.compoundScale.scaleHeight, this._prerenderingContext, this.style);
@@ -2669,7 +2748,7 @@ var Rectangle = function (_PrimitiveComponent) {
 
 exports.default = Rectangle;
 
-},{"./PrimitiveComponent":6,"./Renderer":8}],8:[function(require,module,exports){
+},{"./PrimitiveComponent":7,"./Renderer":9}],9:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2804,7 +2883,7 @@ var Renderer = function () {
             context.closePath();
         }
 
-        /*
+        /**
          * Draw an ellipse
          * @param {number} x the x coordinate of the center of the ellipse
          * @param {number} y the y coordinate of the center of the ellipse
@@ -2826,7 +2905,7 @@ var Renderer = function () {
             context.closePath();
         }
 
-        /*
+        /**
          * Draw a circle
          * @param {number} x the x coordinate of the center of the circle
          * @param {number} y the y coordinate of the center of the circle
@@ -2848,7 +2927,7 @@ var Renderer = function () {
             context.closePath();
         }
 
-        /*
+        /**
          * Draw text
          * @param {number} x the x coordinate of the top let corner
          * @param {number} y the y coordinate of the top left corner
@@ -2867,7 +2946,7 @@ var Renderer = function () {
             context.closePath();
         }
 
-        /*
+        /**
          * Draw an image
          * @param {number} x the x coordinate of the top let corner
          * @param {number} y the y coordinate of the top left corner
@@ -2889,11 +2968,12 @@ var Renderer = function () {
         }
 
         //TODO: this should probably be exposed elsewhere/differently
-        /*
+        /**
          * Measure the text
          * @param {string} text the text to be measured
          * @param {object} context the 2D Context object for a canvas - required for measurement to occur, but may be arbitrary
          * @param {object} style the style options to be used when measuring the text
+         * @return {object} [TextMetrics](https://developer.mozilla.org/en-US/docs/Web/API/TextMetrics) object containing info like Width
          */
 
     }, {
@@ -2917,7 +2997,7 @@ exports.DEFAULTS = DEFAULTS;
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.DEFAULTS = exports.Rectangle = exports.Circle = exports.Composition = exports.PrimitiveComponent = exports.Renderer = exports.CanvasCompositor = undefined;
+exports.DEFAULTS = exports.Line = exports.Rectangle = exports.Circle = exports.Composition = exports.PrimitiveComponent = exports.Renderer = exports.CanvasCompositor = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -2938,6 +3018,10 @@ var _Circle2 = _interopRequireDefault(_Circle);
 var _Rectangle = require('./Rectangle');
 
 var _Rectangle2 = _interopRequireDefault(_Rectangle);
+
+var _Line = require('./Line');
+
+var _Line2 = _interopRequireDefault(_Line);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -3548,11 +3632,9 @@ exports.PrimitiveComponent = _PrimitiveComponent2.default;
 exports.Composition = _Composition2.default;
 exports.Circle = _Circle2.default;
 exports.Rectangle = _Rectangle2.default;
+exports.Line = _Line2.default;
 exports.DEFAULTS = _Renderer.DEFAULTS;
-//export Primitive;
-//export Composition
-//export Circle;
 
-},{"./Circle":4,"./Composition":5,"./PrimitiveComponent":6,"./Rectangle":7,"./Renderer":8}]},{},[])
+},{"./Circle":4,"./Composition":5,"./Line":6,"./PrimitiveComponent":7,"./Rectangle":8,"./Renderer":9}]},{},[])
 
 //# sourceMappingURL=canvas-compositor.js.map

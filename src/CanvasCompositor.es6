@@ -7,6 +7,7 @@ import Composition from './Composition';
 import PrimitiveComponent from './PrimitiveComponent';
 import Circle from './Circle';
 import Rectangle from './Rectangle';
+import Line from './Line';
 
 //const FPS_EPSILON = 10; // +/- 10ms for animation loop to determine if enough time has passed to render
 const DEFAULT_TARGET_FPS = 1000 / 60; //amount of time that must pass before rendering
@@ -362,8 +363,6 @@ export {
     Composition,
     Circle,
     Rectangle,
+    Line,
     DEFAULTS
 };
-//export Primitive;
-//export Composition
-//export Circle;

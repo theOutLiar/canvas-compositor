@@ -105,7 +105,7 @@ export default class Renderer {
         context.closePath();
     }
 
-    /*
+    /**
      * Draw an ellipse
      * @param {number} x the x coordinate of the center of the ellipse
      * @param {number} y the y coordinate of the center of the ellipse
@@ -124,7 +124,7 @@ export default class Renderer {
         context.closePath();
     }
 
-    /*
+    /**
      * Draw a circle
      * @param {number} x the x coordinate of the center of the circle
      * @param {number} y the y coordinate of the center of the circle
@@ -143,7 +143,7 @@ export default class Renderer {
         context.closePath();
     }
 
-    /*
+    /**
      * Draw text
      * @param {number} x the x coordinate of the top let corner
      * @param {number} y the y coordinate of the top left corner
@@ -159,7 +159,7 @@ export default class Renderer {
         context.closePath();
     }
 
-    /*
+    /**
      * Draw an image
      * @param {number} x the x coordinate of the top let corner
      * @param {number} y the y coordinate of the top left corner
@@ -178,11 +178,12 @@ export default class Renderer {
     }
 
     //TODO: this should probably be exposed elsewhere/differently
-    /*
+    /**
      * Measure the text
      * @param {string} text the text to be measured
      * @param {object} context the 2D Context object for a canvas - required for measurement to occur, but may be arbitrary
      * @param {object} style the style options to be used when measuring the text
+     * @return {object} [TextMetrics](https://developer.mozilla.org/en-US/docs/Web/API/TextMetrics) object containing info like Width
      */
     static measureText(text, context, style) {
         Object.assign(context, style);

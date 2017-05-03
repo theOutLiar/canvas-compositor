@@ -25,6 +25,7 @@ export default class Rectangle extends PrimitiveComponent {
 
     /**
      * get the bounding box of the rectangle
+     * @type {{top:number, left:number, bottom:number, right:number}} boundingBox
      */
     get boundingBox() {
         return {
@@ -37,6 +38,7 @@ export default class Rectangle extends PrimitiveComponent {
 
     /**
      * render the rectangle
+     * @override
      */
     render() {
         Renderer.drawRectangle((this.style.lineWidth),

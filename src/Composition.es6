@@ -11,15 +11,16 @@ import PrimitiveComponent from './PrimitiveComponent';
  */
 export default class Composition extends PrimitiveComponent {
     /**
-     * @param {object} options
+     * @param {object} options object settings
      */
     constructor(options) {
         super(options);
-        options = options || {}
+        options = options || {};
         this._children = options.children || [];
     }
 
     /**
+     * children of this composition
      * @type {Array} children the which compose this object
      */
     get children() {
@@ -65,8 +66,8 @@ export default class Composition extends PrimitiveComponent {
     /**
      * get the top-most child at the (x, y)
      * @return {object} childAt the first child below the point
-     * @param {number} x
-     * @param {number} y
+     * @param {number} x the x coordinate
+     * @param {number} y the y coordinate
      */
     childAt(x, y) {
         //loop over the children in reverse because drawing order
@@ -84,8 +85,8 @@ export default class Composition extends PrimitiveComponent {
     addChild(child) {
         child.parent = this;
         this.children.push(child);
-        this.needsRender = true;
-        this.needsDraw = true;
+        super.needsRender = true;
+        super.needsDraw = true;
         //TODO: make this hook more generic
         //by using a registry
         //if (this.onchildadded) {
@@ -102,8 +103,8 @@ export default class Composition extends PrimitiveComponent {
         if (child) {
             var index = this.children.indexOf(child);
             if (index >= 0) {
-                this.needsRender = true;
-                this.needsDraw = true;
+                super.needsRender = true;
+                super.needsDraw = true;
                 return this.children.splice(index, 1);
             }
         }

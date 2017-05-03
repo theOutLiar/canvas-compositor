@@ -19,9 +19,8 @@ export default class PrimitiveComponent {
      */
     constructor(options) {
 
-        if (!options) {
-            options = {};
-        }
+        options = options || {};
+
         /**
          * does the object need to be redrawn?
          * @type {boolean} _needsDraw

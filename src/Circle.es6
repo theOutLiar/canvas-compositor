@@ -21,17 +21,11 @@ export default class Circle extends PrimitiveComponent {
 
     /**
      * get the bounding box of the circle;
+     * @type {{top:number, left: number, bottom:number, right:number}}
      */
     get boundingBox() {
-        /*return {
-            top: this.offset.y - this.radius,
-            left: this.offset.x - this.radius,
-            bottom: this.offset.y + this.radius,
-            right: this.offset.x + this.radius
-        };*/
-
         //TODO: possibly memory inefficient - need to research:
-        //strokes are centered over the mathematical perimeter -
+        //strokes are (were?) centered over the mathematical perimeter -
         //so half the stroke laid within the perimeter, and the
         //other half laid outside. for some reason, this doesn't
         //work for (0 < lineWidth < 2.0).
@@ -55,20 +49,10 @@ export default class Circle extends PrimitiveComponent {
     }
 
     /**
-     * override the render function for drawing cirtcles specifically
+     * override the render function for drawing circles specifically
      * @override
      */
     render() {
-        /*Renderer.drawCircle(
-            //because prerendering happens on a canvas with dimensions equal to the diameter,
-            //the radius can serve as both x and y coordinates on that canvas
-            this.radius,
-            this.radius,
-            this.radius,
-            this._prerenderingContext,
-            this.style
-        );*/
-
         //the below is to ensure the proper placement when scaling/line widths are accounted for
         Renderer.drawCircle(
             (this.radius * this.compoundScale.scaleWidth) + (this.style.lineWidth),
