@@ -8,6 +8,7 @@ import PrimitiveComponent from './PrimitiveComponent';
 import Circle from './Circle';
 import Rectangle from './Rectangle';
 import Line from './Line';
+import VectorPath from './VectorPath';
 
 //const FPS_EPSILON = 10; // +/- 10ms for animation loop to determine if enough time has passed to render
 const DEFAULT_TARGET_FPS = 1000 / 60; //amount of time that must pass before rendering
@@ -364,5 +365,6 @@ export {
     Circle,
     Rectangle,
     Line,
+    VectorPath,
     DEFAULTS
 };

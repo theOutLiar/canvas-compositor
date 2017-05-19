@@ -17,7 +17,8 @@
 
         var CanvasCompositor = ccMod.CanvasCompositor,
             Circle = ccMod.Circle,
-            Rectangle = ccMod.Rectangle;
+            Rectangle = ccMod.Rectangle,
+            VectorPath = ccMod.VectorPath;
 
         var _myCC = new CanvasCompositor(document.getElementById('test-canvas'));
 
@@ -38,13 +39,36 @@
             y: 300,
             style: {
                 fillStyle: '#ccffcc',
-                lineWidth:1.0
+                lineWidth: 1.0
             },
             draggable: true
         })
 
+        var _path = new VectorPath({
+            vertices: [{
+                x: 200,
+                y: 100
+            }, {
+                x: 100,
+                y: 400
+            }, {
+                x: 400,
+                y: 200
+            }, {
+                x: 800,
+                y: 200
+            }],
+            style: {
+                strokeStyle: 'orange',
+                lineWidth: 10.0
+            },
+            draggable: true
+        });
+
         _myCC.scene.addChild(_circ);
         _myCC.scene.addChild(_rect);
+        _myCC.scene.addChild(_path);
+
     </script>
 </body>
 

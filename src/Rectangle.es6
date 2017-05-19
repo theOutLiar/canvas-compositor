@@ -9,7 +9,7 @@ export default class Rectangle extends PrimitiveComponent {
      * @param {object} options the options for the object
      */
     constructor(options) {
-        super(options)
+        super(options);
         /**
          * the width of the rectangle
          * @type {number} width
@@ -28,11 +28,13 @@ export default class Rectangle extends PrimitiveComponent {
      * @type {{top:number, left:number, bottom:number, right:number}} boundingBox
      */
     get boundingBox() {
+        let offset = this.offset;
+        let compoundScale = this.compoundScale;
         return {
-            top: this.offset.y - (this.style.lineWidth),
-            left: this.offset.x - (this.style.lineWidth),
-            bottom: this.offset.y + (this.compoundScale.scaleHeight * this.height) + (this.style.lineWidth),
-            right: this.offset.x + (this.compoundScale.scaleWidth * this.width) + (this.style.lineWidth)
+            top: offset.y - (this.style.lineWidth),
+            left: offset.x - (this.style.lineWidth),
+            bottom: offset.y + (compoundScale.scaleHeight * this.height) + (this.style.lineWidth),
+            right: offset.x + (compoundScale.scaleWidth * this.width) + (this.style.lineWidth)
         };
     }
 
@@ -41,10 +43,11 @@ export default class Rectangle extends PrimitiveComponent {
      * @override
      */
     render() {
+        let compoundScale = this.compoundScale;
         Renderer.drawRectangle((this.style.lineWidth),
             (this.style.lineWidth),
-            this.width * this.compoundScale.scaleWidth,
-            this.height * this.compoundScale.scaleHeight,
+            this.width * compoundScale.scaleWidth,
+            this.height * compoundScale.scaleHeight,
             this._prerenderingContext,
             this.style);
     }

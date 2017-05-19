@@ -1663,7 +1663,7 @@ var Circle = function (_PrimitiveComponent) {
     }, {
         key: 'boundingBox',
         get: function get() {
-            //TODO: possibly memory inefficient - need to research:
+            //TODO: possibly memory-inefficient - need to research:
             //strokes are (were?) centered over the mathematical perimeter -
             //so half the stroke laid within the perimeter, and the
             //other half laid outside. for some reason, this doesn't
@@ -2729,16 +2729,19 @@ var Rectangle = function (_PrimitiveComponent) {
      * @override
      */
     value: function render() {
-      _Renderer2.default.drawRectangle(this.style.lineWidth, this.style.lineWidth, this.width * this.compoundScale.scaleWidth, this.height * this.compoundScale.scaleHeight, this._prerenderingContext, this.style);
+      var compoundScale = this.compoundScale;
+      _Renderer2.default.drawRectangle(this.style.lineWidth, this.style.lineWidth, this.width * compoundScale.scaleWidth, this.height * compoundScale.scaleHeight, this._prerenderingContext, this.style);
     }
   }, {
     key: 'boundingBox',
     get: function get() {
+      var offset = this.offset;
+      var compoundScale = this.compoundScale;
       return {
-        top: this.offset.y - this.style.lineWidth,
-        left: this.offset.x - this.style.lineWidth,
-        bottom: this.offset.y + this.compoundScale.scaleHeight * this.height + this.style.lineWidth,
-        right: this.offset.x + this.compoundScale.scaleWidth * this.width + this.style.lineWidth
+        top: offset.y - this.style.lineWidth,
+        left: offset.x - this.style.lineWidth,
+        bottom: offset.y + compoundScale.scaleHeight * this.height + this.style.lineWidth,
+        right: offset.x + compoundScale.scaleWidth * this.width + this.style.lineWidth
       };
     }
   }]);
@@ -2991,13 +2994,207 @@ exports.default = Renderer;
 exports.Renderer = Renderer;
 exports.DEFAULTS = DEFAULTS;
 
-},{}],"canvas-compositor":[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.DEFAULTS = exports.Line = exports.Rectangle = exports.Circle = exports.Composition = exports.PrimitiveComponent = exports.Renderer = exports.CanvasCompositor = undefined;
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+var _set = function set(object, property, value, receiver) { var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent !== null) { set(parent, property, value, receiver); } } else if ("value" in desc && desc.writable) { desc.value = value; } else { var setter = desc.set; if (setter !== undefined) { setter.call(receiver, value); } } return value; };
+
+var _Renderer = require('./Renderer');
+
+var _Renderer2 = _interopRequireDefault(_Renderer);
+
+var _PrimitiveComponent2 = require('./PrimitiveComponent');
+
+var _PrimitiveComponent3 = _interopRequireDefault(_PrimitiveComponent2);
+
+var _withoutblas = require('vectorious/withoutblas');
+
+var _Line = require('./Line');
+
+var _Line2 = _interopRequireDefault(_Line);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+//would name the file 'path', but damn near everything
+//relies on the filesystem 'path' module
+
+var VectorPath = function (_PrimitiveComponent) {
+    _inherits(VectorPath, _PrimitiveComponent);
+
+    function VectorPath(options) {
+        _classCallCheck(this, VectorPath);
+
+        var _this = _possibleConstructorReturn(this, (VectorPath.__proto__ || Object.getPrototypeOf(VectorPath)).call(this, options));
+
+        options.vertices = options.vertices || [];
+
+        _this.unscaledLineWidth = _this.style.lineWidth;
+
+        _this.vertices = options.vertices.map(function (v) {
+            return new _withoutblas.Vector([v.x, v.y]);
+        });
+
+        var yCoordinates = _this.vertices.map(function (v) {
+            return v.y;
+        });
+        var xCoordinates = _this.vertices.map(function (v) {
+            return v.x;
+        });
+
+        //uses `apply` so we can supply the list as a list of arguments
+        _this._left = Math.min.apply(null, xCoordinates);
+        _this._top = Math.min.apply(null, yCoordinates);
+        _this._right = Math.max.apply(null, xCoordinates);
+        _this._bottom = Math.max.apply(null, yCoordinates);
+
+        _set(VectorPath.prototype.__proto__ || Object.getPrototypeOf(VectorPath.prototype), 'd', new _withoutblas.Vector([_this._left, _this._top]), _this);
+        var normalizationVector = _this.d;
+        _this._normalizedVertices = _this.vertices.map(function (v) {
+            return v.subtract(normalizationVector);
+        });
+
+        _this._normalizedBoundingBox = null;
+        return _this;
+    }
+
+    _createClass(VectorPath, [{
+        key: 'pointIsInObject',
+
+
+        /**
+         * determine whether the point is in the object
+         * even/odd line intersection test
+         * @param {number} x the x coordinate
+         * @param {number} y the y coordinate
+         * @return {boolean} whether or not the point is in the object
+         */
+        value: function pointIsInObject(x, y) {
+            var inside = false;
+            if (_get(VectorPath.prototype.__proto__ || Object.getPrototypeOf(VectorPath.prototype), 'pointIsInObject', this).call(this, x, y)) {
+                //create a line that travels from this point in any direction
+                //if it intersects the polygon an odd number of times, it is inside
+
+                //a line can be described as a vertex and a direction
+                var l = new _Line2.default(new _withoutblas.Vector([x, y]), new _withoutblas.Vector([1, 0]));
+
+                var compoundScale = this.compoundScale;
+                var offset = this.offset;
+
+                for (var i = 0; i < this._normalizedVertices.length; i++) {
+                    var j = i + 1 >= this._normalizedVertices.length ? 0 : i + 1;
+
+                    var v = scaleVectorXY(this._normalizedVertices[i], compoundScale.scaleWidth, compoundScale.scaleHeight).add(offset);
+
+                    var w = scaleVectorXY(this._normalizedVertices[j], compoundScale.scaleWidth, compoundScale.scaleHeight).add(offset);
+
+                    var edgeDirection = _withoutblas.Vector.subtract(w, v).normalize();
+                    var edge = new _Line2.default(v, edgeDirection);
+                    var intersection = edge.intersectionWith(l);
+
+                    //if the lines are parallel/colocated, no need to count;
+                    if (intersection === null) {
+                        continue;
+                    }
+
+                    //TODO: should replace 0s with epsilons, where epsilon is
+                    //the threshhold for considering two things as touching/intersecting
+                    var intersectToTheRight = intersection.x - x >= 0;
+
+                    //if the intersection is not to the right, no need to count
+                    if (!intersectToTheRight) {
+                        continue;
+                    }
+
+                    var negativeX = edgeDirection.x < 0;
+                    var negativeY = edgeDirection.y < 0;
+
+                    //technically speaking, bottom and top should be reversed,
+                    //since y=0 is the top left corner of the screen - it's
+                    //just easier to think about it mathematically this way
+                    var leftVertex = negativeX ? w : v;
+                    var rightVertex = negativeX ? v : w;
+                    var topVertex = negativeY ? w : v;
+                    var bottomVertex = negativeY ? v : w;
+
+                    var intersectWithinSegment = intersection.x - leftVertex.x >= 0 && rightVertex.x - intersection.x >= 0 && intersection.y - topVertex.y >= 0 && bottomVertex.y - intersection.y >= 0;
+
+                    if (intersectWithinSegment) {
+                        inside = !inside;
+                    }
+                }
+            }
+            return inside;
+        }
+    }, {
+        key: 'render',
+        value: function render() {
+            var boundingBox = this.boundingBox;
+            var offset = this.offset;
+            var compoundScale = this.compoundScale;
+            //normalize the vertices (left- and top-most x/y-values should be 0 and 0)
+            var pathToDraw = this._normalizedVertices.map(function (vertex) {
+                return scaleVectorXY(vertex, compoundScale.scaleWidth, compoundScale.scaleHeight).subtract(new _withoutblas.Vector([boundingBox.left, boundingBox.top])).add(offset);
+            });
+            _Renderer2.default.drawPath(pathToDraw, this._prerenderingContext, this.style);
+        }
+    }, {
+        key: 'boundingBox',
+        get: function get() {
+            this._normalizedBoundingBox = {
+                top: 0,
+                left: 0,
+                right: this._right - this._left,
+                bottom: this._bottom - this._top
+            };
+
+            return {
+                top: this._normalizedBoundingBox.top * this.compoundScale.scaleHeight + this.offset.y - this.style.lineWidth,
+                left: this._normalizedBoundingBox.left * this.compoundScale.scaleWidth + this.offset.x - this.style.lineWidth,
+                bottom: this._normalizedBoundingBox.bottom * this.compoundScale.scaleHeight + this.offset.y + this.style.lineWidth,
+                right: this._normalizedBoundingBox.right * this.compoundScale.scaleWidth + this.offset.x + this.style.lineWidth
+            };
+        }
+    }]);
+
+    return VectorPath;
+}(_PrimitiveComponent3.default);
+
+exports.default = VectorPath;
+
+
+function getUnitVector(vector) {
+    var magnitude = vector.magnitude();
+    return new _withoutblas.Vector([vector.x / magnitude, vector.y / magnitude]);
+}
+
+/**
+ * scale both the X and Y components of a vector
+ */
+function scaleVectorXY(vector, scaleX, scaleY) {
+    return new _withoutblas.Vector([vector.x * scaleX, vector.y * scaleY]);
+}
+
+},{"./Line":6,"./PrimitiveComponent":7,"./Renderer":9,"vectorious/withoutblas":3}],"canvas-compositor":[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.DEFAULTS = exports.VectorPath = exports.Line = exports.Rectangle = exports.Circle = exports.Composition = exports.PrimitiveComponent = exports.Renderer = exports.CanvasCompositor = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -3022,6 +3219,10 @@ var _Rectangle2 = _interopRequireDefault(_Rectangle);
 var _Line = require('./Line');
 
 var _Line2 = _interopRequireDefault(_Line);
+
+var _VectorPath = require('./VectorPath');
+
+var _VectorPath2 = _interopRequireDefault(_VectorPath);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -3633,8 +3834,9 @@ exports.Composition = _Composition2.default;
 exports.Circle = _Circle2.default;
 exports.Rectangle = _Rectangle2.default;
 exports.Line = _Line2.default;
+exports.VectorPath = _VectorPath2.default;
 exports.DEFAULTS = _Renderer.DEFAULTS;
 
-},{"./Circle":4,"./Composition":5,"./Line":6,"./PrimitiveComponent":7,"./Rectangle":8,"./Renderer":9}]},{},[])
+},{"./Circle":4,"./Composition":5,"./Line":6,"./PrimitiveComponent":7,"./Rectangle":8,"./Renderer":9,"./VectorPath":10}]},{},[])
 
 //# sourceMappingURL=canvas-compositor.js.map

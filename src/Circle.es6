@@ -24,7 +24,7 @@ export default class Circle extends PrimitiveComponent {
      * @type {{top:number, left: number, bottom:number, right:number}}
      */
     get boundingBox() {
-        //TODO: possibly memory inefficient - need to research:
+        //TODO: possibly memory-inefficient - need to research:
         //strokes are (were?) centered over the mathematical perimeter -
         //so half the stroke laid within the perimeter, and the
         //other half laid outside. for some reason, this doesn't
