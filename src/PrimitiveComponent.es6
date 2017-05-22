@@ -417,7 +417,7 @@ export default class PrimitiveComponent {
         	this._prerenderingContext.closePath();
         }*/
 
-        //offsets are for prerendering context
+        //offsets are for prerendering contexts of compositions
         let x = this.boundingBox.left + (offset && offset.left ? offset.left : 0);
         let y = this.boundingBox.top + (offset && offset.top ? offset.top : 0);
         Renderer.drawImage(x, y, this._prerenderingCanvas, context, this.style);

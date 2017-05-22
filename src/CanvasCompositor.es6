@@ -6,6 +6,7 @@ import {
 import Composition from './Composition';
 import PrimitiveComponent from './PrimitiveComponent';
 import Circle from './Circle';
+import Ellipse from './Ellipse';
 import Rectangle from './Rectangle';
 import Line from './Line';
 import VectorPath from './VectorPath';
@@ -364,6 +365,7 @@ export {
     PrimitiveComponent,
     Composition,
     Circle,
+    Ellipse,
     Rectangle,
     Line,
     VectorPath,

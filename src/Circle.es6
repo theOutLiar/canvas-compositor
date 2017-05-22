@@ -32,18 +32,20 @@ export default class Circle extends PrimitiveComponent {
         //
         //it's just a pixel, but when a thousand objects are on screen,
         //that'll make a difference
+        let offset = this.offset;
+        let scale = this.compoundScale;
         return {
-            top: this.offset.y -
-                ((this.radius * this.compoundScale.scaleHeight) +
+            top: offset.y -
+                ((this.radius * scale.scaleHeight) +
                     (this.style.lineWidth)),
-            left: this.offset.x -
-                ((this.radius * this.compoundScale.scaleWidth) +
+            left: offset.x -
+                ((this.radius * scale.scaleWidth) +
                     (this.style.lineWidth)),
-            bottom: this.offset.y +
-                (this.radius * this.compoundScale.scaleHeight) +
+            bottom: offset.y +
+                (this.radius * scale.scaleHeight) +
                 (this.style.lineWidth),
-            right: this.offset.x +
-                (this.radius * this.compoundScale.scaleWidth) +
+            right: offset.x +
+                (this.radius * scale.scaleWidth) +
                 (this.style.lineWidth)
         };
     }
@@ -54,10 +56,12 @@ export default class Circle extends PrimitiveComponent {
      */
     render() {
         //the below is to ensure the proper placement when scaling/line widths are accounted for
+        let scale = this.compoundScale;
+        let lineWidth = this.style.lineWidth;
         Renderer.drawCircle(
-            (this.radius * this.compoundScale.scaleWidth) + (this.style.lineWidth),
-            (this.radius * this.compoundScale.scaleHeight) + (this.style.lineWidth),
-            (this.radius * this.compoundScale.scaleWidth),
+            (this.radius * scale.scaleWidth) + lineWidth,
+            (this.radius * scale.scaleHeight) + lineWidth,
+            (this.radius * scale.scaleWidth),
             this._prerenderingContext,
             this.style
         );
@@ -72,16 +76,16 @@ export default class Circle extends PrimitiveComponent {
      */
     pointIsInObject(x, y) {
 
-        //if it's not in the bounding box, don't bother with the math
-        if (super.pointIsInObject(x, y)) {
-            let a = x - this.offset.x;
-            let b = y - this.offset.y;
+        let offset = this.offset;
+
+        //don't bother checking the bounding box because
+        //pythagorean formula is closed-form
+            let a = x - offset.x;
+            let b = y - offset.y;
             let c = this.radius;
 
             //thanks pythagoras~!
             return (a * a) + (b * b) <= (c * c);
-        }
-        return false;
         //use the below when scaling is reimplemented
         /*
 		return (

@@ -1570,8 +1570,6 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
-
 var _Renderer = require('./Renderer');
 
 var _Renderer2 = _interopRequireDefault(_Renderer);
@@ -1628,7 +1626,9 @@ var Circle = function (_PrimitiveComponent) {
          */
         value: function render() {
             //the below is to ensure the proper placement when scaling/line widths are accounted for
-            _Renderer2.default.drawCircle(this.radius * this.compoundScale.scaleWidth + this.style.lineWidth, this.radius * this.compoundScale.scaleHeight + this.style.lineWidth, this.radius * this.compoundScale.scaleWidth, this._prerenderingContext, this.style);
+            var scale = this.compoundScale;
+            var lineWidth = this.style.lineWidth;
+            _Renderer2.default.drawCircle(this.radius * scale.scaleWidth + lineWidth, this.radius * scale.scaleHeight + lineWidth, this.radius * scale.scaleWidth, this._prerenderingContext, this.style);
         }
 
         /**
@@ -1643,16 +1643,16 @@ var Circle = function (_PrimitiveComponent) {
         key: 'pointIsInObject',
         value: function pointIsInObject(x, y) {
 
-            //if it's not in the bounding box, don't bother with the math
-            if (_get(Circle.prototype.__proto__ || Object.getPrototypeOf(Circle.prototype), 'pointIsInObject', this).call(this, x, y)) {
-                var a = x - this.offset.x;
-                var b = y - this.offset.y;
-                var c = this.radius;
+            var offset = this.offset;
 
-                //thanks pythagoras~!
-                return a * a + b * b <= c * c;
-            }
-            return false;
+            //don't bother checking the bounding box because
+            //pythagorean formula is closed-form
+            var a = x - offset.x;
+            var b = y - offset.y;
+            var c = this.radius;
+
+            //thanks pythagoras~!
+            return a * a + b * b <= c * c;
             //use the below when scaling is reimplemented
             /*
             return (
@@ -1671,11 +1671,13 @@ var Circle = function (_PrimitiveComponent) {
             //
             //it's just a pixel, but when a thousand objects are on screen,
             //that'll make a difference
+            var offset = this.offset;
+            var scale = this.compoundScale;
             return {
-                top: this.offset.y - (this.radius * this.compoundScale.scaleHeight + this.style.lineWidth),
-                left: this.offset.x - (this.radius * this.compoundScale.scaleWidth + this.style.lineWidth),
-                bottom: this.offset.y + this.radius * this.compoundScale.scaleHeight + this.style.lineWidth,
-                right: this.offset.x + this.radius * this.compoundScale.scaleWidth + this.style.lineWidth
+                top: offset.y - (this.radius * scale.scaleHeight + this.style.lineWidth),
+                left: offset.x - (this.radius * scale.scaleWidth + this.style.lineWidth),
+                bottom: offset.y + this.radius * scale.scaleHeight + this.style.lineWidth,
+                right: offset.x + this.radius * scale.scaleWidth + this.style.lineWidth
             };
         }
     }]);
@@ -1685,7 +1687,7 @@ var Circle = function (_PrimitiveComponent) {
 
 exports.default = Circle;
 
-},{"./PrimitiveComponent":8,"./Renderer":10}],5:[function(require,module,exports){
+},{"./PrimitiveComponent":9,"./Renderer":11}],5:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1924,7 +1926,123 @@ var Composition = function (_PrimitiveComponent) {
 
 exports.default = Composition;
 
-},{"./PrimitiveComponent":8}],6:[function(require,module,exports){
+},{"./PrimitiveComponent":9}],6:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _Renderer = require('./Renderer');
+
+var _Renderer2 = _interopRequireDefault(_Renderer);
+
+var _PrimitiveComponent2 = require('./PrimitiveComponent');
+
+var _PrimitiveComponent3 = _interopRequireDefault(_PrimitiveComponent2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+/**
+ * An ellipse
+ */
+var Ellipse = function (_PrimitiveComponent) {
+    _inherits(Ellipse, _PrimitiveComponent);
+
+    /**
+     * @param {object} options options for the ellipse
+     * @param {number} options.radius the major (horizontal) radius of the ellipse
+     * @param {number} options.minorRadius the minor (vertical) radius of the ellipse
+     */
+    function Ellipse(options) {
+        _classCallCheck(this, Ellipse);
+
+        /**
+         * @type {number} radius the major radius (horizontal) of the ellipse
+         */
+        var _this = _possibleConstructorReturn(this, (Ellipse.__proto__ || Object.getPrototypeOf(Ellipse)).call(this, options));
+
+        _this.radius = options.radius || 0;
+        /**
+         * @type {number} minorRadius the minor radius (vertical) of the ellipse
+         */
+        _this.minorRadius = options.minorRadius || _this.radius || 0;
+        return _this;
+    }
+
+    /**
+     * the bounding box for the ellipse
+     * @type {{top: number, left: number, bottom: number, right: number}} boundingBox
+     */
+
+
+    _createClass(Ellipse, [{
+        key: 'render',
+
+
+        /**
+         * override the render function specifically for ellipses
+         * @override
+         */
+        value: function render() {
+            var scale = this.compoundScale;
+            var lineWidth = this.style.lineWidth;
+            //TODO: work out scaling of major/minor radius
+            //this doesn't make sense
+            _Renderer2.default.drawEllipse(this.radius * scale.scaleWidth + lineWidth, this.minorRadius * scale.scaleHeight + lineWidth, this.radius * scale.scaleWidth, this.minorRadius * scale.scaleHeight, this._prerenderingContext, this.style);
+        }
+        /**
+         * determine whether the point is in the object
+         * basically just the pythagorean theorem
+         * @param {number} x the x coordinate
+         * @param {number} y the y coordinate
+         * @return {boolean} whether or not the point is in the object
+         */
+
+    }, {
+        key: 'pointIsInObject',
+        value: function pointIsInObject(x, y) {
+            var scale = this.compoundScale;
+            var offset = this.offset;
+
+            var a = x - offset.x;
+            var b = y - offset.y;
+
+            var c1 = this.radius * scale.scaleWidth;
+            var c2 = this.minorRadius * scale.scaleHeight;
+
+            //see: http://math.stackexchange.com/questions/76457/check-if-a-point-is-within-an-ellipse
+            return a * a / (c1 * c1) + b * b / (c2 * c2) <= 1;
+        }
+    }, {
+        key: 'boundingBox',
+        get: function get() {
+            var offset = this.offset;
+            var scale = this.compoundScale;
+            var lineWidth = this.style.lineWidth;
+            return {
+                top: offset.y - (this.minorRadius * scale.scaleHeight + lineWidth),
+                left: offset.x - (this.radius * scale.scaleWidth + lineWidth),
+                bottom: offset.y + this.minorRadius * scale.scaleHeight + lineWidth,
+                right: offset.x + this.radius * scale.scaleWidth + lineWidth
+            };
+        }
+    }]);
+
+    return Ellipse;
+}(_PrimitiveComponent3.default);
+
+exports.default = Ellipse;
+
+},{"./PrimitiveComponent":9,"./Renderer":11}],7:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2011,7 +2129,7 @@ var Image = function (_PrimitiveComponent) {
 
 exports.default = Image;
 
-},{"./PrimitiveComponent":8,"./Renderer":10}],7:[function(require,module,exports){
+},{"./PrimitiveComponent":9,"./Renderer":11}],8:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2102,7 +2220,7 @@ var Line = function () {
 
 exports.default = Line;
 
-},{"vectorious/withoutblas":3}],8:[function(require,module,exports){
+},{"vectorious/withoutblas":3}],9:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2374,7 +2492,7 @@ var PrimitiveComponent = function () {
             	this._prerenderingContext.closePath();
             }*/
 
-            //offsets are for prerendering context
+            //offsets are for prerendering contexts of compositions
             var x = this.boundingBox.left + (offset && offset.left ? offset.left : 0);
             var y = this.boundingBox.top + (offset && offset.top ? offset.top : 0);
             _Renderer.Renderer.drawImage(x, y, this._prerenderingCanvas, context, this.style);
@@ -2748,7 +2866,7 @@ var PrimitiveComponent = function () {
 
 exports.default = PrimitiveComponent;
 
-},{"./Renderer":10,"vectorious/withoutblas":3}],9:[function(require,module,exports){
+},{"./Renderer":11,"vectorious/withoutblas":3}],10:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2838,7 +2956,7 @@ var Rectangle = function (_PrimitiveComponent) {
 
 exports.default = Rectangle;
 
-},{"./PrimitiveComponent":8,"./Renderer":10}],10:[function(require,module,exports){
+},{"./PrimitiveComponent":9,"./Renderer":11}],11:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2973,6 +3091,7 @@ var Renderer = function () {
             context.closePath();
         }
 
+        //TODO: provide support for rotation and startAngle parameters
         /**
          * Draw an ellipse
          * @param {number} x the x coordinate of the center of the ellipse
@@ -2988,7 +3107,7 @@ var Renderer = function () {
         value: function drawEllipse(x, y, radius, minorRadius, context, style) {
             Object.assign(context, style);
             context.beginPath();
-            //TODO: 2015-03-12 this is currently only supported by chrome & opera
+            //TODO: 2017-05-22 this is currently not supported by IE
             context.ellipse(x, y, radius, minorRadius, 0, 0, 2 * Math.PI);
             context.fill();
             context.stroke();
@@ -3081,7 +3200,7 @@ exports.default = Renderer;
 exports.Renderer = Renderer;
 exports.DEFAULTS = DEFAULTS;
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -3295,13 +3414,13 @@ function scaleVectorXY(vector, scaleX, scaleY) {
     return new _withoutblas.Vector([vector.x * scaleX, vector.y * scaleY]);
 }
 
-},{"./Line":7,"./PrimitiveComponent":8,"./Renderer":10,"vectorious/withoutblas":3}],"canvas-compositor":[function(require,module,exports){
+},{"./Line":8,"./PrimitiveComponent":9,"./Renderer":11,"vectorious/withoutblas":3}],"canvas-compositor":[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.DEFAULTS = exports.Image = exports.VectorPath = exports.Line = exports.Rectangle = exports.Circle = exports.Composition = exports.PrimitiveComponent = exports.Renderer = exports.CanvasCompositor = undefined;
+exports.DEFAULTS = exports.Image = exports.VectorPath = exports.Line = exports.Rectangle = exports.Ellipse = exports.Circle = exports.Composition = exports.PrimitiveComponent = exports.Renderer = exports.CanvasCompositor = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -3318,6 +3437,10 @@ var _PrimitiveComponent2 = _interopRequireDefault(_PrimitiveComponent);
 var _Circle = require('./Circle');
 
 var _Circle2 = _interopRequireDefault(_Circle);
+
+var _Ellipse = require('./Ellipse');
+
+var _Ellipse2 = _interopRequireDefault(_Ellipse);
 
 var _Rectangle = require('./Rectangle');
 
@@ -3943,12 +4066,13 @@ exports.Renderer = _Renderer.Renderer;
 exports.PrimitiveComponent = _PrimitiveComponent2.default;
 exports.Composition = _Composition2.default;
 exports.Circle = _Circle2.default;
+exports.Ellipse = _Ellipse2.default;
 exports.Rectangle = _Rectangle2.default;
 exports.Line = _Line2.default;
 exports.VectorPath = _VectorPath2.default;
 exports.Image = _Image2.default;
 exports.DEFAULTS = _Renderer.DEFAULTS;
 
-},{"./Circle":4,"./Composition":5,"./Image":6,"./Line":7,"./PrimitiveComponent":8,"./Rectangle":9,"./Renderer":10,"./VectorPath":11}]},{},[])
+},{"./Circle":4,"./Composition":5,"./Ellipse":6,"./Image":7,"./Line":8,"./PrimitiveComponent":9,"./Rectangle":10,"./Renderer":11,"./VectorPath":12}]},{},[])
 
 //# sourceMappingURL=canvas-compositor.js.map

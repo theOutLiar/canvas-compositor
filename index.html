@@ -12,18 +12,20 @@
     <canvas id="test-canvas" width="800" height="600" style="margin-top:20px; border:1px solid black;"></canvas>
     <div class="canvas-debug"></div>
     <script>
+        'use strict';
         //var CCModule = require('canvas-compositor');
-        var ccMod = require('canvas-compositor');
+        let ccMod = require('canvas-compositor');
 
-        var CanvasCompositor = ccMod.CanvasCompositor,
+        let CanvasCompositor = ccMod.CanvasCompositor,
             Circle = ccMod.Circle,
+            Ellipse = ccMod.Ellipse,
             Rectangle = ccMod.Rectangle,
             VectorPath = ccMod.VectorPath,
-            CCImage = ccMod.Image;
+            Image = ccMod.Image;
 
-        var _myCC = new CanvasCompositor(document.getElementById('test-canvas'));
+        let _myCC = new CanvasCompositor(document.getElementById('test-canvas'));
 
-        var _circ = new Circle({
+        let _circ = new Circle({
             radius: 50,
             x: 100,
             y: 100,
@@ -33,7 +35,20 @@
             draggable: true
         });
 
-        var _rect = new Rectangle({
+        let _elip = new Ellipse({
+			x: 200,
+			y: 200,
+			radius: 50,
+            minorRadius: 30,
+			draggable: true,
+			style: {
+				strokeStyle: '#000000',
+				fillStyle: 'blue',
+				lineWidth: 10
+			}
+		});
+
+        let _rect = new Rectangle({
             width: 100,
             height: 50,
             x: 300,
@@ -45,7 +60,7 @@
             draggable: true
         })
 
-        var _path = new VectorPath({
+        let _path = new VectorPath({
             vertices: [{
                 x: 200,
                 y: 100
@@ -66,11 +81,11 @@
             draggable: true
         });
 
-        var _image = null;
-		var i = new Image();
+        let _image = null;
+		let i = new window.Image();
 		i.src = 'demo.png';
 		i.onload = function (e) {
-			_image = new CCImage({
+			_image = new Image({
 				image: i,
 				x: 100,
 				y: 100,
@@ -85,6 +100,7 @@
 
 
         _myCC.scene.addChild(_circ);
+        _myCC.scene.addChild(_elip);
         _myCC.scene.addChild(_rect);
         _myCC.scene.addChild(_path);
 
