@@ -440,11 +440,12 @@ export default class PrimitiveComponent {
      * @return {boolean} whether the point is within the bounding box
      */
     pointIsInBoundingBox(x, y) {
+        let boundingBox = this.boundingBox;
         return (
-            x > this.boundingBox.left &&
-            y > this.boundingBox.top &&
-            x < this.boundingBox.right &&
-            y < this.boundingBox.bottom
+            x > boundingBox.left &&
+            y > boundingBox.top &&
+            x < boundingBox.right &&
+            y < boundingBox.bottom
         );
     }
 

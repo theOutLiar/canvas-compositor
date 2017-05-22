@@ -21,7 +21,8 @@
             Ellipse = ccMod.Ellipse,
             Rectangle = ccMod.Rectangle,
             VectorPath = ccMod.VectorPath,
-            Image = ccMod.Image;
+            Image = ccMod.Image,
+            Text = ccMod.Text;
 
         let _myCC = new CanvasCompositor(document.getElementById('test-canvas'));
 
@@ -36,17 +37,17 @@
         });
 
         let _elip = new Ellipse({
-			x: 200,
-			y: 200,
-			radius: 50,
+            x: 200,
+            y: 200,
+            radius: 50,
             minorRadius: 30,
-			draggable: true,
-			style: {
-				strokeStyle: '#000000',
-				fillStyle: 'blue',
-				lineWidth: 10
-			}
-		});
+            draggable: true,
+            style: {
+                strokeStyle: '#000000',
+                fillStyle: 'blue',
+                lineWidth: 10
+            }
+        });
 
         let _rect = new Rectangle({
             width: 100,
@@ -81,28 +82,40 @@
             draggable: true
         });
 
+        var _text = new Text({
+            x: 100,
+            y: 400,
+            text: 'The quick red fox jumps over the lazy brown dog.',
+            fontSize: '28px',
+            style: {
+                fillStyle: 'green'
+            },
+            draggable: true
+        });
+
         let _image = null;
-		let i = new window.Image();
-		i.src = 'demo.png';
-		i.onload = function (e) {
-			_image = new Image({
-				image: i,
-				x: 100,
-				y: 100,
-				style: {
-					strokeStyle: 'orange',
-					lineWidth: 10.0
-				},
-				draggable: true
-			});
-			_myCC.scene.addChild(_image);
-		}
+        let i = new window.Image();
+        i.src = 'demo.png';
+        i.onload = function(e) {
+            _image = new Image({
+                image: i,
+                x: 100,
+                y: 100,
+                style: {
+                    strokeStyle: 'orange',
+                    lineWidth: 10.0
+                },
+                draggable: true
+            });
+            _myCC.scene.addChild(_image);
+        }
 
 
         _myCC.scene.addChild(_circ);
         _myCC.scene.addChild(_elip);
         _myCC.scene.addChild(_rect);
         _myCC.scene.addChild(_path);
+        _myCC.scene.addChild(_text);
 
     </script>
 </body>

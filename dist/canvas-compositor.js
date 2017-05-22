@@ -2521,7 +2521,8 @@ var PrimitiveComponent = function () {
     }, {
         key: 'pointIsInBoundingBox',
         value: function pointIsInBoundingBox(x, y) {
-            return x > this.boundingBox.left && y > this.boundingBox.top && x < this.boundingBox.right && y < this.boundingBox.bottom;
+            var boundingBox = this.boundingBox;
+            return x > boundingBox.left && y > boundingBox.top && x < boundingBox.right && y < boundingBox.bottom;
         }
 
         /**
@@ -3209,6 +3210,236 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+var _Renderer = require('./Renderer');
+
+var _Renderer2 = _interopRequireDefault(_Renderer);
+
+var _PrimitiveComponent2 = require('./PrimitiveComponent');
+
+var _PrimitiveComponent3 = _interopRequireDefault(_PrimitiveComponent2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var ALL_CHARS = '1234567890QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm.,`~;:\'"!?@#$%^&*()_+={}[]|<>/';
+
+var DEFAULTS = {
+    fontSize: '16px',
+    fontFamily: 'sans-serif',
+    fontStyle: 'normal',
+    fontVariant: 'normal',
+    fontWeight: 'normal',
+    lineHeight: 'normal',
+    textAlign: 'start',
+    textBaseline: 'alphabetic'
+};
+
+function _getTextHeight(font) {
+    //this is a version of:
+    //http://stackoverflow.com/questions/1134586/how-can-you-find-the-height-of-text-on-an-html-canvas
+    //it's a pretty awful hack.
+    //TODO: figure out how cross-browser this is
+
+    //create an element with every character in it with this font
+    var fontHolder = document.createElement('span');
+    fontHolder.innerText = ALL_CHARS;
+    fontHolder.style.font = font;
+
+    //create an inline-block to place after the element
+    var baselineRuler = document.createElement('div');
+    baselineRuler.style.display = 'inline-block';
+    baselineRuler.style.width = '1px';
+    baselineRuler.style.height = '0';
+    baselineRuler.style.verticalAlign = 'baseline';
+
+    //place them in a wrapper and add it to the body
+    var wrapper = document.createElement('div');
+    wrapper.appendChild(fontHolder);
+    wrapper.appendChild(baselineRuler);
+    wrapper.style.whiteSpace = 'nowrap';
+    document.body.appendChild(wrapper);
+
+    //get their bounding rectangles and...
+    var fontRect = fontHolder.getBoundingClientRect();
+    var baselineRect = baselineRuler.getBoundingClientRect();
+
+    //calculate their offset from top
+    var fontTop = fontRect.top + document.body.scrollTop;
+    var fontBottom = fontTop + fontRect.height;
+
+    var baseline = baselineRect.top + document.body.scrollTop;
+
+    document.body.removeChild(wrapper);
+
+    //ascent equals the baseline location minus text top location
+    var ascentFromBaseline = baseline - fontTop;
+
+    //decent equals the text bottom location minuse the baseline location
+    var descentFromBaseline = fontBottom - baseline;
+
+    return {
+        height: fontRect.height,
+        ascent: ascentFromBaseline,
+        descent: descentFromBaseline
+    };
+}
+
+/**
+ * A text object
+ */
+
+var Text = function (_PrimitiveComponent) {
+    _inherits(Text, _PrimitiveComponent);
+
+    /**
+     * @param {object} options the options for the text object
+     */
+    function Text(options) {
+        _classCallCheck(this, Text);
+
+        /**
+         * @type {string} text the text to be rendered
+         */
+        var _this = _possibleConstructorReturn(this, (Text.__proto__ || Object.getPrototypeOf(Text)).call(this, options));
+
+        _this.text = options.text;
+
+        /**
+         * @type {string} fontSize the font size at which to render the text
+         */
+        _this.fontSize = options.fontSize || DEFAULTS.fontSize;
+
+        /**
+         * @type {string} fontFamily the font family in which to render the text
+         */
+        _this.fontFamily = options.fontFamily || DEFAULTS.fontFamily;
+
+        /**
+         * @type {string} fontStyle the font style with which to render the text
+         */
+        _this.fontStyle = options.fontStyle || DEFAULTS.fontStyle;
+
+        /**
+         * @type {string} fontVariant the font variant in which to render the text
+         */
+        _this.fontVariant = options.fontVariant || DEFAULTS.fontVariant;
+
+        /**
+         * @type {string} fontWeight the font weight at which to render the text
+         */
+        _this.fontWeight = options.fontWeight || DEFAULTS.fontWeight;
+
+        /**
+         * @type {string} lineHeight the line height of the text
+         */
+        _this.lineHeight = options.lineHeight || DEFAULTS.lineHeight;
+
+        /**
+         * @type {string} textAlign the alignment with which to render the text
+         */
+        _this.textAlign = options.textAlign || DEFAULTS.textAlign;
+
+        /**
+         * @type {string} textBaseline the baseline for the text
+         */
+        _this.textBaseline = options.textBaseline || DEFAULTS.textBaseline;
+
+        _this._textMetricsNeedUpdate = true;
+        return _this;
+    }
+
+    /**
+     * compute the height data and add it to the textMetrics object from the canvas context
+     * @type {object} textMetrics
+     */
+
+
+    _createClass(Text, [{
+        key: '_updateStyle',
+        value: function _updateStyle(options) {
+            Object.assign(this.style, options, {
+                font: this.fontStyle + ' ' + this.fontVariant + ' ' + this.fontWeight + ' ' + this.fontSize + '/' + this.lineHeight + ' ' + this.fontFamily,
+                textAlign: this.textAlign,
+                textBaseline: this.textBaseline
+            });
+        }
+
+        /**
+         * override the render function for text objects
+         * @override
+         */
+
+    }, {
+        key: 'render',
+        value: function render() {
+            this._textMetricsNeedUpdate = true;
+            this._updateStyle();
+            _Renderer2.default.drawText(0, this.textMetrics.ascent, this.text, this._prerenderingContext, this.style);
+
+            /*if (this.flags.DEBUG) {
+                Renderer.drawPath(this._prerenderingContext, [{
+                    x: 0,
+                    y: this.textMetrics.ascent
+                }, {
+                    x: this.textMetrics.width,
+                    y: this.textMetrics.ascent
+                }], {
+                    strokeStyle: 'Blue'
+                });
+                Renderer.drawCircle(this._prerenderingContext, 0, this.textMetrics.ascent, 3, {
+                    strokeStyle: 'Blue',
+                    fillStyle: 'Blue'
+                });
+            }*/
+        }
+    }, {
+        key: 'textMetrics',
+        get: function get() {
+            if (this._textMetricsNeedUpdate || this._textMetrics === null) {
+                this._updateStyle();
+                this._textMetrics = _Renderer2.default.measureText(this.text, this._prerenderingContext, this.style);
+                Object.assign(this._textMetrics, _getTextHeight(this.style.font));
+                this._textMetricsNeedUpdate = false;
+            }
+            return this._textMetrics;
+        }
+
+        /**
+         * get the bounding box of the text object
+         * @type {top: number, left: number, bottom: number, right: number}
+         */
+
+    }, {
+        key: 'boundingBox',
+        get: function get() {
+            return {
+                top: this.offset.y - this.textMetrics.ascent,
+                left: this.offset.x,
+                bottom: this.offset.y + this.textMetrics.descent,
+                right: this.offset.x + this.textMetrics.width
+            };
+        }
+    }]);
+
+    return Text;
+}(_PrimitiveComponent3.default);
+
+exports.default = Text;
+
+},{"./PrimitiveComponent":9,"./Renderer":11}],13:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
 var _set = function set(object, property, value, receiver) { var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent !== null) { set(parent, property, value, receiver); } } else if ("value" in desc && desc.writable) { desc.value = value; } else { var setter = desc.set; if (setter !== undefined) { setter.call(receiver, value); } } return value; };
@@ -3420,7 +3651,7 @@ function scaleVectorXY(vector, scaleX, scaleY) {
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.DEFAULTS = exports.Image = exports.VectorPath = exports.Line = exports.Rectangle = exports.Ellipse = exports.Circle = exports.Composition = exports.PrimitiveComponent = exports.Renderer = exports.CanvasCompositor = undefined;
+exports.DEFAULTS = exports.Text = exports.Image = exports.VectorPath = exports.Line = exports.Rectangle = exports.Ellipse = exports.Circle = exports.Composition = exports.PrimitiveComponent = exports.Renderer = exports.CanvasCompositor = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -3457,6 +3688,10 @@ var _VectorPath2 = _interopRequireDefault(_VectorPath);
 var _Image = require('./Image');
 
 var _Image2 = _interopRequireDefault(_Image);
+
+var _Text = require('./Text');
+
+var _Text2 = _interopRequireDefault(_Text);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -4071,8 +4306,9 @@ exports.Rectangle = _Rectangle2.default;
 exports.Line = _Line2.default;
 exports.VectorPath = _VectorPath2.default;
 exports.Image = _Image2.default;
+exports.Text = _Text2.default;
 exports.DEFAULTS = _Renderer.DEFAULTS;
 
-},{"./Circle":4,"./Composition":5,"./Ellipse":6,"./Image":7,"./Line":8,"./PrimitiveComponent":9,"./Rectangle":10,"./Renderer":11,"./VectorPath":12}]},{},[])
+},{"./Circle":4,"./Composition":5,"./Ellipse":6,"./Image":7,"./Line":8,"./PrimitiveComponent":9,"./Rectangle":10,"./Renderer":11,"./Text":12,"./VectorPath":13}]},{},[])
 
 //# sourceMappingURL=canvas-compositor.js.map

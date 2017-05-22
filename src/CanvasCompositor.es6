@@ -11,6 +11,7 @@ import Rectangle from './Rectangle';
 import Line from './Line';
 import VectorPath from './VectorPath';
 import Image from './Image';
+import Text from './Text';
 
 //const FPS_EPSILON = 10; // +/- 10ms for animation loop to determine if enough time has passed to render
 const DEFAULT_TARGET_FPS = 1000 / 60; //amount of time that must pass before rendering
@@ -370,5 +371,6 @@ export {
     Line,
     VectorPath,
     Image,
+    Text,
     DEFAULTS
 };
