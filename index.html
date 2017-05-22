@@ -18,7 +18,8 @@
         var CanvasCompositor = ccMod.CanvasCompositor,
             Circle = ccMod.Circle,
             Rectangle = ccMod.Rectangle,
-            VectorPath = ccMod.VectorPath;
+            VectorPath = ccMod.VectorPath,
+            CCImage = ccMod.Image;
 
         var _myCC = new CanvasCompositor(document.getElementById('test-canvas'));
 
@@ -64,6 +65,24 @@
             },
             draggable: true
         });
+
+        var _image = null;
+		var i = new Image();
+		i.src = 'demo.png';
+		i.onload = function (e) {
+			_image = new CCImage({
+				image: i,
+				x: 100,
+				y: 100,
+				style: {
+					strokeStyle: 'orange',
+					lineWidth: 10.0
+				},
+				draggable: true
+			});
+			_myCC.scene.addChild(_image);
+		}
+
 
         _myCC.scene.addChild(_circ);
         _myCC.scene.addChild(_rect);

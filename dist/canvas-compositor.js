@@ -1596,8 +1596,8 @@ var Circle = function (_PrimitiveComponent) {
 
     //TODO: provide details about options for docs - link to a separate page
     /**
-     * @param {object} options object settings
      * PrimitiveComponent constructor
+     * @param {object} options object settings
      */
     function Circle(options) {
         _classCallCheck(this, Circle);
@@ -1685,7 +1685,7 @@ var Circle = function (_PrimitiveComponent) {
 
 exports.default = Circle;
 
-},{"./PrimitiveComponent":7,"./Renderer":9}],5:[function(require,module,exports){
+},{"./PrimitiveComponent":8,"./Renderer":10}],5:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1924,7 +1924,94 @@ var Composition = function (_PrimitiveComponent) {
 
 exports.default = Composition;
 
-},{"./PrimitiveComponent":7}],6:[function(require,module,exports){
+},{"./PrimitiveComponent":8}],6:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _Renderer = require('./Renderer');
+
+var _Renderer2 = _interopRequireDefault(_Renderer);
+
+var _PrimitiveComponent2 = require('./PrimitiveComponent');
+
+var _PrimitiveComponent3 = _interopRequireDefault(_PrimitiveComponent2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+/**
+ * an Image
+ */
+var Image = function (_PrimitiveComponent) {
+    _inherits(Image, _PrimitiveComponent);
+
+    /**
+     * @param {Object} options
+     */
+    function Image(options) {
+        _classCallCheck(this, Image);
+
+        /**
+         * @type {window.Image} unscaledImage the original image
+         */
+        var _this = _possibleConstructorReturn(this, (Image.__proto__ || Object.getPrototypeOf(Image)).call(this, options));
+
+        _this.unscaledImage = options.image;
+        return _this;
+    }
+
+    /**
+     * get the bounding box
+     * @type {{top: number, left: number, bottom: number, right:number}} boundingBox
+     */
+
+
+    _createClass(Image, [{
+        key: 'render',
+
+
+        /**
+         * override the render function for images specifically
+         * @override
+         */
+        value: function render() {
+            var scale = this.compoundScale;
+            var image = new window.Image();
+            image.src = this.unscaledImage.src;
+            image.width = this.unscaledImage.width * scale.scaleWidth;
+            image.height = this.unscaledImage.height * scale.scaleHeight;
+            _Renderer2.default.drawImage(0, 0, image, this._prerenderingContext, this.style);
+        }
+    }, {
+        key: 'boundingBox',
+        get: function get() {
+            var compoundScale = this.compoundScale;
+            var offset = this.offset;
+            return {
+                top: offset.y,
+                left: offset.x,
+                bottom: offset.y + compoundScale.scaleHeight * this.unscaledImage.height,
+                right: offset.x + compoundScale.scaleWidth * this.unscaledImage.width
+            };
+        }
+    }]);
+
+    return Image;
+}(_PrimitiveComponent3.default);
+
+exports.default = Image;
+
+},{"./PrimitiveComponent":8,"./Renderer":10}],7:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2015,7 +2102,7 @@ var Line = function () {
 
 exports.default = Line;
 
-},{"vectorious/withoutblas":3}],7:[function(require,module,exports){
+},{"vectorious/withoutblas":3}],8:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2661,7 +2748,7 @@ var PrimitiveComponent = function () {
 
 exports.default = PrimitiveComponent;
 
-},{"./Renderer":9,"vectorious/withoutblas":3}],8:[function(require,module,exports){
+},{"./Renderer":10,"vectorious/withoutblas":3}],9:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2751,7 +2838,7 @@ var Rectangle = function (_PrimitiveComponent) {
 
 exports.default = Rectangle;
 
-},{"./PrimitiveComponent":7,"./Renderer":9}],9:[function(require,module,exports){
+},{"./PrimitiveComponent":8,"./Renderer":10}],10:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2994,7 +3081,7 @@ exports.default = Renderer;
 exports.Renderer = Renderer;
 exports.DEFAULTS = DEFAULTS;
 
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -3032,9 +3119,19 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 //would name the file 'path', but damn near everything
 //relies on the filesystem 'path' module
 
+/**
+ * An ordered set of vectors defining a path
+ */
 var VectorPath = function (_PrimitiveComponent) {
     _inherits(VectorPath, _PrimitiveComponent);
 
+    /**
+     * see PrimitiveComponent for more options
+     * @param {Object} options the options for the object
+     * @param {Object[]} options.vertices the vertices
+     * @param {number} options.vertices[].x the y coordinate for a vertex
+     * @param {number} options.vertices[].y the y coordinate for a vertex
+     */
     function VectorPath(options) {
         _classCallCheck(this, VectorPath);
 
@@ -3042,8 +3139,12 @@ var VectorPath = function (_PrimitiveComponent) {
 
         options.vertices = options.vertices || [];
 
-        _this.unscaledLineWidth = _this.style.lineWidth;
+        //this.unscaledLineWidth = this.style.lineWidth;
 
+        /**
+         * the list of vertices as vectorious Vectors
+         * @type {Vector[]} vertices
+         */
         _this.vertices = options.vertices.map(function (v) {
             return new _withoutblas.Vector([v.x, v.y]);
         });
@@ -3062,7 +3163,9 @@ var VectorPath = function (_PrimitiveComponent) {
         _this._bottom = Math.max.apply(null, yCoordinates);
 
         _set(VectorPath.prototype.__proto__ || Object.getPrototypeOf(VectorPath.prototype), 'd', new _withoutblas.Vector([_this._left, _this._top]), _this);
+
         var normalizationVector = _this.d;
+
         _this._normalizedVertices = _this.vertices.map(function (v) {
             return v.subtract(normalizationVector);
         });
@@ -3070,6 +3173,12 @@ var VectorPath = function (_PrimitiveComponent) {
         _this._normalizedBoundingBox = null;
         return _this;
     }
+
+    /**
+     * get the bounding box for the vertices
+     * @type {{top:number, left: number, bottom:number, right:number}} boundingBox
+     */
+
 
     _createClass(VectorPath, [{
         key: 'pointIsInObject',
@@ -3139,6 +3248,12 @@ var VectorPath = function (_PrimitiveComponent) {
             }
             return inside;
         }
+
+        /**
+         * override the render function for drawing vector paths specifically
+         * @override
+         */
+
     }, {
         key: 'render',
         value: function render() {
@@ -3176,25 +3291,17 @@ var VectorPath = function (_PrimitiveComponent) {
 exports.default = VectorPath;
 
 
-function getUnitVector(vector) {
-    var magnitude = vector.magnitude();
-    return new _withoutblas.Vector([vector.x / magnitude, vector.y / magnitude]);
-}
-
-/**
- * scale both the X and Y components of a vector
- */
 function scaleVectorXY(vector, scaleX, scaleY) {
     return new _withoutblas.Vector([vector.x * scaleX, vector.y * scaleY]);
 }
 
-},{"./Line":6,"./PrimitiveComponent":7,"./Renderer":9,"vectorious/withoutblas":3}],"canvas-compositor":[function(require,module,exports){
+},{"./Line":7,"./PrimitiveComponent":8,"./Renderer":10,"vectorious/withoutblas":3}],"canvas-compositor":[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.DEFAULTS = exports.VectorPath = exports.Line = exports.Rectangle = exports.Circle = exports.Composition = exports.PrimitiveComponent = exports.Renderer = exports.CanvasCompositor = undefined;
+exports.DEFAULTS = exports.Image = exports.VectorPath = exports.Line = exports.Rectangle = exports.Circle = exports.Composition = exports.PrimitiveComponent = exports.Renderer = exports.CanvasCompositor = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -3223,6 +3330,10 @@ var _Line2 = _interopRequireDefault(_Line);
 var _VectorPath = require('./VectorPath');
 
 var _VectorPath2 = _interopRequireDefault(_VectorPath);
+
+var _Image = require('./Image');
+
+var _Image2 = _interopRequireDefault(_Image);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -3835,8 +3946,9 @@ exports.Circle = _Circle2.default;
 exports.Rectangle = _Rectangle2.default;
 exports.Line = _Line2.default;
 exports.VectorPath = _VectorPath2.default;
+exports.Image = _Image2.default;
 exports.DEFAULTS = _Renderer.DEFAULTS;
 
-},{"./Circle":4,"./Composition":5,"./Line":6,"./PrimitiveComponent":7,"./Rectangle":8,"./Renderer":9,"./VectorPath":10}]},{},[])
+},{"./Circle":4,"./Composition":5,"./Image":6,"./Line":7,"./PrimitiveComponent":8,"./Rectangle":9,"./Renderer":10,"./VectorPath":11}]},{},[])
 
 //# sourceMappingURL=canvas-compositor.js.map

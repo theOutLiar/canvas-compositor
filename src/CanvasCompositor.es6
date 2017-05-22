@@ -9,6 +9,7 @@ import Circle from './Circle';
 import Rectangle from './Rectangle';
 import Line from './Line';
 import VectorPath from './VectorPath';
+import Image from './Image';
 
 //const FPS_EPSILON = 10; // +/- 10ms for animation loop to determine if enough time has passed to render
 const DEFAULT_TARGET_FPS = 1000 / 60; //amount of time that must pass before rendering
@@ -205,7 +206,7 @@ export default class CanvasCompositor {
             callback(e);
         };
 
-        var clickedObject = this.scene.childAt(x, y);
+        let clickedObject = this.scene.childAt(x, y);
 
         if (clickedObject && clickedObject.onmousedown) {
             clickedObject.onmousedown(e);
@@ -236,7 +237,7 @@ export default class CanvasCompositor {
             callback(e);
         };
 
-        var clickedObject = this.scene.childAt(x, y);
+        let clickedObject = this.scene.childAt(x, y);
 
         if (clickedObject && clickedObject.onmouseup) {
             clickedObject.onmouseup(e);
@@ -293,7 +294,7 @@ export default class CanvasCompositor {
     _handleMouseOut(e) {
         e.preventDefault();
 
-        var objects = this.scene.children.filter((c) => !!(c.onmouseout));
+        let objects = this.scene.children.filter((c) => !!(c.onmouseout));
 
         for (let o of objects) {
             o.onmouseout(e);
@@ -366,5 +367,6 @@ export {
     Rectangle,
     Line,
     VectorPath,
+    Image,
     DEFAULTS
 };

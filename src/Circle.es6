@@ -7,8 +7,8 @@ import PrimitiveComponent from './PrimitiveComponent';
 export default class Circle extends PrimitiveComponent {
     //TODO: provide details about options for docs - link to a separate page
     /**
-     * @param {object} options object settings
      * PrimitiveComponent constructor
+     * @param {object} options object settings
      */
     constructor(options) {
         super(options)

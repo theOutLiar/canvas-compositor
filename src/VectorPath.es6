@@ -8,14 +8,28 @@ import Line from './Line';
 //would name the file 'path', but damn near everything
 //relies on the filesystem 'path' module
 
+/**
+ * An ordered set of vectors defining a path
+ */
 export default class VectorPath extends PrimitiveComponent {
+    /**
+     * see PrimitiveComponent for more options
+     * @param {Object} options the options for the object
+     * @param {Object[]} options.vertices the vertices
+     * @param {number} options.vertices[].x the y coordinate for a vertex
+     * @param {number} options.vertices[].y the y coordinate for a vertex
+     */
     constructor(options) {
         super(options);
 
         options.vertices = options.vertices || [];
 
-        this.unscaledLineWidth = this.style.lineWidth;
+        //this.unscaledLineWidth = this.style.lineWidth;
 
+        /**
+         * the list of vertices as vectorious Vectors
+         * @type {Vector[]} vertices
+         */
         this.vertices = options.vertices.map(v => new Vector([v.x, v.y]));
 
         let yCoordinates = this.vertices.map(v => v.y);
@@ -28,12 +42,18 @@ export default class VectorPath extends PrimitiveComponent {
         this._bottom = Math.max.apply(null, yCoordinates);
 
         super.d = new Vector([this._left, this._top]);
+
         let normalizationVector = this.d;
+
         this._normalizedVertices = this.vertices.map(v => v.subtract(normalizationVector));
 
         this._normalizedBoundingBox = null;
     }
 
+    /**
+     * get the bounding box for the vertices
+     * @type {{top:number, left: number, bottom:number, right:number}} boundingBox
+     */
     get boundingBox() {
         this._normalizedBoundingBox = {
             top: 0,
@@ -122,6 +142,10 @@ export default class VectorPath extends PrimitiveComponent {
         return inside;
     }
 
+    /**
+     * override the render function for drawing vector paths specifically
+     * @override
+     */
     render() {
         let boundingBox = this.boundingBox;
         let offset = this.offset;
@@ -135,14 +159,6 @@ export default class VectorPath extends PrimitiveComponent {
     };
 }
 
-function getUnitVector(vector) {
-    let magnitude = vector.magnitude();
-    return new Vector([vector.x / magnitude, vector.y / magnitude]);
-}
-
-/**
- * scale both the X and Y components of a vector
- */
 function scaleVectorXY(vector, scaleX, scaleY) {
     return new Vector([vector.x * scaleX, vector.y * scaleY]);
 }

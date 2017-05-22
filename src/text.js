@@ -1,7 +1,7 @@
 define(['lodash', 'canvas-object', 'renderer'], function (_, CanvasObject, Renderer) {
 	'use strict';
 
-	var ALL_CHARS = '1234567890QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm';
+	var ALL_CHARS = `1234567890QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm.,\`~;:'"!?@#$%^&*()_+={}[]|\<>/`;
 
 	//this is a version of:
 	//http://stackoverflow.com/questions/1134586/how-can-you-find-the-height-of-text-on-an-html-canvas
