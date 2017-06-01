@@ -121,8 +121,8 @@
             style: {
                 strokeStyle: 'red'
             },
-            draggable: true,
-            debug: true
+            draggable: true//,
+            //debug: true
         });
 
         let _image = null;
@@ -142,16 +142,15 @@
             //_myCC.scene.addChild(_image);
         }
 
-        //_myCC.scene.addChild(_circ);
-        //_myCC.scene.addChild(_elip);
-        //_myCC.scene.addChild(_rect);
-        //_myCC.scene.addChild(_path);
+        _myCC.scene.addChild(_circ);
+        _myCC.scene.addChild(_elip);
+        _myCC.scene.addChild(_rect);
+        _myCC.scene.addChild(_path);
         _myCC.scene.addChild(_bezi);
-        //_myCC.scene.addChild(_text);
+        _myCC.scene.addChild(_text);
 
         function _updateFPS() {
             debugFrame.innerHTML = "fps: " + _myCC.framerate;
-
         }
 
         setInterval(_updateFPS, 250);

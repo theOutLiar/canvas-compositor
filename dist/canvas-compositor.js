@@ -1570,6 +1570,8 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+var _set = function set(object, property, value, receiver) { var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent !== null) { set(parent, property, value, receiver); } } else if ("value" in desc && desc.writable) { desc.value = value; } else { var setter = desc.set; if (setter !== undefined) { setter.call(receiver, value); } } return value; };
+
 var _Renderer = require('./Renderer');
 
 var _Renderer2 = _interopRequireDefault(_Renderer);
@@ -1655,56 +1657,54 @@ var Bezier = function (_PrimitiveComponent) {
 
         var _this = _possibleConstructorReturn(this, (Bezier.__proto__ || Object.getPrototypeOf(Bezier)).call(this, options));
 
-        _this._start = options.start;
-        _this._end = options.end;
-        _this._control1 = options.control1;
-        _this._control2 = options.control2;
+        var start = new Vector([options.start.x, options.start.y]);
+        var end = new Vector([options.end.x, options.end.y]);
+        var control1 = new Vector([options.control1.x, options.control1.y]);
+        var control2 = new Vector([options.control2.x, options.control2.y]);
 
         _this._boundingBox = null;
         _this._boundingBoxNeedsUpdate = true;
 
-        //?
-        //super.d = new Vector([this.boundingBox.left, this.boundingBox.top])
+        var xExtrema = _getExtremes(start.x, control1.x, control2, end.x);
+        var yExtrema = _getExtremes(start.y, control1.y, control2.y, end.y);
+        _set(Bezier.prototype.__proto__ || Object.getPrototypeOf(Bezier.prototype), 'd', new Vector([Math.min.apply(null, xExtrema), Math.min.apply(null, yExtrema)]), _this);
+
+        _this._normalizationVector = _this.d;
+
+        _this._start = Vector.subtract(start, _this._normalizationVector);
+        _this._end = Vector.subtract(end, _this._normalizationVector);
+        _this._control1 = Vector.subtract(control1, _this._normalizationVector);
+        _this._control2 = Vector.subtract(control2, _this._normalizationVector);
         return _this;
     }
 
     _createClass(Bezier, [{
-        key: 'pointIsInObject',
-        value: function pointIsInObject(x, y) {
-            return this.pointIsInBoundingBox(x, y);
-        }
-    }, {
         key: 'render',
         value: function render() {
-            _Renderer2.default.drawBezier({
-                x: this._start.x - this.offset.x,
-                y: this._start.y - this.offset.y
-            }, {
-                x: this._end.x - this.offset.x,
-                y: this._end.y - this.offset.x
-            }, {
-                x: this._control1.x - this.offset.x,
-                y: this._control1.y - this.offset.y
-            }, {
-                x: this._control2.x - this.offset.x,
-                y: this._control2.y - this.offset.y
-            }, this._prerenderingContext, this.style);
+            _Renderer2.default.drawBezier(this._start, this._end, this._control1, this._control2, this._prerenderingContext, this.style);
         }
     }, {
         key: 'boundingBox',
         get: function get() {
+            //if (this._boundingBox === null || this._boundingBoxNeedsUpdate) {
+            var lineWidth = this.style.lineWidth;
 
-            if (this._boundingBox === null || this._boundingBoxNeedsUpdate) {
-                var xExtrema = _getExtremes(this._start.x, this._control1.x, this._control2.x, this._end.x);
-                var yExtrema = _getExtremes(this._start.y, this._control1.y, this._control2.y, this._end.y);
-                this._boundingBox = {
-                    top: Math.min.apply(null, yExtrema),
-                    right: Math.max.apply(null, xExtrema),
-                    bottom: Math.max.apply(null, yExtrema),
-                    left: Math.min.apply(null, xExtrema)
-                };
-                this._boundingBoxNeedsUpdate = false;
-            }
+            var offset = this.offset;
+            var start = Vector.add(this._start, this.offset);
+            var control1 = Vector.add(this._control1, this.offset);
+            var control2 = Vector.add(this._control2, this.offset);
+            var end = Vector.add(this._end, this.offset);
+
+            var xExtrema = _getExtremes(start.x, control1.x, control2, end.x);
+            var yExtrema = _getExtremes(start.y, control1.y, control2.y, end.y);
+            this._boundingBox = {
+                top: Math.min.apply(null, yExtrema) - lineWidth,
+                right: Math.max.apply(null, xExtrema) + lineWidth,
+                bottom: Math.max.apply(null, yExtrema) + lineWidth,
+                left: Math.min.apply(null, xExtrema) - lineWidth
+            };
+            this._boundingBoxNeedsUpdate = false;
+            //}
             return this._boundingBox;
         }
     }]);

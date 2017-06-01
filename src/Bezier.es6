@@ -45,52 +45,55 @@ function _getExtremes(start, c1, c2, end) {
 export default class Bezier extends PrimitiveComponent {
     constructor(options) {
         super(options);
-        this._start = options.start;
-        this._end = options.end;
-        this._control1 = options.control1;
-        this._control2 = options.control2;
+        let start = new Vector([options.start.x, options.start.y]);
+        let end = new Vector([options.end.x, options.end.y]);
+        let control1 = new Vector([options.control1.x, options.control1.y]);
+        let control2 = new Vector([options.control2.x, options.control2.y]);
 
         this._boundingBox = null;
         this._boundingBoxNeedsUpdate = true;
 
-        //?
-        //super.d = new Vector([this.boundingBox.left, this.boundingBox.top])
+        let xExtrema = _getExtremes(start.x, control1.x, control2, end.x);
+        let yExtrema = _getExtremes(start.y, control1.y, control2.y, end.y);
+        super.d = new Vector([Math.min.apply(null, xExtrema), Math.min.apply(null, yExtrema)])
+
+        this._normalizationVector = this.d;
+
+        this._start = Vector.subtract(start, this._normalizationVector);
+        this._end = Vector.subtract(end, this._normalizationVector);
+        this._control1 = Vector.subtract(control1, this._normalizationVector);
+        this._control2 = Vector.subtract(control2, this._normalizationVector);
     }
 
     get boundingBox() {
+        //if (this._boundingBox === null || this._boundingBoxNeedsUpdate) {
+        let lineWidth = this.style.lineWidth;
 
-        if (this._boundingBox === null || this._boundingBoxNeedsUpdate) {
-            let xExtrema = _getExtremes(this._start.x, this._control1.x, this._control2.x, this._end.x);
-            let yExtrema = _getExtremes(this._start.y, this._control1.y, this._control2.y, this._end.y);
-            this._boundingBox = {
-                top: Math.min.apply(null, yExtrema),
-                right: Math.max.apply(null, xExtrema),
-                bottom: Math.max.apply(null, yExtrema),
-                left: Math.min.apply(null, xExtrema)
-            }
-            this._boundingBoxNeedsUpdate = false;
+        let offset = this.offset;
+        let start = Vector.add(this._start, this.offset);
+        let control1 = Vector.add(this._control1, this.offset);
+        let control2 = Vector.add(this._control2, this.offset);
+        let end = Vector.add(this._end, this.offset);
+
+        let xExtrema = _getExtremes(start.x, control1.x, control2, end.x);
+        let yExtrema = _getExtremes(start.y, control1.y, control2.y, end.y);
+        this._boundingBox = {
+            top: Math.min.apply(null, yExtrema) - lineWidth,
+            right: Math.max.apply(null, xExtrema) + lineWidth,
+            bottom: Math.max.apply(null, yExtrema) + lineWidth,
+            left: Math.min.apply(null, xExtrema) - lineWidth
         }
+        this._boundingBoxNeedsUpdate = false;
+        //}
         return this._boundingBox;
     }
 
-    pointIsInObject(x, y) {
-        return this.pointIsInBoundingBox(x, y);
-    }
-
     render() {
-        Renderer.drawBezier({
-                x: this._start.x - this.offset.x,
-                y: this._start.y - this.offset.y
-            }, {
-                x: this._end.x - this.offset.x,
-                y: this._end.y - this.offset.x
-            }, {
-                x: this._control1.x - this.offset.x,
-                y: this._control1.y - this.offset.y
-            }, {
-                x: this._control2.x - this.offset.x,
-                y: this._control2.y - this.offset.y
-            },
+        Renderer.drawBezier(
+            this._start,
+            this._end,
+            this._control1,
+            this._control2,
             this._prerenderingContext,
             this.style
         );
