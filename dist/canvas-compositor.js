@@ -1586,6 +1586,159 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+//uhh... i looked up *SO* much stuff on this, and even tried to work out the math myself,
+//but this is ridiculous - where does this come from?
+function _cubicBezier(start, c1, c2, end, t) {
+    return start * (1 - t) * (1 - t) * (1 - t) + 3 * c1 * t * (1 - t) * (1 - t) + 3 * c2 * t * t * (1 - t) + end * t * t * t;
+}
+
+function _getExtremes(start, c1, c2, end) {
+
+    var a = 3 * end - 9 * c2 + 9 * c1 - 3 * start;
+    var b = 6 * c2 - 12 * c1 + 6 * start;
+    var c = 3 * c1 - 3 * start;
+
+    var solutions = [];
+    var localExtrema = [];
+
+    //"discriminant"
+    var disc = b * b - 4 * a * c;
+
+    if (disc >= 0) {
+        if (!Math.abs(a) > 0 && Math.abs(b) > 0) {
+            solutions.push(-c / b);
+        } else if (Math.abs(a) > 0) {
+            solutions.push((-b + Math.sqrt(disc)) / (2 * a));
+            solutions.push((-b - Math.sqrt(disc)) / (2 * a));
+        } else {
+            throw new Error("no solutions!?!?!");
+        }
+
+        var _iteratorNormalCompletion = true;
+        var _didIteratorError = false;
+        var _iteratorError = undefined;
+
+        try {
+            for (var _iterator = solutions[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                var t = _step.value;
+
+                if (0 <= t && t <= 1) {
+                    localExtrema.push(_cubicBezier(start, c1, c2, end, t));
+                }
+            }
+        } catch (err) {
+            _didIteratorError = true;
+            _iteratorError = err;
+        } finally {
+            try {
+                if (!_iteratorNormalCompletion && _iterator.return) {
+                    _iterator.return();
+                }
+            } finally {
+                if (_didIteratorError) {
+                    throw _iteratorError;
+                }
+            }
+        }
+    }
+
+    localExtrema.push(start, end);
+
+    return localExtrema;
+}
+
+var Bezier = function (_PrimitiveComponent) {
+    _inherits(Bezier, _PrimitiveComponent);
+
+    function Bezier(options) {
+        _classCallCheck(this, Bezier);
+
+        var _this = _possibleConstructorReturn(this, (Bezier.__proto__ || Object.getPrototypeOf(Bezier)).call(this, options));
+
+        _this._start = options.start;
+        _this._end = options.end;
+        _this._control1 = options.control1;
+        _this._control2 = options.control2;
+
+        _this._boundingBox = null;
+        _this._boundingBoxNeedsUpdate = true;
+
+        //?
+        //super.d = new Vector([this.boundingBox.left, this.boundingBox.top])
+        return _this;
+    }
+
+    _createClass(Bezier, [{
+        key: 'pointIsInObject',
+        value: function pointIsInObject(x, y) {
+            return this.pointIsInBoundingBox(x, y);
+        }
+    }, {
+        key: 'render',
+        value: function render() {
+            _Renderer2.default.drawBezier({
+                x: this._start.x - this.offset.x,
+                y: this._start.y - this.offset.y
+            }, {
+                x: this._end.x - this.offset.x,
+                y: this._end.y - this.offset.x
+            }, {
+                x: this._control1.x - this.offset.x,
+                y: this._control1.y - this.offset.y
+            }, {
+                x: this._control2.x - this.offset.x,
+                y: this._control2.y - this.offset.y
+            }, this._prerenderingContext, this.style);
+        }
+    }, {
+        key: 'boundingBox',
+        get: function get() {
+
+            if (this._boundingBox === null || this._boundingBoxNeedsUpdate) {
+                var xExtrema = _getExtremes(this._start.x, this._control1.x, this._control2.x, this._end.x);
+                var yExtrema = _getExtremes(this._start.y, this._control1.y, this._control2.y, this._end.y);
+                this._boundingBox = {
+                    top: Math.min.apply(null, yExtrema),
+                    right: Math.max.apply(null, xExtrema),
+                    bottom: Math.max.apply(null, yExtrema),
+                    left: Math.min.apply(null, xExtrema)
+                };
+                this._boundingBoxNeedsUpdate = false;
+            }
+            return this._boundingBox;
+        }
+    }]);
+
+    return Bezier;
+}(_PrimitiveComponent3.default);
+
+exports.default = Bezier;
+
+},{"./PrimitiveComponent":10,"./Renderer":12}],5:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _Renderer = require('./Renderer');
+
+var _Renderer2 = _interopRequireDefault(_Renderer);
+
+var _PrimitiveComponent2 = require('./PrimitiveComponent');
+
+var _PrimitiveComponent3 = _interopRequireDefault(_PrimitiveComponent2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
 /**
  * A circle
  */
@@ -1687,7 +1840,7 @@ var Circle = function (_PrimitiveComponent) {
 
 exports.default = Circle;
 
-},{"./PrimitiveComponent":9,"./Renderer":11}],5:[function(require,module,exports){
+},{"./PrimitiveComponent":10,"./Renderer":12}],6:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1822,11 +1975,12 @@ var Composition = function (_PrimitiveComponent) {
          */
         value: function render() {
             // required to make sure that the drawing occurs within the bounds of this composition
+            var boundingBox = this.boundingBox;
             var offset = {
-                top: -this.boundingBox.top,
-                left: -this.boundingBox.left,
-                bottom: -this.boundingBox.bottom,
-                right: -this.boundingBox.right
+                top: -boundingBox.top,
+                left: -boundingBox.left,
+                bottom: -boundingBox.bottom,
+                right: -boundingBox.right
             };
 
             var _iteratorNormalCompletion = true;
@@ -1877,10 +2031,10 @@ var Composition = function (_PrimitiveComponent) {
     }, {
         key: 'boundingBox',
         get: function get() {
-            var top = null,
-                left = null,
-                bottom = null,
-                right = null;
+            var top = Infinity,
+                left = Infinity,
+                bottom = -Infinity,
+                right = -Infinity;
 
             var _iteratorNormalCompletion2 = true;
             var _didIteratorError2 = false;
@@ -1890,10 +2044,11 @@ var Composition = function (_PrimitiveComponent) {
                 for (var _iterator2 = this.children[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
                     var c = _step2.value;
 
-                    top = top !== null && top < c.boundingBox.top ? top : c.boundingBox.top;
-                    left = left !== null && left < c.boundingBox.left ? left : c.boundingBox.left;
-                    bottom = bottom !== null && bottom > c.boundingBox.bottom ? bottom : c.boundingBox.bottom;
-                    right = right !== null && right > c.boundingBox.right ? right : c.boundingBox.right;
+                    var boundingBox = c.boundingBox;
+                    top = Math.min(boundingBox.top, top);
+                    left = Math.min(boundingBox.left, left);
+                    bottom = Math.max(boundingBox.bottom, bottom);
+                    right = Math.max(boundingBox.right, right);
                 }
             } catch (err) {
                 _didIteratorError2 = true;
@@ -1926,7 +2081,7 @@ var Composition = function (_PrimitiveComponent) {
 
 exports.default = Composition;
 
-},{"./PrimitiveComponent":9}],6:[function(require,module,exports){
+},{"./PrimitiveComponent":10}],7:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2042,7 +2197,7 @@ var Ellipse = function (_PrimitiveComponent) {
 
 exports.default = Ellipse;
 
-},{"./PrimitiveComponent":9,"./Renderer":11}],7:[function(require,module,exports){
+},{"./PrimitiveComponent":10,"./Renderer":12}],8:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2129,7 +2284,7 @@ var Image = function (_PrimitiveComponent) {
 
 exports.default = Image;
 
-},{"./PrimitiveComponent":9,"./Renderer":11}],8:[function(require,module,exports){
+},{"./PrimitiveComponent":10,"./Renderer":12}],9:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2220,7 +2375,7 @@ var Line = function () {
 
 exports.default = Line;
 
-},{"vectorious/withoutblas":3}],9:[function(require,module,exports){
+},{"vectorious/withoutblas":3}],10:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2250,6 +2405,9 @@ var PrimitiveComponent = function () {
         _classCallCheck(this, PrimitiveComponent);
 
         options = options || {};
+
+        this._flags = {};
+        this._flags.DEBUG = options.debug || false;
 
         /**
          * does the object need to be redrawn?
@@ -2454,6 +2612,8 @@ var PrimitiveComponent = function () {
     }, {
         key: 'draw',
         value: function draw(context, offset) {
+            var boundingBox = this.boundingBox;
+
             this.needsDraw = false;
 
             if (this.needsRender && this.render) {
@@ -2466,8 +2626,8 @@ var PrimitiveComponent = function () {
                 this._prerenderingContext = this._prerenderingCanvas.getContext('2d'); //text needs prerendering context defined for boundingBox measurements
 
                 //make sure the new canvas has the appropriate dimensions
-                this._prerenderingCanvas.width = this.boundingBox.right - this.boundingBox.left;
-                this._prerenderingCanvas.height = this.boundingBox.bottom - this.boundingBox.top;
+                this._prerenderingCanvas.width = boundingBox.right - boundingBox.left;
+                this._prerenderingCanvas.height = boundingBox.bottom - boundingBox.top;
 
                 this.render();
                 this.needsRender = false;
@@ -2475,26 +2635,28 @@ var PrimitiveComponent = function () {
 
             //TODO: handle debug options
             //draw bounding boxes
-            /*if (this.flags.DEBUG) {
-            	this._prerenderingContext.beginPath();
-            	this._prerenderingContext.lineWidth=2.0;
-            	this._prerenderingContext.strokeStyle='#FF0000';
-            	this._prerenderingContext.strokeRect(0,0,this._prerenderedImage.width, this._prerenderedImage.height);
-            	this._prerenderingContext.closePath();
-            }*/
+            if (this._flags.DEBUG) {
+                this._prerenderingContext.beginPath();
+                this._prerenderingContext.setLineDash([5, 15]);
+                this._prerenderingContext.lineWidth = 2.0;
+                this._prerenderingContext.strokeStyle = '#FF0000';
+                this._prerenderingContext.strokeStyle = '#FF0000';
+                this._prerenderingContext.strokeRect(0, 0, this._prerenderingCanvas.width, this._prerenderingCanvas.height);
+                this._prerenderingContext.closePath();
+            }
 
             //TODO: handle bounding box drawing
             /*if (this.drawBoundingBox){
             	this._prerenderingContext.beginPath();
             	this._prerenderingContext.lineWidth=2.0;
             	this._prerenderingContext.strokeStyle=this.boundingBoxColor;
-            	this._prerenderingContext.strokeRect(0,0,this._prerenderedImage.width, this._prerenderedImage.height);
+            	this._prerenderingContext.strokeRect(0,0,this._prerenderingCanvas.width, this._prerenderingCanvas.height);
             	this._prerenderingContext.closePath();
             }*/
 
             //offsets are for prerendering contexts of compositions
-            var x = this.boundingBox.left + (offset && offset.left ? offset.left : 0);
-            var y = this.boundingBox.top + (offset && offset.top ? offset.top : 0);
+            var x = boundingBox.left + (offset && offset.left ? offset.left : 0);
+            var y = boundingBox.top + (offset && offset.top ? offset.top : 0);
             _Renderer.Renderer.drawImage(x, y, this._prerenderingCanvas, context, this.style);
         }
 
@@ -2867,7 +3029,7 @@ var PrimitiveComponent = function () {
 
 exports.default = PrimitiveComponent;
 
-},{"./Renderer":11,"vectorious/withoutblas":3}],10:[function(require,module,exports){
+},{"./Renderer":12,"vectorious/withoutblas":3}],11:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2957,7 +3119,7 @@ var Rectangle = function (_PrimitiveComponent) {
 
 exports.default = Rectangle;
 
-},{"./PrimitiveComponent":9,"./Renderer":11}],11:[function(require,module,exports){
+},{"./PrimitiveComponent":10,"./Renderer":12}],12:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -3024,21 +3186,11 @@ var Renderer = function () {
         value: function drawPath(vertices, context, style) {
             Object.assign(context, style);
             context.beginPath();
-            var started = false;
-            var x = 0;
-            var y = 0;
-            for (var v in vertices) {
-                x = vertices[v].x;
-                y = vertices[v].y;
-                if (!started) {
-                    context.moveTo(x, y);
-                    started = true;
-                } else {
-                    context.lineTo(x, y);
-                }
+            context.moveTo(vertices[0].x, vertices[0].y);
+            for (var v = 1; v < vertices.length; v++) {
+                context.lineTo(vertices[v].x, vertices[v].y);
             }
             context.stroke();
-            context.closePath();
         }
 
         /**
@@ -3053,20 +3205,21 @@ var Renderer = function () {
         value: function drawPolygon(vertices, context, style) {
             Object.assign(context, style);
             context.beginPath();
-            var started = false;
-            var x = 0;
-            var y = 0;
-            for (var v in vertices) {
-                x = vertices[v].x;
-                y = vertices[v].y;
-                if (!started) {
-                    context.moveTo(x, y);
-                    started = true;
-                } else {
-                    context.lineTo(x, y);
-                }
+            context.moveTo(vertices[0].x, vertices[0].y);
+            for (var v = 1; v < vertices.length; v++) {
+                context.lineTo(vertices[v].x, vertices[v].y);
             }
-            context.lineTo(vertices[0].x, vertices[0].y);
+            context.closePath();
+            context.stroke();
+        }
+    }, {
+        key: 'drawBezier',
+        value: function drawBezier(start, end, c1, c2, context, style) {
+            Object.assign(context, style);
+            //must `beginPath()` before `moveTo` to get correct starting position
+            context.beginPath();
+            context.moveTo(start.x, start.y);
+            context.bezierCurveTo(c1.x, c1.y, c2.x, c2.y, end.x, end.y);
             context.stroke();
             context.closePath();
         }
@@ -3085,11 +3238,9 @@ var Renderer = function () {
         key: 'drawRectangle',
         value: function drawRectangle(x, y, width, height, context, style) {
             Object.assign(context, style);
-            context.beginPath();
             context.rect(x, y, width, height);
             context.fill();
             context.stroke();
-            context.closePath();
         }
 
         //TODO: provide support for rotation and startAngle parameters
@@ -3107,12 +3258,10 @@ var Renderer = function () {
         key: 'drawEllipse',
         value: function drawEllipse(x, y, radius, minorRadius, context, style) {
             Object.assign(context, style);
-            context.beginPath();
             //TODO: 2017-05-22 this is currently not supported by IE
             context.ellipse(x, y, radius, minorRadius, 0, 0, 2 * Math.PI);
             context.fill();
             context.stroke();
-            context.closePath();
         }
 
         /**
@@ -3128,13 +3277,11 @@ var Renderer = function () {
         key: 'drawCircle',
         value: function drawCircle(x, y, radius, context, style) {
             Object.assign(context, style);
-            context.beginPath();
             context.arc(x, y, radius, 0, 2 * Math.PI);
             //TODO: 2015-03-12 this is currently only supported by chrome & opera
             //context.ellipse(x, y, radius, radius, 0, 0, 2 * Math.PI);
             context.fill();
             context.stroke();
-            context.closePath();
         }
 
         /**
@@ -3150,10 +3297,8 @@ var Renderer = function () {
         key: 'drawText',
         value: function drawText(x, y, text, context, style) {
             Object.assign(context, style);
-            context.beginPath();
             context.fillText(text, x, y);
             //TODO: implement stroke text if specified
-            context.closePath();
         }
 
         /**
@@ -3171,9 +3316,7 @@ var Renderer = function () {
             Object.assign(context, style);
             //no reason to draw 0-sized images
             if (image.width > 0 && image.height > 0) {
-                context.beginPath();
                 context.drawImage(image, x, y, image.width, image.height);
-                context.closePath();
             }
         }
 
@@ -3201,7 +3344,7 @@ exports.default = Renderer;
 exports.Renderer = Renderer;
 exports.DEFAULTS = DEFAULTS;
 
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -3431,7 +3574,7 @@ var Text = function (_PrimitiveComponent) {
 
 exports.default = Text;
 
-},{"./PrimitiveComponent":9,"./Renderer":11}],13:[function(require,module,exports){
+},{"./PrimitiveComponent":10,"./Renderer":12}],14:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -3645,13 +3788,13 @@ function scaleVectorXY(vector, scaleX, scaleY) {
     return new _withoutblas.Vector([vector.x * scaleX, vector.y * scaleY]);
 }
 
-},{"./Line":8,"./PrimitiveComponent":9,"./Renderer":11,"vectorious/withoutblas":3}],"canvas-compositor":[function(require,module,exports){
+},{"./Line":9,"./PrimitiveComponent":10,"./Renderer":12,"vectorious/withoutblas":3}],"canvas-compositor":[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.DEFAULTS = exports.Text = exports.Image = exports.VectorPath = exports.Line = exports.Rectangle = exports.Ellipse = exports.Circle = exports.Composition = exports.PrimitiveComponent = exports.Renderer = exports.CanvasCompositor = undefined;
+exports.DEFAULTS = exports.Text = exports.Image = exports.Bezier = exports.VectorPath = exports.Line = exports.Rectangle = exports.Ellipse = exports.Circle = exports.Composition = exports.PrimitiveComponent = exports.Renderer = exports.CanvasCompositor = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -3684,6 +3827,10 @@ var _Line2 = _interopRequireDefault(_Line);
 var _VectorPath = require('./VectorPath');
 
 var _VectorPath2 = _interopRequireDefault(_VectorPath);
+
+var _Bezier = require('./Bezier');
+
+var _Bezier2 = _interopRequireDefault(_Bezier);
 
 var _Image = require('./Image');
 
@@ -3741,23 +3888,16 @@ var CanvasCompositor = function () {
         var borderLeft = style.getPropertyValue('border-left') ? parseFloat(style.getPropertyValue('border-left')) : 0;
         var paddingLeft = style.getPropertyValue('padding-left') ? parseFloat(style.getPropertyValue('padding-left')) : 0;
 
-        /**
-         * @type {number} _leftPadding the padding on the left of the canvas, which
-         * affects the offset of the mouse position
-         */
         this._leftPadding = borderLeft + paddingLeft;
 
         var borderTop = style.getPropertyValue('border-top') ? parseFloat(style.getPropertyValue('border-top')) : 0;
         var paddingTop = style.getPropertyValue('padding-top') ? parseFloat(style.getPropertyValue('padding-top')) : 0;
 
-        /**
-         * @type {number} _topPadding the padding on the top of the canvas, which
-         * affects the offset of the mouse position
-         */
         this._topPadding = borderTop + paddingTop;
 
-        //this._currentTime = 0;
-        //this._lastRenderTime = 0;
+        this._currentTime = 0;
+        this._lastFrameTimestamp = 0;
+        this._lastRenderTime = 0;
 
         this._targetObject = null;
 
@@ -3774,23 +3914,10 @@ var CanvasCompositor = function () {
         };
 
         this._animationLoop();
-        //this._framerate = 0;
+        this._framerate = 0;
     }
 
     //TODO: expose the framerate
-    /*set framerate(val) {
-        this._framerate = val;
-    }
-     get framerate() {
-        var framerateUpdatedEvent = new Event();
-        return this._framerate;
-    }*/
-
-    //TODO: multiple target objects? in reverse order of render? in order of composition?
-    /**
-     * the object currently selected for interaction
-     * @type {object}
-     */
 
 
     _createClass(CanvasCompositor, [{
@@ -3805,17 +3932,16 @@ var CanvasCompositor = function () {
          * There is no need to invoke this directly, the constructor will do it.
          */
         value: function _animationLoop() {
-            //console.log(this);
-            //console.log();
             window.requestAnimationFrame(this._animationLoop.bind(this));
-            //this._currentTime = +new Date();
+            this._currentTime = +new Date();
             //set maximum of 60 fps and only redraw if necessary
-            if ( /*this._currentTime - this._lastRenderTime >= this._targetFPS &&*/this.scene.needsDraw) {
-                //this.framerate = 1 / (this._currentTime - this._lastRenderTime / 1000)
-                //this._lastRenderTime = +new Date();
+            if ( /*this._currentTime - this._lastFrameTimestamp >= this._targetFPS &&*/this.scene.needsDraw) {
+                this._lastRenderTime = +new Date();
                 _Renderer.Renderer.clearRect(0, 0, this._canvas.width, this._canvas.height, this._context);
                 this.scene.draw(this._context);
             }
+            this.framerate = parseInt(1000 / (this._currentTime - this._lastFrameTimestamp));
+            this._lastFrameTimestamp = +new Date();
         }
 
         /**
@@ -3832,9 +3958,6 @@ var CanvasCompositor = function () {
                 this._eventRegistry[eventType].push(callback);
             }
         }
-    }, {
-        key: 'removeEvent',
-
 
         /**
          * remove an event to the event registry
@@ -3843,6 +3966,9 @@ var CanvasCompositor = function () {
          * @param {function} callback the callback to be removed from the event
          * @return {function} the callback that was removed
          */
+
+    }, {
+        key: 'removeEvent',
         value: function removeEvent(eventType, callback) {
             if (this._eventRegistry[eventType]) {
                 var index = this._eventRegistry[eventType].indexOf(callback);
@@ -3851,14 +3977,14 @@ var CanvasCompositor = function () {
                 }
             }
         }
-    }, {
-        key: '_bindEvents',
-
 
         /**
          * attach interaction events to the canvas. the canvas compositor dispatches
          * events to relevant objects through bridges to the scene graph
          */
+
+    }, {
+        key: '_bindEvents',
         value: function _bindEvents() {
             //TODO: reimplement touch events?
             //must bind to `this` to retain reference
@@ -3964,8 +4090,6 @@ var CanvasCompositor = function () {
                 }
             }
 
-            ;
-
             var _iteratorNormalCompletion3 = true;
             var _didIteratorError3 = false;
             var _iteratorError3 = undefined;
@@ -3990,8 +4114,6 @@ var CanvasCompositor = function () {
                     }
                 }
             }
-
-            ;
 
             var clickedObject = this.scene.childAt(x, y);
 
@@ -4038,8 +4160,6 @@ var CanvasCompositor = function () {
                 }
             }
 
-            ;
-
             var _iteratorNormalCompletion5 = true;
             var _didIteratorError5 = false;
             var _iteratorError5 = undefined;
@@ -4064,8 +4184,6 @@ var CanvasCompositor = function () {
                     }
                 }
             }
-
-            ;
         }
     }, {
         key: '_handleClick',
@@ -4115,8 +4233,6 @@ var CanvasCompositor = function () {
                 }
             }
 
-            ;
-
             var _iteratorNormalCompletion7 = true;
             var _didIteratorError7 = false;
             var _iteratorError7 = undefined;
@@ -4141,8 +4257,6 @@ var CanvasCompositor = function () {
                     }
                 }
             }
-
-            ;
         }
     }, {
         key: '_handleMouseOut',
@@ -4213,6 +4327,27 @@ var CanvasCompositor = function () {
 
             ;
         }
+    }, {
+        key: 'drawBezier',
+        value: function drawBezier(start, end, c1, c2, style) {
+            _Renderer.Renderer.drawBezier(start, end, c1, c2, this._context, style);
+        }
+    }, {
+        key: 'framerate',
+        set: function set(val) {
+            this._framerate = val;
+        },
+        get: function get() {
+            //var framerateUpdatedEvent = new Event();
+            return this._framerate;
+        }
+
+        //TODO: multiple target objects? in reverse order of render? in order of composition?
+        /**
+         * the object currently selected for interaction
+         * @type {object}
+         */
+
     }, {
         key: 'targetObject',
         get: function get() {
@@ -4305,10 +4440,11 @@ exports.Ellipse = _Ellipse2.default;
 exports.Rectangle = _Rectangle2.default;
 exports.Line = _Line2.default;
 exports.VectorPath = _VectorPath2.default;
+exports.Bezier = _Bezier2.default;
 exports.Image = _Image2.default;
 exports.Text = _Text2.default;
 exports.DEFAULTS = _Renderer.DEFAULTS;
 
-},{"./Circle":4,"./Composition":5,"./Ellipse":6,"./Image":7,"./Line":8,"./PrimitiveComponent":9,"./Rectangle":10,"./Renderer":11,"./Text":12,"./VectorPath":13}]},{},[])
+},{"./Bezier":4,"./Circle":5,"./Composition":6,"./Ellipse":7,"./Image":8,"./Line":9,"./PrimitiveComponent":10,"./Rectangle":11,"./Renderer":12,"./Text":13,"./VectorPath":14}]},{},[])
 
 //# sourceMappingURL=canvas-compositor.js.map

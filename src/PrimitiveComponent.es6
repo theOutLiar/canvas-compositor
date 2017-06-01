@@ -21,6 +21,9 @@ export default class PrimitiveComponent {
 
         options = options || {};
 
+        this._flags = {};
+        this._flags.DEBUG = options.debug || false;
+
         /**
          * does the object need to be redrawn?
          * @type {boolean} _needsDraw
@@ -379,6 +382,8 @@ export default class PrimitiveComponent {
      * @param {object} offset the offset on the canvas - optional, used for prerendering
      */
     draw(context, offset) {
+        let boundingBox = this.boundingBox;
+
         this.needsDraw = false;
 
         if (this.needsRender && this.render) {
@@ -391,8 +396,8 @@ export default class PrimitiveComponent {
             this._prerenderingContext = this._prerenderingCanvas.getContext('2d'); //text needs prerendering context defined for boundingBox measurements
 
             //make sure the new canvas has the appropriate dimensions
-            this._prerenderingCanvas.width = this.boundingBox.right - this.boundingBox.left;
-            this._prerenderingCanvas.height = this.boundingBox.bottom - this.boundingBox.top;
+            this._prerenderingCanvas.width = boundingBox.right - boundingBox.left;
+            this._prerenderingCanvas.height = boundingBox.bottom - boundingBox.top;
 
             this.render();
             this.needsRender = false;
@@ -400,26 +405,28 @@ export default class PrimitiveComponent {
 
         //TODO: handle debug options
         //draw bounding boxes
-        /*if (this.flags.DEBUG) {
+        if (this._flags.DEBUG) {
         	this._prerenderingContext.beginPath();
+            this._prerenderingContext.setLineDash([5, 15]);
         	this._prerenderingContext.lineWidth=2.0;
+            this._prerenderingContext.strokeStyle='#FF0000';
         	this._prerenderingContext.strokeStyle='#FF0000';
-        	this._prerenderingContext.strokeRect(0,0,this._prerenderedImage.width, this._prerenderedImage.height);
+        	this._prerenderingContext.strokeRect(0,0,this._prerenderingCanvas.width, this._prerenderingCanvas.height);
         	this._prerenderingContext.closePath();
-        }*/
+        }
 
         //TODO: handle bounding box drawing
         /*if (this.drawBoundingBox){
         	this._prerenderingContext.beginPath();
         	this._prerenderingContext.lineWidth=2.0;
         	this._prerenderingContext.strokeStyle=this.boundingBoxColor;
-        	this._prerenderingContext.strokeRect(0,0,this._prerenderedImage.width, this._prerenderedImage.height);
+        	this._prerenderingContext.strokeRect(0,0,this._prerenderingCanvas.width, this._prerenderingCanvas.height);
         	this._prerenderingContext.closePath();
         }*/
 
         //offsets are for prerendering contexts of compositions
-        let x = this.boundingBox.left + (offset && offset.left ? offset.left : 0);
-        let y = this.boundingBox.top + (offset && offset.top ? offset.top : 0);
+        let x = boundingBox.left + (offset && offset.left ? offset.left : 0);
+        let y = boundingBox.top + (offset && offset.top ? offset.top : 0);
         Renderer.drawImage(x, y, this._prerenderingCanvas, context, this.style);
     }
 

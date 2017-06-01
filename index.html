@@ -6,21 +6,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Canvas Compositor</title>
     <script src="dist/canvas-compositor.js" type="text/javascript" charset="utf-8"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+
+    </style>
 </head>
 
 <body>
     <canvas id="test-canvas" width="800" height="600" style="margin-top:20px; border:1px solid black;"></canvas>
-    <div class="canvas-debug"></div>
+    <div id="canvas-debug"></div>
     <script>
         'use strict';
         //var CCModule = require('canvas-compositor');
         let ccMod = require('canvas-compositor');
+        let debugFrame = document.getElementById('canvas-debug');
 
         let CanvasCompositor = ccMod.CanvasCompositor,
             Circle = ccMod.Circle,
             Ellipse = ccMod.Ellipse,
             Rectangle = ccMod.Rectangle,
             VectorPath = ccMod.VectorPath,
+            Bezier = ccMod.Bezier,
             Image = ccMod.Image,
             Text = ccMod.Text;
 
@@ -93,6 +101,30 @@
             draggable: true
         });
 
+        var _bezi = new Bezier({
+            start: {
+                x: 50,
+                y: 50
+            },
+            end: {
+                x: 300,
+                y: 50
+            },
+            control1: {
+                x: 50,
+                y: 201
+            },
+            control2: {
+                x: 300,
+                y: 199
+            },
+            style: {
+                strokeStyle: 'red'
+            },
+            draggable: true,
+            debug: true
+        });
+
         let _image = null;
         let i = new window.Image();
         i.src = 'demo.png';
@@ -107,15 +139,22 @@
                 },
                 draggable: true
             });
-            _myCC.scene.addChild(_image);
+            //_myCC.scene.addChild(_image);
         }
 
+        //_myCC.scene.addChild(_circ);
+        //_myCC.scene.addChild(_elip);
+        //_myCC.scene.addChild(_rect);
+        //_myCC.scene.addChild(_path);
+        _myCC.scene.addChild(_bezi);
+        //_myCC.scene.addChild(_text);
 
-        _myCC.scene.addChild(_circ);
-        _myCC.scene.addChild(_elip);
-        _myCC.scene.addChild(_rect);
-        _myCC.scene.addChild(_path);
-        _myCC.scene.addChild(_text);
+        function _updateFPS() {
+            debugFrame.innerHTML = "fps: " + _myCC.framerate;
+
+        }
+
+        setInterval(_updateFPS, 250);
 
     </script>
 </body>

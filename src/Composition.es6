@@ -32,16 +32,17 @@ export default class Composition extends PrimitiveComponent {
      * @type {{top:number, left:number, right:number, bottom:number}} boundingBox
      */
     get boundingBox() {
-        let top = null,
-            left = null,
-            bottom = null,
-            right = null;
+        let top = Infinity,
+            left = Infinity,
+            bottom = -Infinity,
+            right = -Infinity;
 
         for (let c of this.children) {
-            top = top !== null && top < c.boundingBox.top ? top : c.boundingBox.top;
-            left = left !== null && left < c.boundingBox.left ? left : c.boundingBox.left;
-            bottom = bottom !== null && bottom > c.boundingBox.bottom ? bottom : c.boundingBox.bottom;
-            right = right !== null && right > c.boundingBox.right ? right : c.boundingBox.right;
+            let boundingBox = c.boundingBox;
+            top = Math.min(boundingBox.top, top);
+            left = Math.min(boundingBox.left, left);
+            bottom = Math.max(boundingBox.bottom, bottom);
+            right = Math.max(boundingBox.right, right);
         };
 
         return {
@@ -116,11 +117,12 @@ export default class Composition extends PrimitiveComponent {
      */
     render() {
         // required to make sure that the drawing occurs within the bounds of this composition
+        let boundingBox = this.boundingBox;
         var offset = {
-            top: -this.boundingBox.top,
-            left: -this.boundingBox.left,
-            bottom: -this.boundingBox.bottom,
-            right: -this.boundingBox.right
+            top: -boundingBox.top,
+            left: -boundingBox.left,
+            bottom: -boundingBox.bottom,
+            right: -boundingBox.right
         };
 
         for (let c of this.children) {

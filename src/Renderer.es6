@@ -43,21 +43,11 @@ export default class Renderer {
     static drawPath(vertices, context, style) {
         Object.assign(context, style);
         context.beginPath();
-        let started = false;
-        let x = 0;
-        let y = 0;
-        for (var v in vertices) {
-            x = vertices[v].x;
-            y = vertices[v].y;
-            if (!started) {
-                context.moveTo(x, y);
-                started = true;
-            } else {
-                context.lineTo(x, y);
-            }
+        context.moveTo(vertices[0].x, vertices[0].y);
+        for (let v = 1; v < vertices.length; v++) {
+            context.lineTo(vertices[v].x, vertices[v].y);
         }
         context.stroke();
-        context.closePath();
     }
 
     /**
@@ -69,20 +59,21 @@ export default class Renderer {
     static drawPolygon(vertices, context, style) {
         Object.assign(context, style);
         context.beginPath();
-        let started = false;
-        let x = 0;
-        let y = 0;
-        for (var v in vertices) {
-            x = vertices[v].x;
-            y = vertices[v].y;
-            if (!started) {
-                context.moveTo(x, y);
-                started = true;
-            } else {
-                context.lineTo(x, y);
-            }
+        context.moveTo(vertices[0].x, vertices[0].y);
+        for (let v = 1; v < vertices.length; v++) {
+            context.lineTo(vertices[v].x, vertices[v].y);
         }
-        context.lineTo(vertices[0].x, vertices[0].y);
+        context.closePath();
+        context.stroke();
+
+    }
+
+    static drawBezier(start, end, c1, c2, context, style) {
+        Object.assign(context, style);
+        //must `beginPath()` before `moveTo` to get correct starting position
+        context.beginPath();
+        context.moveTo(start.x, start.y);
+        context.bezierCurveTo(c1.x, c1.y, c2.x, c2.y, end.x, end.y);
         context.stroke();
         context.closePath();
     }
@@ -98,11 +89,9 @@ export default class Renderer {
      */
     static drawRectangle(x, y, width, height, context, style) {
         Object.assign(context, style);
-        context.beginPath();
         context.rect(x, y, width, height);
         context.fill();
         context.stroke();
-        context.closePath();
     }
 
     //TODO: provide support for rotation and startAngle parameters
@@ -117,12 +106,10 @@ export default class Renderer {
      */
     static drawEllipse(x, y, radius, minorRadius, context, style) {
         Object.assign(context, style);
-        context.beginPath();
         //TODO: 2017-05-22 this is currently not supported by IE
         context.ellipse(x, y, radius, minorRadius, 0, 0, 2 * Math.PI);
         context.fill();
         context.stroke();
-        context.closePath();
     }
 
     /**
@@ -135,13 +122,11 @@ export default class Renderer {
      */
     static drawCircle(x, y, radius, context, style) {
         Object.assign(context, style);
-        context.beginPath();
         context.arc(x, y, radius, 0, 2 * Math.PI);
         //TODO: 2015-03-12 this is currently only supported by chrome & opera
         //context.ellipse(x, y, radius, radius, 0, 0, 2 * Math.PI);
         context.fill();
         context.stroke();
-        context.closePath();
     }
 
     /**
@@ -154,10 +139,8 @@ export default class Renderer {
      */
     static drawText(x, y, text, context, style) {
         Object.assign(context, style);
-        context.beginPath();
         context.fillText(text, x, y);
         //TODO: implement stroke text if specified
-        context.closePath();
     }
 
     /**
@@ -172,9 +155,7 @@ export default class Renderer {
         Object.assign(context, style);
         //no reason to draw 0-sized images
         if (image.width > 0 && image.height > 0) {
-            context.beginPath();
             context.drawImage(image, x, y, image.width, image.height);
-            context.closePath();
         }
     }
 

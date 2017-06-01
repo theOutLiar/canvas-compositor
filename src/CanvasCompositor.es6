@@ -10,6 +10,7 @@ import Ellipse from './Ellipse';
 import Rectangle from './Rectangle';
 import Line from './Line';
 import VectorPath from './VectorPath';
+import Bezier from './Bezier';
 import Image from './Image';
 import Text from './Text';
 
@@ -54,24 +55,16 @@ export default class CanvasCompositor {
         let borderLeft = style.getPropertyValue('border-left') ? parseFloat(style.getPropertyValue('border-left')) : 0;
         let paddingLeft = style.getPropertyValue('padding-left') ? parseFloat(style.getPropertyValue('padding-left')) : 0;
 
-        /**
-         * @type {number} _leftPadding the padding on the left of the canvas, which
-         * affects the offset of the mouse position
-         */
         this._leftPadding = borderLeft + paddingLeft;
-
 
         let borderTop = style.getPropertyValue('border-top') ? parseFloat(style.getPropertyValue('border-top')) : 0;
         let paddingTop = style.getPropertyValue('padding-top') ? parseFloat(style.getPropertyValue('padding-top')) : 0;
 
-        /**
-         * @type {number} _topPadding the padding on the top of the canvas, which
-         * affects the offset of the mouse position
-         */
         this._topPadding = borderTop + paddingTop;
 
-        //this._currentTime = 0;
-        //this._lastRenderTime = 0;
+        this._currentTime = 0;
+        this._lastFrameTimestamp = 0;
+        this._lastRenderTime = 0;
 
         this._targetObject = null;
 
@@ -88,18 +81,18 @@ export default class CanvasCompositor {
         };
 
         this._animationLoop();
-        //this._framerate = 0;
+        this._framerate = 0;
     }
 
     //TODO: expose the framerate
-    /*set framerate(val) {
+    set framerate(val) {
         this._framerate = val;
     }
 
     get framerate() {
-        var framerateUpdatedEvent = new Event();
+        //var framerateUpdatedEvent = new Event();
         return this._framerate;
-    }*/
+    }
 
     //TODO: multiple target objects? in reverse order of render? in order of composition?
     /**
@@ -134,17 +127,16 @@ export default class CanvasCompositor {
      * There is no need to invoke this directly, the constructor will do it.
      */
     _animationLoop() {
-        //console.log(this);
-        //console.log();
         window.requestAnimationFrame(this._animationLoop.bind(this));
-        //this._currentTime = +new Date();
+        this._currentTime = +new Date();
         //set maximum of 60 fps and only redraw if necessary
-        if ( /*this._currentTime - this._lastRenderTime >= this._targetFPS &&*/ this.scene.needsDraw) {
-            //this.framerate = 1 / (this._currentTime - this._lastRenderTime / 1000)
-            //this._lastRenderTime = +new Date();
+        if ( /*this._currentTime - this._lastFrameTimestamp >= this._targetFPS &&*/ this.scene.needsDraw) {
+            this._lastRenderTime = +new Date();
             Renderer.clearRect(0, 0, this._canvas.width, this._canvas.height, this._context);
             this.scene.draw(this._context);
         }
+        this.framerate = parseInt(1000 / (this._currentTime - this._lastFrameTimestamp));
+        this._lastFrameTimestamp = +new Date();
 
     }
 
@@ -158,7 +150,7 @@ export default class CanvasCompositor {
         if (this._eventRegistry[eventType]) {
             this._eventRegistry[eventType].push(callback);
         }
-    };
+    }
 
     /**
      * remove an event to the event registry
@@ -174,7 +166,7 @@ export default class CanvasCompositor {
                 return this._eventRegistry[eventType].splice(index, 1);
             }
         }
-    };
+    }
 
     /**
      * attach interaction events to the canvas. the canvas compositor dispatches
@@ -233,11 +225,11 @@ export default class CanvasCompositor {
             if (c.draggable && c.onmouseup) {
                 c.onmouseup(e);
             }
-        };
+        }
 
         for (let callback of this._eventRegistry[EVENTS.MOUSEUP]) {
             callback(e);
-        };
+        }
 
         let clickedObject = this.scene.childAt(x, y);
 
@@ -256,11 +248,11 @@ export default class CanvasCompositor {
 
         for (let callback of this._eventRegistry[EVENTS.MOUSEMOVE]) {
             callback(e);
-        };
+        }
 
         for (let o of objects) {
             o.onmousemove(e);
-        };
+        }
     };
 
     /**
@@ -282,11 +274,11 @@ export default class CanvasCompositor {
 
         for (let callback of this._eventRegistry[EVENTS.CLICK]) {
             callback(e);
-        };
+        }
 
         for (let o of objects) {
             o.onclick(e);
-        };
+        }
     };
 
     /**
@@ -306,6 +298,10 @@ export default class CanvasCompositor {
             callback(e);
         };
     };
+
+    drawBezier(start, end, c1, c2, style){
+        Renderer.drawBezier(start, end, c1, c2, this._context, style);
+    }
 }
 
 /*
@@ -370,6 +366,7 @@ export {
     Rectangle,
     Line,
     VectorPath,
+    Bezier,
     Image,
     Text,
     DEFAULTS
