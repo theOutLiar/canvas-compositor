@@ -1,11 +1,10 @@
-import {
-    Vector
-} from 'vectorious/withoutblas';
+import VectorAdaptor from './VectorAdaptor';
 import {
     DEFAULTS,
     Renderer
 } from './Renderer';
 
+let Vector = null;
 /**
  * The base class of things that may be drawn on the canvas.
  * All drawable objects should inherit from this class.
@@ -23,6 +22,10 @@ export default class PrimitiveComponent {
 
         this._flags = {};
         this._flags.DEBUG = options.debug || false;
+
+        if (!Vector){
+            Vector = new VectorAdaptor().implementation;
+        }
 
         /**
          * does the object need to be redrawn?

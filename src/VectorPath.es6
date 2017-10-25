@@ -1,13 +1,12 @@
 import Renderer from './Renderer';
 import PrimitiveComponent from './PrimitiveComponent';
-import {
-    Vector
-} from 'vectorious/withoutblas';
+import VectorAdaptor from './VectorAdaptor';
 import Line from './Line';
 
 //would name the file 'path', but damn near everything
 //relies on the filesystem 'path' module
 
+let Vector = null;
 /**
  * An ordered set of vectors defining a path
  */
@@ -21,6 +20,10 @@ export default class VectorPath extends PrimitiveComponent {
      */
     constructor(options) {
         super(options);
+
+        if (!Vector){
+            Vector = new VectorAdaptor().implementation;
+        }
 
         options.vertices = options.vertices || [];
 

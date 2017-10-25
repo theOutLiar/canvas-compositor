@@ -1,7 +1,6 @@
-import {
-    Vector
-} from 'vectorious/withoutblas';
+import VectorAdaptor from './VectorAdaptor';
 
+let Vector = null;
 /**
  * A line
  */
@@ -15,6 +14,11 @@ export default class Line {
      * @param {object} direction
      */
     constructor(anchor, direction) {
+
+        if (!Vector) {
+            Vector = new VectorAdaptor().implementation;
+        }
+
         /**
          * @type {object} p1 a vector describing a point through which the line passes
          */

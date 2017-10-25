@@ -1580,6 +1580,10 @@ var _PrimitiveComponent2 = require('./PrimitiveComponent');
 
 var _PrimitiveComponent3 = _interopRequireDefault(_PrimitiveComponent2);
 
+var _VectorAdaptor = require('./VectorAdaptor');
+
+var _VectorAdaptor2 = _interopRequireDefault(_VectorAdaptor);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -1587,6 +1591,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Vector = null;
 
 //uhh... i looked up *SO* much stuff on this, and even tried to work out the math myself,
 //but this is ridiculous - where does this come from?
@@ -1657,6 +1663,10 @@ var Bezier = function (_PrimitiveComponent) {
 
         var _this = _possibleConstructorReturn(this, (Bezier.__proto__ || Object.getPrototypeOf(Bezier)).call(this, options));
 
+        if (!Vector) {
+            Vector = new _VectorAdaptor2.default().implementation;
+        }
+
         var start = new Vector([options.start.x, options.start.y]);
         var end = new Vector([options.end.x, options.end.y]);
         var control1 = new Vector([options.control1.x, options.control1.y]);
@@ -1714,7 +1724,7 @@ var Bezier = function (_PrimitiveComponent) {
 
 exports.default = Bezier;
 
-},{"./PrimitiveComponent":10,"./Renderer":12}],5:[function(require,module,exports){
+},{"./PrimitiveComponent":10,"./Renderer":12,"./VectorAdaptor":14}],5:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2293,13 +2303,19 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _withoutblas = require('vectorious/withoutblas');
+var _VectorAdaptor = require('./VectorAdaptor');
+
+var _VectorAdaptor2 = _interopRequireDefault(_VectorAdaptor);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+var Vector = null;
 /**
  * A line
  */
+
 var Line = function () {
     /**
      * A Line can be defined by two points, p1 and p2, through
@@ -2311,6 +2327,10 @@ var Line = function () {
      */
     function Line(anchor, direction) {
         _classCallCheck(this, Line);
+
+        if (!Vector) {
+            Vector = new _VectorAdaptor2.default().implementation;
+        }
 
         /**
          * @type {object} p1 a vector describing a point through which the line passes
@@ -2325,7 +2345,7 @@ var Line = function () {
         /**
          * @type {object} a vector describing a second point through which the line passes
          */
-        this.p2 = _withoutblas.Vector.add(this.p1, this.direction);
+        this.p2 = Vector.add(this.p1, this.direction);
     }
 
     /**
@@ -2366,7 +2386,7 @@ var Line = function () {
 
             var xNumerator = (x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4);
             var yNumerator = (x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4);
-            return new _withoutblas.Vector([xNumerator / denominator, yNumerator / denominator]);
+            return new Vector([xNumerator / denominator, yNumerator / denominator]);
         }
     }]);
 
@@ -2375,7 +2395,7 @@ var Line = function () {
 
 exports.default = Line;
 
-},{"vectorious/withoutblas":3}],10:[function(require,module,exports){
+},{"./VectorAdaptor":14}],10:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2384,12 +2404,17 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _withoutblas = require('vectorious/withoutblas');
+var _VectorAdaptor = require('./VectorAdaptor');
+
+var _VectorAdaptor2 = _interopRequireDefault(_VectorAdaptor);
 
 var _Renderer = require('./Renderer');
 
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+var Vector = null;
 /**
  * The base class of things that may be drawn on the canvas.
  * All drawable objects should inherit from this class.
@@ -2397,6 +2422,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
  * call this directly, although they may wish to extend their own
  * classes with it.
  */
+
 var PrimitiveComponent = function () {
     /**
      * @param {object} options
@@ -2408,6 +2434,10 @@ var PrimitiveComponent = function () {
 
         this._flags = {};
         this._flags.DEBUG = options.debug || false;
+
+        if (!Vector) {
+            Vector = new _VectorAdaptor2.default().implementation;
+        }
 
         /**
          * does the object need to be redrawn?
@@ -2438,7 +2468,7 @@ var PrimitiveComponent = function () {
          * position relative to its parent composition (or [0,0] if this is the scene composition)
          * @type {object} d
          */
-        this._d = new _withoutblas.Vector([options.x || 0, options.y || 0]);
+        this._d = new Vector([options.x || 0, options.y || 0]);
 
         /**
          * style options for this particular object. these are standard context styles
@@ -2569,7 +2599,7 @@ var PrimitiveComponent = function () {
         value: function dragStart(e) {
             //TODO: should probably be using an event registry so
             //multiple event callbacks can be registered
-            this._mouseOffset = new _withoutblas.Vector([e.offsetX, e.offsetY]).subtract(this.offset);
+            this._mouseOffset = new Vector([e.offsetX, e.offsetY]).subtract(this.offset);
             this.onmousedown = null;
             this.onmousemove = this.drag;
             this.onmouseup = this.dragEnd;
@@ -2584,7 +2614,7 @@ var PrimitiveComponent = function () {
     }, {
         key: 'drag',
         value: function drag(e) {
-            this.d = new _withoutblas.Vector([e.offsetX, e.offsetY]).subtract(this._mouseOffset);
+            this.d = new Vector([e.offsetX, e.offsetY]).subtract(this._mouseOffset);
             this.needsDraw = true;
         }
 
@@ -2776,7 +2806,7 @@ var PrimitiveComponent = function () {
     }, {
         key: 'offset',
         get: function get() {
-            return this.parent ? _withoutblas.Vector.add(this.d, this.parent.offset) : this.d;
+            return this.parent ? Vector.add(this.d, this.parent.offset) : this.d;
         }
 
         /**
@@ -3029,7 +3059,7 @@ var PrimitiveComponent = function () {
 
 exports.default = PrimitiveComponent;
 
-},{"./Renderer":12,"vectorious/withoutblas":3}],11:[function(require,module,exports){
+},{"./Renderer":12,"./VectorAdaptor":14}],11:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -3145,15 +3175,14 @@ var DEFAULTS = {
     font: '10px sans-serif',
     textAlign: 'start',
     textBaseline: 'alphabetic'
+
+    //TODO: masking? it looks like this is done in the Composition, but that may be bugged out.
+
+    /**
+     * A collection of high level static methods for drawing directly to canvas
+     *
+     */
 };
-
-//TODO: masking? it looks like this is done in the Composition, but that may be bugged out.
-
-/**
- * A collection of high level static methods for drawing directly to canvas
- *
- */
-
 var Renderer = function () {
     function Renderer() {
         _classCallCheck(this, Renderer);
@@ -3583,6 +3612,53 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+var _withoutblas = require('vectorious/withoutblas');
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var instance = null;
+
+var VectorAdaptor = function () {
+    function VectorAdaptor(implementation) {
+        _classCallCheck(this, VectorAdaptor);
+
+        //this is a singleton because any given runtime only needs one implementation of Vector
+        if (instance) {
+            return instance;
+        }
+
+        //could do some API checking to see if things are compatible for different vector libs
+        //and write a facade for vector altogether... but that seems like a lot of work.
+        //more docs to come, but this assumes Vectorious is being used.
+        if (!implementation) {
+            implementation = _withoutblas.Vector;
+        }
+
+        this._implementation = implementation;
+        instance = this;
+    }
+
+    _createClass(VectorAdaptor, [{
+        key: 'implementation',
+        get: function get() {
+            return this._implementation;
+        }
+    }]);
+
+    return VectorAdaptor;
+}();
+
+exports.default = VectorAdaptor;
+
+},{"vectorious/withoutblas":3}],15:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
 var _set = function set(object, property, value, receiver) { var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent !== null) { set(parent, property, value, receiver); } } else if ("value" in desc && desc.writable) { desc.value = value; } else { var setter = desc.set; if (setter !== undefined) { setter.call(receiver, value); } } return value; };
@@ -3595,7 +3671,9 @@ var _PrimitiveComponent2 = require('./PrimitiveComponent');
 
 var _PrimitiveComponent3 = _interopRequireDefault(_PrimitiveComponent2);
 
-var _withoutblas = require('vectorious/withoutblas');
+var _VectorAdaptor = require('./VectorAdaptor');
+
+var _VectorAdaptor2 = _interopRequireDefault(_VectorAdaptor);
 
 var _Line = require('./Line');
 
@@ -3612,9 +3690,11 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 //would name the file 'path', but damn near everything
 //relies on the filesystem 'path' module
 
+var Vector = null;
 /**
  * An ordered set of vectors defining a path
  */
+
 var VectorPath = function (_PrimitiveComponent) {
     _inherits(VectorPath, _PrimitiveComponent);
 
@@ -3630,6 +3710,10 @@ var VectorPath = function (_PrimitiveComponent) {
 
         var _this = _possibleConstructorReturn(this, (VectorPath.__proto__ || Object.getPrototypeOf(VectorPath)).call(this, options));
 
+        if (!Vector) {
+            Vector = new _VectorAdaptor2.default().implementation;
+        }
+
         options.vertices = options.vertices || [];
 
         //this.unscaledLineWidth = this.style.lineWidth;
@@ -3639,7 +3723,7 @@ var VectorPath = function (_PrimitiveComponent) {
          * @type {Vector[]} vertices
          */
         _this.vertices = options.vertices.map(function (v) {
-            return new _withoutblas.Vector([v.x, v.y]);
+            return new Vector([v.x, v.y]);
         });
 
         var yCoordinates = _this.vertices.map(function (v) {
@@ -3655,7 +3739,7 @@ var VectorPath = function (_PrimitiveComponent) {
         _this._right = Math.max.apply(null, xCoordinates);
         _this._bottom = Math.max.apply(null, yCoordinates);
 
-        _set(VectorPath.prototype.__proto__ || Object.getPrototypeOf(VectorPath.prototype), 'd', new _withoutblas.Vector([_this._left, _this._top]), _this);
+        _set(VectorPath.prototype.__proto__ || Object.getPrototypeOf(VectorPath.prototype), 'd', new Vector([_this._left, _this._top]), _this);
 
         var normalizationVector = _this.d;
 
@@ -3691,7 +3775,7 @@ var VectorPath = function (_PrimitiveComponent) {
                 //if it intersects the polygon an odd number of times, it is inside
 
                 //a line can be described as a vertex and a direction
-                var l = new _Line2.default(new _withoutblas.Vector([x, y]), new _withoutblas.Vector([1, 0]));
+                var l = new _Line2.default(new Vector([x, y]), new Vector([1, 0]));
 
                 var compoundScale = this.compoundScale;
                 var offset = this.offset;
@@ -3703,7 +3787,7 @@ var VectorPath = function (_PrimitiveComponent) {
 
                     var w = scaleVectorXY(this._normalizedVertices[j], compoundScale.scaleWidth, compoundScale.scaleHeight).add(offset);
 
-                    var edgeDirection = _withoutblas.Vector.subtract(w, v).normalize();
+                    var edgeDirection = Vector.subtract(w, v).normalize();
                     var edge = new _Line2.default(v, edgeDirection);
                     var intersection = edge.intersectionWith(l);
 
@@ -3755,7 +3839,7 @@ var VectorPath = function (_PrimitiveComponent) {
             var compoundScale = this.compoundScale;
             //normalize the vertices (left- and top-most x/y-values should be 0 and 0)
             var pathToDraw = this._normalizedVertices.map(function (vertex) {
-                return scaleVectorXY(vertex, compoundScale.scaleWidth, compoundScale.scaleHeight).subtract(new _withoutblas.Vector([boundingBox.left, boundingBox.top])).add(offset);
+                return scaleVectorXY(vertex, compoundScale.scaleWidth, compoundScale.scaleHeight).subtract(new Vector([boundingBox.left, boundingBox.top])).add(offset);
             });
             _Renderer2.default.drawPath(pathToDraw, this._prerenderingContext, this.style);
         }
@@ -3785,10 +3869,10 @@ exports.default = VectorPath;
 
 
 function scaleVectorXY(vector, scaleX, scaleY) {
-    return new _withoutblas.Vector([vector.x * scaleX, vector.y * scaleY]);
+    return new Vector([vector.x * scaleX, vector.y * scaleY]);
 }
 
-},{"./Line":9,"./PrimitiveComponent":10,"./Renderer":12,"vectorious/withoutblas":3}],"canvas-compositor":[function(require,module,exports){
+},{"./Line":9,"./PrimitiveComponent":10,"./Renderer":12,"./VectorAdaptor":14}],"canvas-compositor":[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -4445,6 +4529,6 @@ exports.Image = _Image2.default;
 exports.Text = _Text2.default;
 exports.DEFAULTS = _Renderer.DEFAULTS;
 
-},{"./Bezier":4,"./Circle":5,"./Composition":6,"./Ellipse":7,"./Image":8,"./Line":9,"./PrimitiveComponent":10,"./Rectangle":11,"./Renderer":12,"./Text":13,"./VectorPath":14}]},{},[])
+},{"./Bezier":4,"./Circle":5,"./Composition":6,"./Ellipse":7,"./Image":8,"./Line":9,"./PrimitiveComponent":10,"./Rectangle":11,"./Renderer":12,"./Text":13,"./VectorPath":15}]},{},[])
 
 //# sourceMappingURL=canvas-compositor.js.map
