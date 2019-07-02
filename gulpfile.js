@@ -8,39 +8,41 @@ var browserify = require('browserify');
 
 var sourcemaps = require('gulp-sourcemaps');
 
+let mkdirp = require('mkdirp');
+
 var buffer = require('vinyl-buffer'); //vinyl dependencies for ensuring browserify/babelify output to buffer
 var source = require('vinyl-source-stream'); //would rather have these deps in a plugin...
 
-gulp.task('js', () => {
-    browserify({
-            debug: true,
-        extensions: ['.es6']
-        }).require('./src/CanvasCompositor', {
-            expose: 'canvas-compositor'
-        })
-        .transform(babelify, {
-            presets: ['es2015']
-        })
-        .bundle()
-        .on('error', function (e) {
-            gutil.log(e);
-            this.emit('end');
-        })
-        .pipe(source('canvas-compositor.js'))
-        .pipe(buffer())
-        .pipe(sourcemaps.init({
-            loadMaps: true
-        }))
-        .pipe(sourcemaps.write('./', {
-            sourceRoot: 'source'
-        }))
-        .pipe(gulp.dest('dist/'));
+let fs = require('fs');
+let path = require('path');
+
+gulp.task('js', (done) => {
+    mkdirp('dist/js', function (err) {
+        if (err) {
+            gutil.log(err);
+        }
+        browserify({
+                entries: ['src/CanvasCompositor'],
+                standalone: 'app',
+                debug: true
+            })
+            .transform(babelify, {
+                presets: ['@babel/env']
+            })
+            .bundle()
+            .on('error', gutil.log)
+            .pipe(fs.createWriteStream(path.join(__dirname, 'dist/js', 'app.js'), {
+                encoding: 'utf-8'
+            }));
+    });
+    return done();
 });
 
-gulp.task('build', ['js']);
+gulp.task('build', gulp.task('js'));
 
-gulp.task('watch', () => {
-    gulp.watch(['src/**/*.es6'], ['js']);
+gulp.task('watch', (done) => {
+    gulp.watch(['src/**/*'], ['js']);
+    return done();
 });
 
-gulp.task('dev', ['build', 'watch']);
+gulp.task('dev', gulp.series(['build', 'watch']));

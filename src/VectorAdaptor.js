@@ -1,4 +1,4 @@
-import { Vector } from 'vectorious/withoutblas';
+import { Vector } from 'vectorious';
 
 let instance = null;
 export default class VectorAdaptor{
