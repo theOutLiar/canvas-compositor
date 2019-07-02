@@ -1,6 +1,6 @@
 {
   "name": "canvas-compositor",
-  "version": "0.1.18",
+  "version": "0.1.19",
   "description": "a light and performant canvas compositing engine",
   "main": "dist/canvas-compositor.js",
   "scripts": {

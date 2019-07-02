@@ -18,22 +18,13 @@
     <canvas id="test-canvas" width="800" height="600" style="margin-top:20px; border:1px solid black;"></canvas>
     <div id="canvas-debug"></div>
     <script>
-        'use strict';
-        let ccMod = require('canvas-compositor');
+
+        let cc = CanvasCompositor;
         let debugFrame = document.getElementById('canvas-debug');
 
-        let CanvasCompositor = ccMod.CanvasCompositor,
-            Circle = ccMod.Circle,
-            Ellipse = ccMod.Ellipse,
-            Rectangle = ccMod.Rectangle,
-            VectorPath = ccMod.VectorPath,
-            Bezier = ccMod.Bezier,
-            Image = ccMod.Image,
-            Text = ccMod.Text;
+        let _myCC = new cc.CanvasCompositor(document.getElementById('test-canvas'));
 
-        let _myCC = new CanvasCompositor(document.getElementById('test-canvas'));
-
-        let _circ = new Circle({
+        let _circ = new cc.Circle({
             radius: 50,
             x: 100,
             y: 100,
@@ -43,7 +34,7 @@
             draggable: true
         });
 
-        let _elip = new Ellipse({
+        let _elip = new cc.Ellipse({
             x: 200,
             y: 200,
             radius: 50,
@@ -56,7 +47,7 @@
             }
         });
 
-        let _rect = new Rectangle({
+        let _rect = new cc.Rectangle({
             width: 100,
             height: 50,
             x: 300,
@@ -68,7 +59,7 @@
             draggable: true
         })
 
-        let _path = new VectorPath({
+        let _path = new cc.VectorPath({
             vertices: [{
                 x: 200,
                 y: 100
@@ -89,7 +80,7 @@
             draggable: true
         });
 
-        var _text = new Text({
+        var _text = new cc.Text({
             x: 100,
             y: 400,
             text: 'The quick red fox jumps over the lazy brown dog.',
@@ -100,7 +91,7 @@
             draggable: true
         });
 
-        var _bezi = new Bezier({
+        var _bezi = new cc.Bezier({
             start: {
                 x: 50,
                 y: 50
@@ -128,7 +119,7 @@
         let i = new window.Image();
         i.src = 'demo.png';
         i.onload = function(e) {
-            _image = new Image({
+            _image = new cc.Image({
                 image: i,
                 x: 100,
                 y: 100,

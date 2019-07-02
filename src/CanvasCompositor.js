@@ -33,7 +33,7 @@ const EVENTS = {
  * The CanvasCompositor class establishes an event dispatcher, animation loop, and scene graph for
  * compositions.
  */
-export default class CanvasCompositor {
+class CanvasCompositor {
     /**
      * The CanvasCompositor class establishes an event dispatcher, animation loop, and scene graph for
      * compositions
@@ -299,62 +299,10 @@ export default class CanvasCompositor {
         };
     };
 
-    drawBezier(start, end, c1, c2, style){
+    drawBezier(start, end, c1, c2, style) {
         Renderer.drawBezier(start, end, c1, c2, this._context, style);
     }
 }
-
-/*
-
-
-	CanvasCompositor.prototype._bindEvents = function () {
-
-        //TODO: typically, usage of stopPropagation() is a sign that things were done wrong.
-		this._canvas.addEventListener('touchstart', function (e) {
-			e.preventDefault();
-			e.stopPropagation();
-			_translateTouchEvent('mousedown', e);
-		});
-		this._canvas.addEventListener('touchend', function (e) {
-			e.preventDefault();
-			e.stopPropagation();
-			_translateTouchEvent('mouseup', e);
-		});
-		this._canvas.addEventListener('touchmove', function (e) {
-			e.preventDefault();
-			e.stopPropagation();
-			_translateTouchEvent('mousemove', e);
-		});
-		this._canvas.addEventListener('touchcancel', function (e) {
-			e.preventDefault();
-			e.stopPropagation();
-			_translateTouchEvent('mouseout', e);
-		});
-
-		//there is no 'touch' event
-		//should the press event be disabled?
-		//should it be simulated?
-		//can all functionality be covered by up+down/start+end events?
-	};
-
-	function _translateTouchEvent(type, e) {
-		var mouseEventInit;
-		if (e.touches.length) {
-			mouseEventInit = {
-				screenX: e.touches[0].screenX,
-				screenY: e.touches[0].screenY,
-				clientX: e.touches[0].clientX,
-				clientY: e.touches[0].clientY,
-				button: 0
-			};
-		} else {
-			mouseEventInit = _lastKnownTouchLocation;
-		}
-		_lastKnownTouchLocation = mouseEventInit;
-		var evt = new window.MouseEvent(type, mouseEventInit);
-		e.target.dispatchEvent(evt);
-	}
-*/
 
 export {
     CanvasCompositor,
@@ -370,4 +318,4 @@ export {
     Image,
     Text,
     DEFAULTS
-};
+}

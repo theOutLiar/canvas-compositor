@@ -17,13 +17,13 @@ let fs = require('fs');
 let path = require('path');
 
 gulp.task('js', (done) => {
-    mkdirp('dist/js', function (err) {
+    mkdirp('dist', function (err) {
         if (err) {
             gutil.log(err);
         }
         browserify({
                 entries: ['src/CanvasCompositor'],
-                standalone: 'app',
+                standalone: 'CanvasCompositor',
                 debug: true
             })
             .transform(babelify, {
@@ -31,7 +31,7 @@ gulp.task('js', (done) => {
             })
             .bundle()
             .on('error', gutil.log)
-            .pipe(fs.createWriteStream(path.join(__dirname, 'dist/js', 'app.js'), {
+            .pipe(fs.createWriteStream(path.join(__dirname, 'dist', 'canvas-compositor.js'), {
                 encoding: 'utf-8'
             }));
     });
