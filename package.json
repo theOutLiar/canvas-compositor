@@ -1,43 +1,52 @@
 {
-  "name": "canvas-compositor",
-  "version": "0.1.19",
-  "description": "a light and performant canvas compositing engine",
-  "main": "dist/canvas-compositor.js",
-  "scripts": {
-    "getdeps": "npm prune && npm install",
-    "test": "test",
-    "predev": "npm run getdeps",
-    "dev": "gulp dev",
-    "predoc": "npm run getdeps",
-    "doc": "esdoc",
-    "start": "npm run build",
-    "prebuild": "npm run getdeps",
-    "build": "gulp build && esdoc"
-  },
-  "keywords": [
-    "2d",
-    "canvas",
-    "compositing"
-  ],
-  "author": "Christopher J Gore",
-  "repository": {
-    "type": "git",
-    "url": "git@github.com:theOutLiar/canvas-compositor.git"
-  },
-  "license": "MIT",
-  "devDependencies": {
-    "@babel/core": "^7.4.5",
-    "@babel/preset-env": "^7.4.5",
-    "babelify": "^10.0.0",
-    "browserify": "^16.2.3",
-    "gulp": "^4.0.2",
-    "gulp-sourcemaps": "^2.6.5",
-    "gutil": "^1.6.4",
-    "mkdirp": "^0.5.1",
-    "vinyl-buffer": "^1.0.1",
-    "vinyl-source-stream": "^2.0.0"
-  },
-  "dependencies": {
-    "vectorious": "^5.5.0"
-  }
+    "name": "canvas-compositor",
+    "version": "1.0.0",
+    "description": "a light and performant canvas compositing engine",
+    "main": "lib/CanvasCompositor.js",
+    "scripts": {
+        "prebuild": "npm prune && npm install",
+        "build": "esdoc && babel src/ -d lib/ -D -s && browserify src/CanvasCompositor.js -o dist/canvas-compositor.js -s CanvasCompositor -d -t [ babelify ]"
+    },
+    "keywords": [
+        "2d",
+        "canvas",
+        "compositing"
+    ],
+    "author": "Christopher J Gore",
+    "repository": {
+        "type": "git",
+        "url": "git@github.com:theOutLiar/canvas-compositor.git"
+    },
+    "license": "MIT",
+    "devDependencies": {
+        "@babel/cli": "^7.4.4",
+        "@babel/core": "^7.4.5",
+        "@babel/preset-env": "^7.4.5",
+        "babelify": "^10.0.0",
+        "browserify": "^16.2.3",
+        "esdoc": "^1.1.0",
+        "esdoc-ecmascript-proposal-plugin": "^1.0.0",
+        "mocha": "^6.1.4"
+    },
+    "dependencies": {
+        "@babel/polyfill": "^7.4.4",
+        "vectorious": "^5.5.0"
+    },
+    "babel": {
+        "presets": [
+            "@babel/env"
+        ]
+    },
+    "esdoc": {
+        "source": "./src",
+        "destination": "./docs",
+        "plugins": [
+            {
+                "name": "esdoc-ecmascript-proposal-plugin",
+                "option": {
+                    "all": true
+                }
+            }
+        ]
+    }
 }

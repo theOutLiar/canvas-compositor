@@ -22,7 +22,7 @@
         let cc = CanvasCompositor;
         let debugFrame = document.getElementById('canvas-debug');
 
-        let _myCC = new cc.CanvasCompositor(document.getElementById('test-canvas'));
+        let _myCC = new cc.init(document.getElementById('test-canvas'));
 
         let _circ = new cc.Circle({
             radius: 50,

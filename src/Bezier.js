@@ -1,8 +1,6 @@
-import Renderer from './Renderer';
-import PrimitiveComponent from './PrimitiveComponent';
-import VectorAdaptor from './VectorAdaptor';
-
-let Vector = null;
+import { Renderer } from './Renderer';
+import { PrimitiveComponent } from './PrimitiveComponent';
+import { Vector } from 'vectorious';
 
 //uhh... i looked up *SO* much stuff on this, and even tried to work out the math myself,
 //but this is ridiculous - where does this come from?
@@ -45,13 +43,9 @@ function _getExtremes(start, c1, c2, end) {
     return localExtrema;
 }
 
-export default class Bezier extends PrimitiveComponent {
+export class Bezier extends PrimitiveComponent {
     constructor(options) {
         super(options);
-
-        if (!Vector){
-            Vector = new VectorAdaptor().implementation;
-        }
 
         let start = new Vector([options.start.x, options.start.y]);
         let end = new Vector([options.end.x, options.end.y]);

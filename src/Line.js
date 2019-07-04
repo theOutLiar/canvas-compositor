@@ -1,10 +1,9 @@
-import VectorAdaptor from './VectorAdaptor';
+import { Vector } from 'vectorious';
 
-let Vector = null;
 /**
  * A line
  */
-export default class Line {
+export class Line {
     /**
      * A Line can be defined by two points, p1 and p2, through
      * which it passes. Here, an anchor point is supplied for p1,
@@ -14,11 +13,6 @@ export default class Line {
      * @param {object} direction
      */
     constructor(anchor, direction) {
-
-        if (!Vector) {
-            Vector = new VectorAdaptor().implementation;
-        }
-
         /**
          * @type {object} p1 a vector describing a point through which the line passes
          */

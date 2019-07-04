@@ -1,5 +1,5 @@
-import Renderer from './Renderer';
-import PrimitiveComponent from './PrimitiveComponent';
+import { Renderer } from './Renderer';
+import { PrimitiveComponent } from './PrimitiveComponent';
 
 const ALL_CHARS = `1234567890QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm.,\`~;:'"!?@#$%^&*()_+={}[]|\<>/`;
 
@@ -67,7 +67,7 @@ function _getTextHeight(font) {
 /**
  * A text object
  */
-export default class Text extends PrimitiveComponent {
+export class Text extends PrimitiveComponent {
     /**
      * @param {object} options the options for the text object
      */

@@ -1,4 +1,4 @@
-import PrimitiveComponent from './PrimitiveComponent';
+import { PrimitiveComponent } from './PrimitiveComponent';
 
 /**
  * The Composition class is an extension of the Primitive that is
@@ -9,7 +9,7 @@ import PrimitiveComponent from './PrimitiveComponent';
  * action taken on the parent element acts upon all of the children,
  * and transatively, all of their children.
  */
-export default class Composition extends PrimitiveComponent {
+export class Composition extends PrimitiveComponent {
     /**
      * @param {object} options object settings
      */

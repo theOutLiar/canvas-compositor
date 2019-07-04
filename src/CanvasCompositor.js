@@ -1,18 +1,14 @@
-import {
-    DEFAULTS,
-    Renderer
-} from './Renderer';
-
-import Composition from './Composition';
-import PrimitiveComponent from './PrimitiveComponent';
-import Circle from './Circle';
-import Ellipse from './Ellipse';
-import Rectangle from './Rectangle';
-import Line from './Line';
-import VectorPath from './VectorPath';
-import Bezier from './Bezier';
-import Image from './Image';
-import Text from './Text';
+import { DEFAULTS, Renderer } from './Renderer';
+import { Composition}  from './Composition';
+import { PrimitiveComponent } from './PrimitiveComponent';
+import { Circle } from './Circle';
+import { Ellipse } from './Ellipse';
+import { Rectangle } from './Rectangle';
+import { Line } from './Line';
+import { VectorPath } from './VectorPath';
+import { Bezier } from './Bezier';
+import { Image } from './Image';
+import { Text } from './Text';
 
 //const FPS_EPSILON = 10; // +/- 10ms for animation loop to determine if enough time has passed to render
 const DEFAULT_TARGET_FPS = 1000 / 60; //amount of time that must pass before rendering
@@ -304,8 +300,11 @@ class CanvasCompositor {
     }
 }
 
+export function init(canvas) {
+    return new CanvasCompositor(canvas);
+}
+
 export {
-    CanvasCompositor,
     Renderer,
     PrimitiveComponent,
     Composition,

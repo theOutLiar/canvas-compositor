@@ -1,7 +1,7 @@
 /**
  * Default style values for the renderer
  */
-const DEFAULTS = {
+export const DEFAULTS = {
     //direction: 'inherit',
     fillStyle: 'black',
     //filter: 'none',
@@ -21,7 +21,7 @@ const DEFAULTS = {
  * A collection of high level static methods for drawing directly to canvas
  *
  */
-export default class Renderer {
+export class Renderer {
     /**
      * Erase everything drawn on the supplied rectangle for the given context.
      * @param {number} x the x coordinate of the top left corner
@@ -172,8 +172,3 @@ export default class Renderer {
         return context.measureText(text);
     }
 }
-
-export {
-    Renderer,
-    DEFAULTS
-};

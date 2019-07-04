@@ -1,10 +1,10 @@
-import Renderer from './Renderer';
-import PrimitiveComponent from './PrimitiveComponent';
+import { Renderer } from './Renderer';
+import { PrimitiveComponent } from './PrimitiveComponent';
 
 /**
  * A circle
  */
-export default class Circle extends PrimitiveComponent {
+export class Circle extends PrimitiveComponent {
     //TODO: provide details about options for docs - link to a separate page
     /**
      * PrimitiveComponent constructor

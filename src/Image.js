@@ -1,10 +1,10 @@
-import Renderer from './Renderer';
-import PrimitiveComponent from './PrimitiveComponent';
+import { Renderer } from './Renderer';
+import { PrimitiveComponent } from './PrimitiveComponent';
 
 /**
  * an Image
  */
-export default class Image extends PrimitiveComponent {
+export class Image extends PrimitiveComponent {
     /**
      * @param {Object} options
      */

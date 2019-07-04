@@ -1,10 +1,6 @@
-import VectorAdaptor from './VectorAdaptor';
-import {
-    DEFAULTS,
-    Renderer
-} from './Renderer';
+import { Vector } from 'vectorious';
+import { DEFAULTS, Renderer } from './Renderer';
 
-let Vector = null;
 /**
  * The base class of things that may be drawn on the canvas.
  * All drawable objects should inherit from this class.
@@ -12,7 +8,7 @@ let Vector = null;
  * call this directly, although they may wish to extend their own
  * classes with it.
  */
-export default class PrimitiveComponent {
+export class PrimitiveComponent {
     /**
      * @param {object} options
      */
@@ -22,10 +18,6 @@ export default class PrimitiveComponent {
 
         this._flags = {};
         this._flags.DEBUG = options.debug || false;
-
-        if (!Vector){
-            Vector = new VectorAdaptor().implementation;
-        }
 
         /**
          * does the object need to be redrawn?

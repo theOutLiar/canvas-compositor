@@ -1,10 +1,10 @@
-import Renderer from './Renderer';
-import PrimitiveComponent from './PrimitiveComponent';
+import { Renderer } from './Renderer';
+import { PrimitiveComponent } from './PrimitiveComponent';
 
 /**
  * A rectangle
  */
-export default class Rectangle extends PrimitiveComponent {
+export class Rectangle extends PrimitiveComponent {
     /**
      * @param {object} options the options for the object
      */
