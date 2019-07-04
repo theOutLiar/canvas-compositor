@@ -1,13 +1,5 @@
 # canvas-compositor
-A canvas compositor that doesn't suck. 
-
-### WIP
-
-This is a Work In Progress. 
-
-If you have something helpful to say, please do - otherwise, keep your complaints to yourself. 
-
-Proper API documentation to come... 
+A light, performant canvas compositor 
 
 # Getting started
 
@@ -16,7 +8,7 @@ You should be able to include the compiled files from the dist directory in any 
 You can then start using the CanvasCompositor's scene and graphics APIs by instantiating it with a canvas: 
 
 ```
-var _cc = new CanvasCompositor(document.getElementById('myCanvas'));
+var _cc = new CanvasCompositor.init(document.getElementById('myCanvas'));
 ```
 
 Our `_cc` variable will expose some basic drawing functions (e.g.: `drawPath`, `drawRectangle`, `drawEllipse`, `drawText`, etc.) as well as a variety of classes (e.g.: `Path`, `Rectangle`, `Ellipse`, `Text`, etc.) that utilize them. 
@@ -32,5 +24,3 @@ The `Scene` property is the entry point to your scene graph. It is of class `Con
 # Tests
 
 At the moment, there are none. I'll probably get to that later. 
-
-If you have a problem with that, either get over it or look at the code and write the tests yourself. 
