@@ -15,12 +15,16 @@
 </head>
 
 <body>
-    <canvas id="test-canvas" width="800" height="600" style="margin-top:20px; border:1px solid black;"></canvas>
-    <div id="canvas-debug"></div>
+    <canvas id="test-canvas" width="800" height="600" style="margin-top:20px;"></canvas>
+    <div id="canvas-debug">
+        FPS <span id="fps"></span> X: <span id="mousex"></span> Y: <span id="mousey"></span>
+    </div>
     <script>
 
         let cc = CanvasCompositor;
-        let debugFrame = document.getElementById('canvas-debug');
+        let fpsDebug = document.getElementById('fps');
+        let mousexDebug = document.getElementById('mousex');
+        let mouseyDebug = document.getElementById('mousey');
 
         let _myCC = new cc.init(document.getElementById('test-canvas'));
 
@@ -139,8 +143,13 @@
         _myCC.scene.addChild(_bezi);
         _myCC.scene.addChild(_text);
 
+        _myCC.registerEvent('onmousemove', ()=>{
+            mousexDebug.innerHTML = _myCC.mouseX;
+            mouseyDebug.innerHTML = _myCC.mouseY;
+        });
+
         function _updateFPS() {
-            debugFrame.innerHTML = "fps: " + _myCC.framerate;
+            fpsDebug.innerHTML = _myCC.framerate;
         }
 
         setInterval(_updateFPS, 250);

@@ -48,6 +48,10 @@ class CanvasCompositor {
         //TODO: determine if border-box affects this, and adjust accordingly
         let style = window.getComputedStyle(this._canvas);
 
+        this._rect = canvas.getBoundingClientRect();
+        this._mouseX=null;
+        this._mouseY=null;
+
         let borderLeft = style.getPropertyValue('border-left') ? parseFloat(style.getPropertyValue('border-left')) : 0;
         let paddingLeft = style.getPropertyValue('padding-left') ? parseFloat(style.getPropertyValue('padding-left')) : 0;
 
@@ -113,6 +117,22 @@ class CanvasCompositor {
      */
     get scene() {
         return this._scene;
+    }
+
+    /**
+    * get the X position of the mouse on the canvas
+    * @type {number}
+    */
+    get mouseX(){
+        return this._mouseX;
+    }
+
+    /**
+    * get the Y position of the mouse on the canvas
+    * @type {number}
+    */
+    get mouseY(){
+        return this._mouseY;
     }
 
     /**
@@ -185,8 +205,8 @@ class CanvasCompositor {
     _handleMouseDown(e) {
         e.preventDefault();
 
-        let x = e.offsetX - this._leftPadding;
-        let y = e.offsetY - this._topPadding;
+        let x = e.clientX - this._rect.left - this._leftPadding;
+        let y = e.clientY - this._rect.top - this._topPadding;
 
         //pass through x and y to propagated events
         e.canvasX = x;
@@ -210,8 +230,8 @@ class CanvasCompositor {
     _handleMouseUp(e) {
         e.preventDefault();
 
-        let x = e.offsetX - this._leftPadding;
-        let y = e.offsetY - this._topPadding;
+        let x = e.clientX - this._rect.left - this._leftPadding;
+        let y = e.clientY - this._rect.top - this._topPadding;
 
         //pass through x and y to propagated events
         e.canvasX = x;
@@ -240,6 +260,9 @@ class CanvasCompositor {
      */
     _handleMouseMove(e) {
         e.preventDefault();
+        this._mouseX = e.clientX - this._rect.left - this._leftPadding;
+        this._mouseY = e.clientY - this._rect.top - this._topPadding;
+
         let objects = this.scene.children.filter((c) => !!(c.onmousemove));
 
         for (let callback of this._eventRegistry[EVENTS.MOUSEMOVE]) {
@@ -258,8 +281,8 @@ class CanvasCompositor {
     _handleClick(e) {
         e.preventDefault();
 
-        let x = e.offsetX - this._leftPadding;
-        let y = e.offsetY - this._topPadding;
+        let x = e.clientX - this._rect.left - this._leftPadding;
+        let y = e.clientY - this._rect.top - this._topPadding;
 
         //pass through x and y to propagated events
         e.canvasX = x;
@@ -299,6 +322,10 @@ class CanvasCompositor {
         Renderer.drawBezier(start, end, c1, c2, this._context, style);
     }
 }
+
+/**
+ * The initialization function
+ */
 
 export function init(canvas) {
     return new CanvasCompositor(canvas);

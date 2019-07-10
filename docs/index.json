@@ -193,7 +193,7 @@
     "__docId__": 16,
     "kind": "file",
     "name": "src/CanvasCompositor.js",
-    "content": "import { DEFAULTS, Renderer } from './Renderer';\nimport { Composition}  from './Composition';\nimport { PrimitiveComponent } from './PrimitiveComponent';\nimport { Circle } from './Circle';\nimport { Ellipse } from './Ellipse';\nimport { Rectangle } from './Rectangle';\nimport { Line } from './Line';\nimport { VectorPath } from './VectorPath';\nimport { Bezier } from './Bezier';\nimport { Image } from './Image';\nimport { Text } from './Text';\n\n//const FPS_EPSILON = 10; // +/- 10ms for animation loop to determine if enough time has passed to render\nconst DEFAULT_TARGET_FPS = 1000 / 60; //amount of time that must pass before rendering\n\nconst EVENTS = {\n    MOUSEUP: 'onmouseup',\n    MOUSEDOWN: 'onmousedown',\n    MOUSEMOVE: 'onmousemove',\n    MOUSEOUT: 'onmouseout',\n    CLICK: 'onclick'\n};\n\n/**\n * The CanvasCompositor class is the entry-point to usage of the `canvas-compositor`.\n * The application programmer is expected to hand over low-level control of the canvas\n * context to the high-level classes and methods exposed by CanvasCompositor.\n *\n * The CanvasCompositor class establishes an event dispatcher, animation loop, and scene graph for\n * compositions.\n */\nclass CanvasCompositor {\n    /**\n     * The CanvasCompositor class establishes an event dispatcher, animation loop, and scene graph for\n     * compositions\n     *\n     * @param {object} canvas This should be a canvas, either from the DOM or an equivalent API\n     *\n     * @example\n     * let cc = new CanvasCompositor(document.getElementById('myCanvas'));\n     */\n    constructor(canvas) {\n        this._canvas = canvas;\n        this._context = this._canvas.getContext('2d');\n\n        //acquire the padding on the canvas – this is necessary to properly\n        //locate the mouse position\n        //TODO: determine if border-box affects this, and adjust accordingly\n        let style = window.getComputedStyle(this._canvas);\n\n        let borderLeft = style.getPropertyValue('border-left') ? parseFloat(style.getPropertyValue('border-left')) : 0;\n        let paddingLeft = style.getPropertyValue('padding-left') ? parseFloat(style.getPropertyValue('padding-left')) : 0;\n\n        this._leftPadding = borderLeft + paddingLeft;\n\n        let borderTop = style.getPropertyValue('border-top') ? parseFloat(style.getPropertyValue('border-top')) : 0;\n        let paddingTop = style.getPropertyValue('padding-top') ? parseFloat(style.getPropertyValue('padding-top')) : 0;\n\n        this._topPadding = borderTop + paddingTop;\n\n        this._currentTime = 0;\n        this._lastFrameTimestamp = 0;\n        this._lastRenderTime = 0;\n\n        this._targetObject = null;\n\n        this._scene = new Composition(this.canvas);\n\n        this._bindEvents();\n\n        this._eventRegistry = {\n            onmouseup: [],\n            onmousedown: [],\n            onmousemove: [],\n            onmouseout: [],\n            onclick: []\n        };\n\n        this._animationLoop();\n        this._framerate = 0;\n    }\n\n    //TODO: expose the framerate\n    set framerate(val) {\n        this._framerate = val;\n    }\n\n    get framerate() {\n        //var framerateUpdatedEvent = new Event();\n        return this._framerate;\n    }\n\n    //TODO: multiple target objects? in reverse order of render? in order of composition?\n    /**\n     * the object currently selected for interaction\n     * @type {object}\n     */\n    get targetObject() {\n        return this._targetObject;\n    }\n    /**\n     * the object currently selected for interaction\n     * @param {object} val\n     * @type {object}\n     */\n    set targetObject(val) {\n        this._targetObject = val;\n    }\n\n    /**\n     * the root of the scene graph. add primitives to this to compose an image\n     * @type {object}\n     */\n    get scene() {\n        return this._scene;\n    }\n\n    /**\n     * The animation loop for this instance of CanvasCompositor.\n     * Upon receipt of the animation frame from `requestAnimationFrame`, the loop will check\n     * whether enough time has passed to redraw for the target framerate.\n     * It will only draw if somewhere along the scene graph, an object needs updating.\n     * There is no need to invoke this directly, the constructor will do it.\n     */\n    _animationLoop() {\n        window.requestAnimationFrame(this._animationLoop.bind(this));\n        this._currentTime = +new Date();\n        //set maximum of 60 fps and only redraw if necessary\n        if ( /*this._currentTime - this._lastFrameTimestamp >= this._targetFPS &&*/ this.scene.needsDraw) {\n            this._lastRenderTime = +new Date();\n            Renderer.clearRect(0, 0, this._canvas.width, this._canvas.height, this._context);\n            this.scene.draw(this._context);\n        }\n        this.framerate = parseInt(1000 / (this._currentTime - this._lastFrameTimestamp));\n        this._lastFrameTimestamp = +new Date();\n\n    }\n\n    /**\n     * add an event to the event registry\n     *\n     * @param {string} eventType the name of the type of event\n     * @param {function} callback the callback to be triggered when the event occurs\n     */\n    registerEvent(eventType, callback) {\n        if (this._eventRegistry[eventType]) {\n            this._eventRegistry[eventType].push(callback);\n        }\n    }\n\n    /**\n     * remove an event to the event registry\n     *\n     * @param {string} eventType the name of the type of event\n     * @param {function} callback the callback to be removed from the event\n     * @return {function} the callback that was removed\n     */\n    removeEvent(eventType, callback) {\n        if (this._eventRegistry[eventType]) {\n            let index = this._eventRegistry[eventType].indexOf(callback);\n            if (index >= 0) {\n                return this._eventRegistry[eventType].splice(index, 1);\n            }\n        }\n    }\n\n    /**\n     * attach interaction events to the canvas. the canvas compositor dispatches\n     * events to relevant objects through bridges to the scene graph\n     */\n    _bindEvents() {\n        //TODO: reimplement touch events?\n        //must bind to `this` to retain reference\n        this._canvas.addEventListener('mousedown', this._handleMouseDown.bind(this));\n        this._canvas.addEventListener('mouseup', this._handleMouseUp.bind(this));\n        this._canvas.addEventListener('mousemove', this._handleMouseMove.bind(this));\n        this._canvas.addEventListener('mouseout', this._handleMouseOut.bind(this));\n        this._canvas.addEventListener('click', this._handleClick.bind(this));\n    }\n\n    /**\n     * bridge the mouse down event on the canvas to the\n     * the objects in the scene graph\n     */\n    _handleMouseDown(e) {\n        e.preventDefault();\n\n        let x = e.offsetX - this._leftPadding;\n        let y = e.offsetY - this._topPadding;\n\n        //pass through x and y to propagated events\n        e.canvasX = x;\n        e.canvasY = y;\n\n        for (let callback of this._eventRegistry[EVENTS.MOUSEDOWN]) {\n            callback(e);\n        };\n\n        let clickedObject = this.scene.childAt(x, y);\n\n        if (clickedObject && clickedObject.onmousedown) {\n            clickedObject.onmousedown(e);\n        }\n    }\n\n    /**\n     * bridge the mouse up event on the canvas to the\n     * the objects in the scene graph\n     */\n    _handleMouseUp(e) {\n        e.preventDefault();\n\n        let x = e.offsetX - this._leftPadding;\n        let y = e.offsetY - this._topPadding;\n\n        //pass through x and y to propagated events\n        e.canvasX = x;\n        e.canvasY = y;\n\n        for (let c of this.scene.children) {\n            if (c.draggable && c.onmouseup) {\n                c.onmouseup(e);\n            }\n        }\n\n        for (let callback of this._eventRegistry[EVENTS.MOUSEUP]) {\n            callback(e);\n        }\n\n        let clickedObject = this.scene.childAt(x, y);\n\n        if (clickedObject && clickedObject.onmouseup) {\n            clickedObject.onmouseup(e);\n        }\n    };\n\n    /**\n     * bridge the mouse move event on the canvas to the\n     * the objects in the scene graph\n     */\n    _handleMouseMove(e) {\n        e.preventDefault();\n        let objects = this.scene.children.filter((c) => !!(c.onmousemove));\n\n        for (let callback of this._eventRegistry[EVENTS.MOUSEMOVE]) {\n            callback(e);\n        }\n\n        for (let o of objects) {\n            o.onmousemove(e);\n        }\n    };\n\n    /**\n     * bridge the click event on the canvas to the\n     * the objects in the scene graph\n     */\n    _handleClick(e) {\n        e.preventDefault();\n\n        let x = e.offsetX - this._leftPadding;\n        let y = e.offsetY - this._topPadding;\n\n        //pass through x and y to propagated events\n        e.canvasX = x;\n        e.canvasY = y;\n\n        //TODO: FF doesn't get this\n        let objects = this.scene.children.filter((c) => !!(c.onclick));\n\n        for (let callback of this._eventRegistry[EVENTS.CLICK]) {\n            callback(e);\n        }\n\n        for (let o of objects) {\n            o.onclick(e);\n        }\n    };\n\n    /**\n     * bridge the mouse out event on the canvas to the\n     * the objects in the scene graph\n     */\n    _handleMouseOut(e) {\n        e.preventDefault();\n\n        let objects = this.scene.children.filter((c) => !!(c.onmouseout));\n\n        for (let o of objects) {\n            o.onmouseout(e);\n        };\n\n        for (let callback of this._eventRegistry[EVENTS.MOUSEOUT]) {\n            callback(e);\n        };\n    };\n\n    drawBezier(start, end, c1, c2, style) {\n        Renderer.drawBezier(start, end, c1, c2, this._context, style);\n    }\n}\n\nexport function init(canvas) {\n    return new CanvasCompositor(canvas);\n}\n\nexport {\n    Renderer,\n    PrimitiveComponent,\n    Composition,\n    Circle,\n    Ellipse,\n    Rectangle,\n    Line,\n    VectorPath,\n    Bezier,\n    Image,\n    Text,\n    DEFAULTS\n}\n",
+    "content": "import { DEFAULTS, Renderer } from './Renderer';\nimport { Composition}  from './Composition';\nimport { PrimitiveComponent } from './PrimitiveComponent';\nimport { Circle } from './Circle';\nimport { Ellipse } from './Ellipse';\nimport { Rectangle } from './Rectangle';\nimport { Line } from './Line';\nimport { VectorPath } from './VectorPath';\nimport { Bezier } from './Bezier';\nimport { Image } from './Image';\nimport { Text } from './Text';\n\n//const FPS_EPSILON = 10; // +/- 10ms for animation loop to determine if enough time has passed to render\nconst DEFAULT_TARGET_FPS = 1000 / 60; //amount of time that must pass before rendering\n\nconst EVENTS = {\n    MOUSEUP: 'onmouseup',\n    MOUSEDOWN: 'onmousedown',\n    MOUSEMOVE: 'onmousemove',\n    MOUSEOUT: 'onmouseout',\n    CLICK: 'onclick'\n};\n\n/**\n * The CanvasCompositor class is the entry-point to usage of the `canvas-compositor`.\n * The application programmer is expected to hand over low-level control of the canvas\n * context to the high-level classes and methods exposed by CanvasCompositor.\n *\n * The CanvasCompositor class establishes an event dispatcher, animation loop, and scene graph for\n * compositions.\n */\nclass CanvasCompositor {\n    /**\n     * The CanvasCompositor class establishes an event dispatcher, animation loop, and scene graph for\n     * compositions\n     *\n     * @param {object} canvas This should be a canvas, either from the DOM or an equivalent API\n     *\n     * @example\n     * let cc = new CanvasCompositor(document.getElementById('myCanvas'));\n     */\n    constructor(canvas) {\n        this._canvas = canvas;\n        this._context = this._canvas.getContext('2d');\n\n        //acquire the padding on the canvas – this is necessary to properly\n        //locate the mouse position\n        //TODO: determine if border-box affects this, and adjust accordingly\n        let style = window.getComputedStyle(this._canvas);\n\n        this._rect = canvas.getBoundingClientRect();\n        this._mouseX=null;\n        this._mouseY=null;\n\n        let borderLeft = style.getPropertyValue('border-left') ? parseFloat(style.getPropertyValue('border-left')) : 0;\n        let paddingLeft = style.getPropertyValue('padding-left') ? parseFloat(style.getPropertyValue('padding-left')) : 0;\n\n        this._leftPadding = borderLeft + paddingLeft;\n\n        let borderTop = style.getPropertyValue('border-top') ? parseFloat(style.getPropertyValue('border-top')) : 0;\n        let paddingTop = style.getPropertyValue('padding-top') ? parseFloat(style.getPropertyValue('padding-top')) : 0;\n\n        this._topPadding = borderTop + paddingTop;\n\n        this._currentTime = 0;\n        this._lastFrameTimestamp = 0;\n        this._lastRenderTime = 0;\n\n        this._targetObject = null;\n\n        this._scene = new Composition(this.canvas);\n\n        this._bindEvents();\n\n        this._eventRegistry = {\n            onmouseup: [],\n            onmousedown: [],\n            onmousemove: [],\n            onmouseout: [],\n            onclick: []\n        };\n\n        this._animationLoop();\n        this._framerate = 0;\n    }\n\n    //TODO: expose the framerate\n    set framerate(val) {\n        this._framerate = val;\n    }\n\n    get framerate() {\n        //var framerateUpdatedEvent = new Event();\n        return this._framerate;\n    }\n\n    //TODO: multiple target objects? in reverse order of render? in order of composition?\n    /**\n     * the object currently selected for interaction\n     * @type {object}\n     */\n    get targetObject() {\n        return this._targetObject;\n    }\n    /**\n     * the object currently selected for interaction\n     * @param {object} val\n     * @type {object}\n     */\n    set targetObject(val) {\n        this._targetObject = val;\n    }\n\n    /**\n     * the root of the scene graph. add primitives to this to compose an image\n     * @type {object}\n     */\n    get scene() {\n        return this._scene;\n    }\n\n    /**\n    * get the X position of the mouse on the canvas\n    * @type {number}\n    */\n    get mouseX(){\n        return this._mouseX;\n    }\n\n    /**\n    * get the Y position of the mouse on the canvas\n    * @type {number}\n    */\n    get mouseY(){\n        return this._mouseY;\n    }\n\n    /**\n     * The animation loop for this instance of CanvasCompositor.\n     * Upon receipt of the animation frame from `requestAnimationFrame`, the loop will check\n     * whether enough time has passed to redraw for the target framerate.\n     * It will only draw if somewhere along the scene graph, an object needs updating.\n     * There is no need to invoke this directly, the constructor will do it.\n     */\n    _animationLoop() {\n        window.requestAnimationFrame(this._animationLoop.bind(this));\n        this._currentTime = +new Date();\n        //set maximum of 60 fps and only redraw if necessary\n        if ( /*this._currentTime - this._lastFrameTimestamp >= this._targetFPS &&*/ this.scene.needsDraw) {\n            this._lastRenderTime = +new Date();\n            Renderer.clearRect(0, 0, this._canvas.width, this._canvas.height, this._context);\n            this.scene.draw(this._context);\n        }\n        this.framerate = parseInt(1000 / (this._currentTime - this._lastFrameTimestamp));\n        this._lastFrameTimestamp = +new Date();\n\n    }\n\n    /**\n     * add an event to the event registry\n     *\n     * @param {string} eventType the name of the type of event\n     * @param {function} callback the callback to be triggered when the event occurs\n     */\n    registerEvent(eventType, callback) {\n        if (this._eventRegistry[eventType]) {\n            this._eventRegistry[eventType].push(callback);\n        }\n    }\n\n    /**\n     * remove an event to the event registry\n     *\n     * @param {string} eventType the name of the type of event\n     * @param {function} callback the callback to be removed from the event\n     * @return {function} the callback that was removed\n     */\n    removeEvent(eventType, callback) {\n        if (this._eventRegistry[eventType]) {\n            let index = this._eventRegistry[eventType].indexOf(callback);\n            if (index >= 0) {\n                return this._eventRegistry[eventType].splice(index, 1);\n            }\n        }\n    }\n\n    /**\n     * attach interaction events to the canvas. the canvas compositor dispatches\n     * events to relevant objects through bridges to the scene graph\n     */\n    _bindEvents() {\n        //TODO: reimplement touch events?\n        //must bind to `this` to retain reference\n        this._canvas.addEventListener('mousedown', this._handleMouseDown.bind(this));\n        this._canvas.addEventListener('mouseup', this._handleMouseUp.bind(this));\n        this._canvas.addEventListener('mousemove', this._handleMouseMove.bind(this));\n        this._canvas.addEventListener('mouseout', this._handleMouseOut.bind(this));\n        this._canvas.addEventListener('click', this._handleClick.bind(this));\n    }\n\n    /**\n     * bridge the mouse down event on the canvas to the\n     * the objects in the scene graph\n     */\n    _handleMouseDown(e) {\n        e.preventDefault();\n\n        let x = e.clientX - this._rect.left - this._leftPadding;\n        let y = e.clientY - this._rect.top - this._topPadding;\n\n        //pass through x and y to propagated events\n        e.canvasX = x;\n        e.canvasY = y;\n\n        for (let callback of this._eventRegistry[EVENTS.MOUSEDOWN]) {\n            callback(e);\n        };\n\n        let clickedObject = this.scene.childAt(x, y);\n\n        if (clickedObject && clickedObject.onmousedown) {\n            clickedObject.onmousedown(e);\n        }\n    }\n\n    /**\n     * bridge the mouse up event on the canvas to the\n     * the objects in the scene graph\n     */\n    _handleMouseUp(e) {\n        e.preventDefault();\n\n        let x = e.clientX - this._rect.left - this._leftPadding;\n        let y = e.clientY - this._rect.top - this._topPadding;\n\n        //pass through x and y to propagated events\n        e.canvasX = x;\n        e.canvasY = y;\n\n        for (let c of this.scene.children) {\n            if (c.draggable && c.onmouseup) {\n                c.onmouseup(e);\n            }\n        }\n\n        for (let callback of this._eventRegistry[EVENTS.MOUSEUP]) {\n            callback(e);\n        }\n\n        let clickedObject = this.scene.childAt(x, y);\n\n        if (clickedObject && clickedObject.onmouseup) {\n            clickedObject.onmouseup(e);\n        }\n    };\n\n    /**\n     * bridge the mouse move event on the canvas to the\n     * the objects in the scene graph\n     */\n    _handleMouseMove(e) {\n        e.preventDefault();\n        this._mouseX = e.clientX - this._rect.left - this._leftPadding;\n        this._mouseY = e.clientY - this._rect.top - this._topPadding;\n\n        let objects = this.scene.children.filter((c) => !!(c.onmousemove));\n\n        for (let callback of this._eventRegistry[EVENTS.MOUSEMOVE]) {\n            callback(e);\n        }\n\n        for (let o of objects) {\n            o.onmousemove(e);\n        }\n    };\n\n    /**\n     * bridge the click event on the canvas to the\n     * the objects in the scene graph\n     */\n    _handleClick(e) {\n        e.preventDefault();\n\n        let x = e.clientX - this._rect.left - this._leftPadding;\n        let y = e.clientY - this._rect.top - this._topPadding;\n\n        //pass through x and y to propagated events\n        e.canvasX = x;\n        e.canvasY = y;\n\n        //TODO: FF doesn't get this\n        let objects = this.scene.children.filter((c) => !!(c.onclick));\n\n        for (let callback of this._eventRegistry[EVENTS.CLICK]) {\n            callback(e);\n        }\n\n        for (let o of objects) {\n            o.onclick(e);\n        }\n    };\n\n    /**\n     * bridge the mouse out event on the canvas to the\n     * the objects in the scene graph\n     */\n    _handleMouseOut(e) {\n        e.preventDefault();\n\n        let objects = this.scene.children.filter((c) => !!(c.onmouseout));\n\n        for (let o of objects) {\n            o.onmouseout(e);\n        };\n\n        for (let callback of this._eventRegistry[EVENTS.MOUSEOUT]) {\n            callback(e);\n        };\n    };\n\n    drawBezier(start, end, c1, c2, style) {\n        Renderer.drawBezier(start, end, c1, c2, this._context, style);\n    }\n}\n\n/**\n * The initialization function\n */\n\nexport function init(canvas) {\n    return new CanvasCompositor(canvas);\n}\n\nexport {\n    Renderer,\n    PrimitiveComponent,\n    Composition,\n    Circle,\n    Ellipse,\n    Rectangle,\n    Line,\n    VectorPath,\n    Bezier,\n    Image,\n    Text,\n    DEFAULTS\n}\n",
     "static": true,
     "longname": "C:/Users/Christopher/git/canvas-compositor/src/CanvasCompositor.js",
     "access": null,
@@ -300,58 +300,58 @@
   {
     "__docId__": 23,
     "kind": "member",
+    "name": "_rect",
+    "memberof": "src/CanvasCompositor.js~CanvasCompositor",
+    "static": false,
+    "longname": "src/CanvasCompositor.js~CanvasCompositor#_rect",
+    "access": null,
+    "description": null,
+    "lineNumber": 51,
+    "undocument": true
+  },
+  {
+    "__docId__": 24,
+    "kind": "member",
+    "name": "_mouseX",
+    "memberof": "src/CanvasCompositor.js~CanvasCompositor",
+    "static": false,
+    "longname": "src/CanvasCompositor.js~CanvasCompositor#_mouseX",
+    "access": null,
+    "description": null,
+    "lineNumber": 52,
+    "undocument": true
+  },
+  {
+    "__docId__": 25,
+    "kind": "member",
+    "name": "_mouseY",
+    "memberof": "src/CanvasCompositor.js~CanvasCompositor",
+    "static": false,
+    "longname": "src/CanvasCompositor.js~CanvasCompositor#_mouseY",
+    "access": null,
+    "description": null,
+    "lineNumber": 53,
+    "undocument": true
+  },
+  {
+    "__docId__": 26,
+    "kind": "member",
     "name": "_leftPadding",
     "memberof": "src/CanvasCompositor.js~CanvasCompositor",
     "static": false,
     "longname": "src/CanvasCompositor.js~CanvasCompositor#_leftPadding",
     "access": null,
     "description": null,
-    "lineNumber": 54,
-    "undocument": true
-  },
-  {
-    "__docId__": 24,
-    "kind": "member",
-    "name": "_topPadding",
-    "memberof": "src/CanvasCompositor.js~CanvasCompositor",
-    "static": false,
-    "longname": "src/CanvasCompositor.js~CanvasCompositor#_topPadding",
-    "access": null,
-    "description": null,
-    "lineNumber": 59,
-    "undocument": true
-  },
-  {
-    "__docId__": 25,
-    "kind": "member",
-    "name": "_currentTime",
-    "memberof": "src/CanvasCompositor.js~CanvasCompositor",
-    "static": false,
-    "longname": "src/CanvasCompositor.js~CanvasCompositor#_currentTime",
-    "access": null,
-    "description": null,
-    "lineNumber": 61,
-    "undocument": true
-  },
-  {
-    "__docId__": 26,
-    "kind": "member",
-    "name": "_lastFrameTimestamp",
-    "memberof": "src/CanvasCompositor.js~CanvasCompositor",
-    "static": false,
-    "longname": "src/CanvasCompositor.js~CanvasCompositor#_lastFrameTimestamp",
-    "access": null,
-    "description": null,
-    "lineNumber": 62,
+    "lineNumber": 58,
     "undocument": true
   },
   {
     "__docId__": 27,
     "kind": "member",
-    "name": "_lastRenderTime",
+    "name": "_topPadding",
     "memberof": "src/CanvasCompositor.js~CanvasCompositor",
     "static": false,
-    "longname": "src/CanvasCompositor.js~CanvasCompositor#_lastRenderTime",
+    "longname": "src/CanvasCompositor.js~CanvasCompositor#_topPadding",
     "access": null,
     "description": null,
     "lineNumber": 63,
@@ -360,10 +360,10 @@
   {
     "__docId__": 28,
     "kind": "member",
-    "name": "_targetObject",
+    "name": "_currentTime",
     "memberof": "src/CanvasCompositor.js~CanvasCompositor",
     "static": false,
-    "longname": "src/CanvasCompositor.js~CanvasCompositor#_targetObject",
+    "longname": "src/CanvasCompositor.js~CanvasCompositor#_currentTime",
     "access": null,
     "description": null,
     "lineNumber": 65,
@@ -372,17 +372,53 @@
   {
     "__docId__": 29,
     "kind": "member",
-    "name": "_scene",
+    "name": "_lastFrameTimestamp",
     "memberof": "src/CanvasCompositor.js~CanvasCompositor",
     "static": false,
-    "longname": "src/CanvasCompositor.js~CanvasCompositor#_scene",
+    "longname": "src/CanvasCompositor.js~CanvasCompositor#_lastFrameTimestamp",
+    "access": null,
+    "description": null,
+    "lineNumber": 66,
+    "undocument": true
+  },
+  {
+    "__docId__": 30,
+    "kind": "member",
+    "name": "_lastRenderTime",
+    "memberof": "src/CanvasCompositor.js~CanvasCompositor",
+    "static": false,
+    "longname": "src/CanvasCompositor.js~CanvasCompositor#_lastRenderTime",
     "access": null,
     "description": null,
     "lineNumber": 67,
     "undocument": true
   },
   {
-    "__docId__": 30,
+    "__docId__": 31,
+    "kind": "member",
+    "name": "_targetObject",
+    "memberof": "src/CanvasCompositor.js~CanvasCompositor",
+    "static": false,
+    "longname": "src/CanvasCompositor.js~CanvasCompositor#_targetObject",
+    "access": null,
+    "description": null,
+    "lineNumber": 69,
+    "undocument": true
+  },
+  {
+    "__docId__": 32,
+    "kind": "member",
+    "name": "_scene",
+    "memberof": "src/CanvasCompositor.js~CanvasCompositor",
+    "static": false,
+    "longname": "src/CanvasCompositor.js~CanvasCompositor#_scene",
+    "access": null,
+    "description": null,
+    "lineNumber": 71,
+    "undocument": true
+  },
+  {
+    "__docId__": 33,
     "kind": "member",
     "name": "_eventRegistry",
     "memberof": "src/CanvasCompositor.js~CanvasCompositor",
@@ -390,11 +426,11 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#_eventRegistry",
     "access": null,
     "description": null,
-    "lineNumber": 71,
+    "lineNumber": 75,
     "undocument": true
   },
   {
-    "__docId__": 31,
+    "__docId__": 34,
     "kind": "member",
     "name": "_framerate",
     "memberof": "src/CanvasCompositor.js~CanvasCompositor",
@@ -402,26 +438,12 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#_framerate",
     "access": null,
     "description": null,
-    "lineNumber": 80,
-    "undocument": true
-  },
-  {
-    "__docId__": 32,
-    "kind": "set",
-    "name": "framerate",
-    "memberof": "src/CanvasCompositor.js~CanvasCompositor",
-    "generator": false,
-    "async": false,
-    "static": false,
-    "longname": "src/CanvasCompositor.js~CanvasCompositor#framerate",
-    "access": null,
-    "description": null,
     "lineNumber": 84,
     "undocument": true
   },
   {
-    "__docId__": 34,
-    "kind": "get",
+    "__docId__": 35,
+    "kind": "set",
     "name": "framerate",
     "memberof": "src/CanvasCompositor.js~CanvasCompositor",
     "generator": false,
@@ -434,7 +456,21 @@
     "undocument": true
   },
   {
-    "__docId__": 35,
+    "__docId__": 37,
+    "kind": "get",
+    "name": "framerate",
+    "memberof": "src/CanvasCompositor.js~CanvasCompositor",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/CanvasCompositor.js~CanvasCompositor#framerate",
+    "access": null,
+    "description": null,
+    "lineNumber": 92,
+    "undocument": true
+  },
+  {
+    "__docId__": 38,
     "kind": "get",
     "name": "targetObject",
     "memberof": "src/CanvasCompositor.js~CanvasCompositor",
@@ -444,7 +480,7 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#targetObject",
     "access": null,
     "description": "the object currently selected for interaction",
-    "lineNumber": 98,
+    "lineNumber": 102,
     "type": {
       "nullable": null,
       "types": [
@@ -455,7 +491,7 @@
     }
   },
   {
-    "__docId__": 36,
+    "__docId__": 39,
     "kind": "set",
     "name": "targetObject",
     "memberof": "src/CanvasCompositor.js~CanvasCompositor",
@@ -465,7 +501,7 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#targetObject",
     "access": null,
     "description": "the object currently selected for interaction",
-    "lineNumber": 106,
+    "lineNumber": 110,
     "params": [
       {
         "nullable": null,
@@ -488,7 +524,7 @@
     }
   },
   {
-    "__docId__": 38,
+    "__docId__": 41,
     "kind": "get",
     "name": "scene",
     "memberof": "src/CanvasCompositor.js~CanvasCompositor",
@@ -498,7 +534,7 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#scene",
     "access": null,
     "description": "the root of the scene graph. add primitives to this to compose an image",
-    "lineNumber": 114,
+    "lineNumber": 118,
     "type": {
       "nullable": null,
       "types": [
@@ -509,7 +545,49 @@
     }
   },
   {
-    "__docId__": 39,
+    "__docId__": 42,
+    "kind": "get",
+    "name": "mouseX",
+    "memberof": "src/CanvasCompositor.js~CanvasCompositor",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/CanvasCompositor.js~CanvasCompositor#mouseX",
+    "access": null,
+    "description": "get the X position of the mouse on the canvas",
+    "lineNumber": 126,
+    "type": {
+      "nullable": null,
+      "types": [
+        "number"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 43,
+    "kind": "get",
+    "name": "mouseY",
+    "memberof": "src/CanvasCompositor.js~CanvasCompositor",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/CanvasCompositor.js~CanvasCompositor#mouseY",
+    "access": null,
+    "description": "get the Y position of the mouse on the canvas",
+    "lineNumber": 134,
+    "type": {
+      "nullable": null,
+      "types": [
+        "number"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 44,
     "kind": "method",
     "name": "_animationLoop",
     "memberof": "src/CanvasCompositor.js~CanvasCompositor",
@@ -519,10 +597,10 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#_animationLoop",
     "access": null,
     "description": "The animation loop for this instance of CanvasCompositor.\nUpon receipt of the animation frame from `requestAnimationFrame`, the loop will check\nwhether enough time has passed to redraw for the target framerate.\nIt will only draw if somewhere along the scene graph, an object needs updating.\nThere is no need to invoke this directly, the constructor will do it.",
-    "lineNumber": 125
+    "lineNumber": 145
   },
   {
-    "__docId__": 44,
+    "__docId__": 49,
     "kind": "method",
     "name": "registerEvent",
     "memberof": "src/CanvasCompositor.js~CanvasCompositor",
@@ -532,7 +610,7 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#registerEvent",
     "access": null,
     "description": "add an event to the event registry",
-    "lineNumber": 145,
+    "lineNumber": 165,
     "params": [
       {
         "nullable": null,
@@ -557,7 +635,7 @@
     ]
   },
   {
-    "__docId__": 45,
+    "__docId__": 50,
     "kind": "method",
     "name": "removeEvent",
     "memberof": "src/CanvasCompositor.js~CanvasCompositor",
@@ -567,7 +645,7 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#removeEvent",
     "access": null,
     "description": "remove an event to the event registry",
-    "lineNumber": 158,
+    "lineNumber": 178,
     "params": [
       {
         "nullable": null,
@@ -600,7 +678,7 @@
     }
   },
   {
-    "__docId__": 46,
+    "__docId__": 51,
     "kind": "method",
     "name": "_bindEvents",
     "memberof": "src/CanvasCompositor.js~CanvasCompositor",
@@ -610,10 +688,10 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#_bindEvents",
     "access": null,
     "description": "attach interaction events to the canvas. the canvas compositor dispatches\nevents to relevant objects through bridges to the scene graph",
-    "lineNumber": 171
+    "lineNumber": 191
   },
   {
-    "__docId__": 47,
+    "__docId__": 52,
     "kind": "method",
     "name": "_handleMouseDown",
     "memberof": "src/CanvasCompositor.js~CanvasCompositor",
@@ -623,10 +701,10 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#_handleMouseDown",
     "access": null,
     "description": "bridge the mouse down event on the canvas to the\nthe objects in the scene graph",
-    "lineNumber": 185
+    "lineNumber": 205
   },
   {
-    "__docId__": 48,
+    "__docId__": 53,
     "kind": "method",
     "name": "_handleMouseUp",
     "memberof": "src/CanvasCompositor.js~CanvasCompositor",
@@ -636,10 +714,10 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#_handleMouseUp",
     "access": null,
     "description": "bridge the mouse up event on the canvas to the\nthe objects in the scene graph",
-    "lineNumber": 210
+    "lineNumber": 230
   },
   {
-    "__docId__": 49,
+    "__docId__": 54,
     "kind": "method",
     "name": "_handleMouseMove",
     "memberof": "src/CanvasCompositor.js~CanvasCompositor",
@@ -649,10 +727,10 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#_handleMouseMove",
     "access": null,
     "description": "bridge the mouse move event on the canvas to the\nthe objects in the scene graph",
-    "lineNumber": 241
+    "lineNumber": 261
   },
   {
-    "__docId__": 50,
+    "__docId__": 57,
     "kind": "method",
     "name": "_handleClick",
     "memberof": "src/CanvasCompositor.js~CanvasCompositor",
@@ -662,10 +740,10 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#_handleClick",
     "access": null,
     "description": "bridge the click event on the canvas to the\nthe objects in the scene graph",
-    "lineNumber": 258
+    "lineNumber": 281
   },
   {
-    "__docId__": 51,
+    "__docId__": 58,
     "kind": "method",
     "name": "_handleMouseOut",
     "memberof": "src/CanvasCompositor.js~CanvasCompositor",
@@ -675,10 +753,10 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#_handleMouseOut",
     "access": null,
     "description": "bridge the mouse out event on the canvas to the\nthe objects in the scene graph",
-    "lineNumber": 284
+    "lineNumber": 307
   },
   {
-    "__docId__": 52,
+    "__docId__": 59,
     "kind": "method",
     "name": "drawBezier",
     "memberof": "src/CanvasCompositor.js~CanvasCompositor",
@@ -688,11 +766,11 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#drawBezier",
     "access": null,
     "description": null,
-    "lineNumber": 298,
+    "lineNumber": 321,
     "undocument": true
   },
   {
-    "__docId__": 53,
+    "__docId__": 60,
     "kind": "function",
     "name": "init",
     "memberof": "src/CanvasCompositor.js",
@@ -704,12 +782,11 @@
     "export": true,
     "importPath": "canvas-compositor/src/CanvasCompositor.js",
     "importStyle": "{init}",
-    "description": null,
-    "lineNumber": 303,
-    "undocument": true
+    "description": "The initialization function",
+    "lineNumber": 330
   },
   {
-    "__docId__": 54,
+    "__docId__": 61,
     "kind": "file",
     "name": "src/Circle.js",
     "content": "import { Renderer } from './Renderer';\nimport { PrimitiveComponent } from './PrimitiveComponent';\n\n/**\n * A circle\n */\nexport class Circle extends PrimitiveComponent {\n    //TODO: provide details about options for docs - link to a separate page\n    /**\n     * PrimitiveComponent constructor\n     * @param {object} options object settings\n     */\n    constructor(options) {\n        super(options)\n        /**\n         * the radius of the circle\n         * @type {number} radius\n         */\n        this.radius = options.radius || 0;\n    }\n\n    /**\n     * get the bounding box of the circle;\n     * @type {{top:number, left: number, bottom:number, right:number}}\n     */\n    get boundingBox() {\n        //TODO: possibly memory-inefficient - need to research:\n        //strokes are (were?) centered over the mathematical perimeter -\n        //so half the stroke laid within the perimeter, and the\n        //other half laid outside. for some reason, this doesn't\n        //work for (0 < lineWidth < 2.0).\n        //\n        //it's just a pixel, but when a thousand objects are on screen,\n        //that'll make a difference\n        let offset = this.offset;\n        let scale = this.compoundScale;\n        return {\n            top: offset.y -\n                ((this.radius * scale.scaleHeight) +\n                    (this.style.lineWidth)),\n            left: offset.x -\n                ((this.radius * scale.scaleWidth) +\n                    (this.style.lineWidth)),\n            bottom: offset.y +\n                (this.radius * scale.scaleHeight) +\n                (this.style.lineWidth),\n            right: offset.x +\n                (this.radius * scale.scaleWidth) +\n                (this.style.lineWidth)\n        };\n    }\n\n    /**\n     * override the render function for drawing circles specifically\n     * @override\n     */\n    render() {\n        //the below is to ensure the proper placement when scaling/line widths are accounted for\n        let scale = this.compoundScale;\n        let lineWidth = this.style.lineWidth;\n        Renderer.drawCircle(\n            (this.radius * scale.scaleWidth) + lineWidth,\n            (this.radius * scale.scaleHeight) + lineWidth,\n            (this.radius * scale.scaleWidth),\n            this._prerenderingContext,\n            this.style\n        );\n    }\n\n    /**\n     * determine whether the point is in the object\n     * basically just the pythagorean theorem\n     * @param {number} x the x coordinate\n     * @param {number} y the y coordinate\n     * @return {boolean} whether or not the point is in the object\n     */\n    pointIsInObject(x, y) {\n\n        let offset = this.offset;\n\n        //don't bother checking the bounding box because\n        //pythagorean formula is closed-form\n            let a = x - offset.x;\n            let b = y - offset.y;\n            let c = this.radius;\n\n            //thanks pythagoras~!\n            return (a * a) + (b * b) <= (c * c);\n        //use the below when scaling is reimplemented\n        /*\n\t\treturn (\n\t\t\tCanvasObject.prototype.PointIsInObject.call(this, x, y) &&\n\t\t\tMath.pow((x - this.offset.x), 2) / Math.pow((this.radius * this.GlobalScale.scaleWidth), 2) + Math.pow((y - this.offset.y), 2) / Math.pow((this.radius * this.GlobalScale.scaleHeight), 2) <= 1\n\t\t);*/\n    };\n}\n",
@@ -720,7 +797,7 @@
     "lineNumber": 1
   },
   {
-    "__docId__": 55,
+    "__docId__": 62,
     "kind": "class",
     "name": "Circle",
     "memberof": "src/Circle.js",
@@ -738,7 +815,7 @@
     ]
   },
   {
-    "__docId__": 56,
+    "__docId__": 63,
     "kind": "constructor",
     "name": "constructor",
     "memberof": "src/Circle.js~Circle",
@@ -763,7 +840,7 @@
     ]
   },
   {
-    "__docId__": 57,
+    "__docId__": 64,
     "kind": "member",
     "name": "radius",
     "memberof": "src/Circle.js~Circle",
@@ -782,7 +859,7 @@
     }
   },
   {
-    "__docId__": 58,
+    "__docId__": 65,
     "kind": "get",
     "name": "boundingBox",
     "memberof": "src/Circle.js~Circle",
@@ -803,7 +880,7 @@
     }
   },
   {
-    "__docId__": 59,
+    "__docId__": 66,
     "kind": "method",
     "name": "render",
     "memberof": "src/Circle.js~Circle",
@@ -817,7 +894,7 @@
     "override": true
   },
   {
-    "__docId__": 60,
+    "__docId__": 67,
     "kind": "method",
     "name": "pointIsInObject",
     "memberof": "src/Circle.js~Circle",
@@ -860,7 +937,7 @@
     }
   },
   {
-    "__docId__": 61,
+    "__docId__": 68,
     "kind": "file",
     "name": "src/Composition.js",
     "content": "import { PrimitiveComponent } from './PrimitiveComponent';\n\n/**\n * The Composition class is an extension of the Primitive that is\n * composed of other extensions of the Primitive. The Composition\n * is used to establish the Scene graph as the parent of all other\n * objects on screen. This is the key abstraction of the [composite\n * pattern](https://en.wikipedia.org/wiki/Composite_pattern): an\n * action taken on the parent element acts upon all of the children,\n * and transatively, all of their children.\n */\nexport class Composition extends PrimitiveComponent {\n    /**\n     * @param {object} options object settings\n     */\n    constructor(options) {\n        super(options);\n        options = options || {};\n        this._children = options.children || [];\n    }\n\n    /**\n     * children of this composition\n     * @type {Array} children the which compose this object\n     */\n    get children() {\n        return this._children;\n    }\n\n    /**\n     * the bounding box of the composition (i.e., the containing bounds of all the children of this composition)\n     * @type {{top:number, left:number, right:number, bottom:number}} boundingBox\n     */\n    get boundingBox() {\n        let top = Infinity,\n            left = Infinity,\n            bottom = -Infinity,\n            right = -Infinity;\n\n        for (let c of this.children) {\n            let boundingBox = c.boundingBox;\n            top = Math.min(boundingBox.top, top);\n            left = Math.min(boundingBox.left, left);\n            bottom = Math.max(boundingBox.bottom, bottom);\n            right = Math.max(boundingBox.right, right);\n        };\n\n        return {\n            top: top,\n            left: left,\n            bottom: bottom,\n            right: right\n        };\n    }\n\n\n    /**\n     * the an array of children that are found at (x, y)\n     * @return {object} childrenAt all the children below the point\n     * @param {number} x the x coordinate\n     * @param {number} y the y coordinate\n     */\n    childrenAt(x, y) {\n        return this.children.filter((c) => c.PointIsInObject(x, y));\n    }\n\n    /**\n     * get the top-most child at the (x, y)\n     * @return {object} childAt the first child below the point\n     * @param {number} x the x coordinate\n     * @param {number} y the y coordinate\n     */\n    childAt(x, y) {\n        //loop over the children in reverse because drawing order\n        for (var c = this.children.length - 1; c >= 0; c--) {\n            if (this.children[c].pointIsInObject(x, y)) {\n                return this.children[c];\n            }\n        }\n    }\n\n    /**\n     * add a child to this composition\n     * @param {object} child the child to be added\n     */\n    addChild(child) {\n        child.parent = this;\n        this.children.push(child);\n        super.needsRender = true;\n        super.needsDraw = true;\n        //TODO: make this hook more generic\n        //by using a registry\n        //if (this.onchildadded) {\n        //  this.onchildadded();\n        //}\n    }\n\n    /**\n     * remove a child from this composition\n     * @param {object} child the child to be removed\n     * @return {object} the child removed\n     */\n    removeChild(child) {\n        if (child) {\n            var index = this.children.indexOf(child);\n            if (index >= 0) {\n                super.needsRender = true;\n                super.needsDraw = true;\n                return this.children.splice(index, 1);\n            }\n        }\n    };\n\n    /**\n     * @override\n     * override the render functiont to render the children onto this compositions prerendering canvas\n     */\n    render() {\n        // required to make sure that the drawing occurs within the bounds of this composition\n        let boundingBox = this.boundingBox;\n        var offset = {\n            top: -boundingBox.top,\n            left: -boundingBox.left,\n            bottom: -boundingBox.bottom,\n            right: -boundingBox.right\n        };\n\n        for (let c of this.children) {\n            c.draw(this._prerenderingContext, offset);\n        };\n\n        // `destination-out` will erase things\n        //this._prerenderingContext.globalCompositeOperation = 'destination-out';\n        //_.each(this.masks, function (m) {\n        //m.draw(renderContext, contextOffset);\n        //});\n        //renderContext.globalCompositeOperation = 'normal';\n    };\n}\n",
@@ -871,7 +948,7 @@
     "lineNumber": 1
   },
   {
-    "__docId__": 62,
+    "__docId__": 69,
     "kind": "class",
     "name": "Composition",
     "memberof": "src/Composition.js",
@@ -889,7 +966,7 @@
     ]
   },
   {
-    "__docId__": 63,
+    "__docId__": 70,
     "kind": "constructor",
     "name": "constructor",
     "memberof": "src/Composition.js~Composition",
@@ -914,7 +991,7 @@
     ]
   },
   {
-    "__docId__": 64,
+    "__docId__": 71,
     "kind": "member",
     "name": "_children",
     "memberof": "src/Composition.js~Composition",
@@ -926,7 +1003,7 @@
     "undocument": true
   },
   {
-    "__docId__": 65,
+    "__docId__": 72,
     "kind": "get",
     "name": "children",
     "memberof": "src/Composition.js~Composition",
@@ -947,7 +1024,7 @@
     }
   },
   {
-    "__docId__": 66,
+    "__docId__": 73,
     "kind": "get",
     "name": "boundingBox",
     "memberof": "src/Composition.js~Composition",
@@ -968,7 +1045,7 @@
     }
   },
   {
-    "__docId__": 67,
+    "__docId__": 74,
     "kind": "method",
     "name": "childrenAt",
     "memberof": "src/Composition.js~Composition",
@@ -1011,7 +1088,7 @@
     }
   },
   {
-    "__docId__": 68,
+    "__docId__": 75,
     "kind": "method",
     "name": "childAt",
     "memberof": "src/Composition.js~Composition",
@@ -1054,7 +1131,7 @@
     }
   },
   {
-    "__docId__": 69,
+    "__docId__": 76,
     "kind": "method",
     "name": "addChild",
     "memberof": "src/Composition.js~Composition",
@@ -1079,7 +1156,7 @@
     ]
   },
   {
-    "__docId__": 70,
+    "__docId__": 77,
     "kind": "method",
     "name": "removeChild",
     "memberof": "src/Composition.js~Composition",
@@ -1112,7 +1189,7 @@
     }
   },
   {
-    "__docId__": 71,
+    "__docId__": 78,
     "kind": "method",
     "name": "render",
     "memberof": "src/Composition.js~Composition",
@@ -1126,7 +1203,7 @@
     "override": true
   },
   {
-    "__docId__": 72,
+    "__docId__": 79,
     "kind": "file",
     "name": "src/Ellipse.js",
     "content": "import { Renderer } from './Renderer';\nimport { PrimitiveComponent } from './PrimitiveComponent';\n\n\n\n/**\n * An ellipse\n */\nexport class Ellipse extends PrimitiveComponent {\n    /**\n     * @param {object} options options for the ellipse\n     * @param {number} options.radius the major (horizontal) radius of the ellipse\n     * @param {number} options.minorRadius the minor (vertical) radius of the ellipse\n     */\n    constructor(options) {\n        super(options);\n        /**\n         * @type {number} radius the major radius (horizontal) of the ellipse\n         */\n        this.radius = options.radius || 0;\n        /**\n         * @type {number} minorRadius the minor radius (vertical) of the ellipse\n         */\n        this.minorRadius = options.minorRadius || this.radius || 0;\n    }\n\n    /**\n     * the bounding box for the ellipse\n     * @type {{top: number, left: number, bottom: number, right: number}} boundingBox\n     */\n    get boundingBox() {\n        let offset = this.offset;\n        let scale = this.compoundScale;\n        let lineWidth = this.style.lineWidth;\n        return {\n            top: offset.y -\n                ((this.minorRadius * scale.scaleHeight) + lineWidth),\n            left: offset.x -\n                ((this.radius * scale.scaleWidth) + lineWidth),\n            bottom: offset.y +\n                (this.minorRadius * scale.scaleHeight) + lineWidth,\n            right: offset.x +\n                (this.radius * scale.scaleWidth) + lineWidth\n        };\n    }\n\n    /**\n     * override the render function specifically for ellipses\n     * @override\n     */\n    render() {\n        let scale = this.compoundScale;\n        let lineWidth = this.style.lineWidth;\n        //TODO: work out scaling of major/minor radius\n        //this doesn't make sense\n        Renderer.drawEllipse(\n            (this.radius * scale.scaleWidth) + lineWidth,\n            (this.minorRadius * scale.scaleHeight) + lineWidth,\n            (this.radius * scale.scaleWidth),\n            (this.minorRadius * scale.scaleHeight),\n            this._prerenderingContext,\n            this.style\n        );\n    }\n    /**\n     * determine whether the point is in the object\n     * basically just the pythagorean theorem\n     * @param {number} x the x coordinate\n     * @param {number} y the y coordinate\n     * @return {boolean} whether or not the point is in the object\n     */\n    pointIsInObject(x, y) {\n        let scale = this.compoundScale;\n        let offset = this.offset;\n\n        let a = x - offset.x;\n        let b = y - offset.y;\n\n        let c1 = this.radius * scale.scaleWidth;\n        let c2 = this.minorRadius * scale.scaleHeight;\n\n        //see: http://math.stackexchange.com/questions/76457/check-if-a-point-is-within-an-ellipse\n        return ((a*a) / (c1*c1)) + ((b*b) / (c2*c2)) <= 1;\n    };\n}\n",
@@ -1137,7 +1214,7 @@
     "lineNumber": 1
   },
   {
-    "__docId__": 73,
+    "__docId__": 80,
     "kind": "class",
     "name": "Ellipse",
     "memberof": "src/Ellipse.js",
@@ -1155,7 +1232,7 @@
     ]
   },
   {
-    "__docId__": 74,
+    "__docId__": 81,
     "kind": "constructor",
     "name": "constructor",
     "memberof": "src/Ellipse.js~Ellipse",
@@ -1200,7 +1277,7 @@
     ]
   },
   {
-    "__docId__": 75,
+    "__docId__": 82,
     "kind": "member",
     "name": "radius",
     "memberof": "src/Ellipse.js~Ellipse",
@@ -1219,7 +1296,7 @@
     }
   },
   {
-    "__docId__": 76,
+    "__docId__": 83,
     "kind": "member",
     "name": "minorRadius",
     "memberof": "src/Ellipse.js~Ellipse",
@@ -1238,7 +1315,7 @@
     }
   },
   {
-    "__docId__": 77,
+    "__docId__": 84,
     "kind": "get",
     "name": "boundingBox",
     "memberof": "src/Ellipse.js~Ellipse",
@@ -1259,7 +1336,7 @@
     }
   },
   {
-    "__docId__": 78,
+    "__docId__": 85,
     "kind": "method",
     "name": "render",
     "memberof": "src/Ellipse.js~Ellipse",
@@ -1273,7 +1350,7 @@
     "override": true
   },
   {
-    "__docId__": 79,
+    "__docId__": 86,
     "kind": "method",
     "name": "pointIsInObject",
     "memberof": "src/Ellipse.js~Ellipse",
@@ -1316,7 +1393,7 @@
     }
   },
   {
-    "__docId__": 80,
+    "__docId__": 87,
     "kind": "file",
     "name": "src/Image.js",
     "content": "import { Renderer } from './Renderer';\nimport { PrimitiveComponent } from './PrimitiveComponent';\n\n/**\n * an Image\n */\nexport class Image extends PrimitiveComponent {\n    /**\n     * @param {Object} options\n     */\n    constructor(options) {\n        super(options);\n        /**\n         * @type {window.Image} unscaledImage the original image\n         */\n        this.unscaledImage = options.image;\n    }\n\n    /**\n     * get the bounding box\n     * @type {{top: number, left: number, bottom: number, right:number}} boundingBox\n     */\n    get boundingBox() {\n        let compoundScale = this.compoundScale;\n        let offset = this.offset;\n        return {\n            top: offset.y,\n            left: offset.x,\n            bottom: offset.y + (compoundScale.scaleHeight * this.unscaledImage.height),\n            right: offset.x + (compoundScale.scaleWidth * this.unscaledImage.width)\n        };\n    }\n\n    /**\n     * override the render function for images specifically\n     * @override\n     */\n    render() {\n        let scale = this.compoundScale;\n        let image = new window.Image();\n        image.src = this.unscaledImage.src;\n        image.width = this.unscaledImage.width * scale.scaleWidth;\n        image.height = this.unscaledImage.height * scale.scaleHeight;\n        Renderer.drawImage(0, 0, image, this._prerenderingContext, this.style);\n    };\n}\n",
@@ -1327,7 +1404,7 @@
     "lineNumber": 1
   },
   {
-    "__docId__": 81,
+    "__docId__": 88,
     "kind": "class",
     "name": "Image",
     "memberof": "src/Image.js",
@@ -1345,7 +1422,7 @@
     ]
   },
   {
-    "__docId__": 82,
+    "__docId__": 89,
     "kind": "constructor",
     "name": "constructor",
     "memberof": "src/Image.js~Image",
@@ -1370,7 +1447,7 @@
     ]
   },
   {
-    "__docId__": 83,
+    "__docId__": 90,
     "kind": "member",
     "name": "unscaledImage",
     "memberof": "src/Image.js~Image",
@@ -1389,7 +1466,7 @@
     }
   },
   {
-    "__docId__": 84,
+    "__docId__": 91,
     "kind": "get",
     "name": "boundingBox",
     "memberof": "src/Image.js~Image",
@@ -1410,7 +1487,7 @@
     }
   },
   {
-    "__docId__": 85,
+    "__docId__": 92,
     "kind": "method",
     "name": "render",
     "memberof": "src/Image.js~Image",
@@ -1424,7 +1501,7 @@
     "override": true
   },
   {
-    "__docId__": 86,
+    "__docId__": 93,
     "kind": "file",
     "name": "src/Line.js",
     "content": "import { Vector } from 'vectorious';\n\n/**\n * A line\n */\nexport class Line {\n    /**\n     * A Line can be defined by two points, p1 and p2, through\n     * which it passes. Here, an anchor point is supplied for p1,\n     * and a unit vector, direction, is added to it to provided\n     * the second.\n     * @param {object} anchor\n     * @param {object} direction\n     */\n    constructor(anchor, direction) {\n        /**\n         * @type {object} p1 a vector describing a point through which the line passes\n         */\n        this.p1 = anchor;\n\n        /**\n         * @type {object} direction a unit vector describing the direction from p1\n         */\n        this.direction = direction;\n\n        /**\n         * @type {object} a vector describing a second point through which the line passes\n         */\n        this.p2 = Vector.add(this.p1, this.direction);\n    }\n\n    /**\n     * determine the location that this line intersects with another, if at all\n     * @param {object} l the Line to test for intersection against this Line\n     * @return {object} the vector of the location of intersection, or null if the lines are parallel\n     */\n    intersectionWith(l) {\n        return Line.intersection(this, l);\n    }\n\n    /**\n     * determine the location that these lines intersect, if at all\n     * @param {object} l1 the first Line to test for intersection\n     * @param {object} l2 the second Line to test for intersection\n     * @return {object} the vector of the location of intersection, or null if the lines are parallel\n     */\n    static intersection(l1, l2) {\n        let x1 = l1.p1.x,\n            x2 = l1.p2.x,\n            x3 = l2.p1.x,\n            x4 = l2.p2.x;\n        let y1 = l1.p1.y,\n            y2 = l1.p2.y,\n            y3 = l2.p1.y,\n            y4 = l2.p2.y;\n        let denominator = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);\n        if (denominator === 0) {\n            return null;\n        }\n\n        let xNumerator = (x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4);\n        let yNumerator = (x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4);\n        return new Vector([xNumerator / denominator, yNumerator / denominator]);\n    }\n}\n",
@@ -1435,7 +1512,7 @@
     "lineNumber": 1
   },
   {
-    "__docId__": 87,
+    "__docId__": 94,
     "kind": "class",
     "name": "Line",
     "memberof": "src/Line.js",
@@ -1450,7 +1527,7 @@
     "interface": false
   },
   {
-    "__docId__": 88,
+    "__docId__": 95,
     "kind": "constructor",
     "name": "constructor",
     "memberof": "src/Line.js~Line",
@@ -1485,7 +1562,7 @@
     ]
   },
   {
-    "__docId__": 89,
+    "__docId__": 96,
     "kind": "member",
     "name": "p1",
     "memberof": "src/Line.js~Line",
@@ -1504,7 +1581,7 @@
     }
   },
   {
-    "__docId__": 90,
+    "__docId__": 97,
     "kind": "member",
     "name": "direction",
     "memberof": "src/Line.js~Line",
@@ -1523,7 +1600,7 @@
     }
   },
   {
-    "__docId__": 91,
+    "__docId__": 98,
     "kind": "member",
     "name": "p2",
     "memberof": "src/Line.js~Line",
@@ -1542,7 +1619,7 @@
     }
   },
   {
-    "__docId__": 92,
+    "__docId__": 99,
     "kind": "method",
     "name": "intersectionWith",
     "memberof": "src/Line.js~Line",
@@ -1575,7 +1652,7 @@
     }
   },
   {
-    "__docId__": 93,
+    "__docId__": 100,
     "kind": "method",
     "name": "intersection",
     "memberof": "src/Line.js~Line",
@@ -1618,7 +1695,7 @@
     }
   },
   {
-    "__docId__": 94,
+    "__docId__": 101,
     "kind": "file",
     "name": "src/PrimitiveComponent.js",
     "content": "import { Vector } from 'vectorious';\nimport { DEFAULTS, Renderer } from './Renderer';\n\n/**\n * The base class of things that may be drawn on the canvas.\n * All drawable objects should inherit from this class.\n * Typically, it is unnecessary for application programmers to\n * call this directly, although they may wish to extend their own\n * classes with it.\n */\nexport class PrimitiveComponent {\n    /**\n     * @param {object} options\n     */\n    constructor(options) {\n\n        options = options || {};\n\n        this._flags = {};\n        this._flags.DEBUG = options.debug || false;\n\n        /**\n         * does the object need to be redrawn?\n         * @type {boolean} _needsDraw\n         */\n        this._needsDraw = true;\n\n        /**\n         * does the object need to be rendered?\n         * @type {boolean} _needsRender\n         */\n        this._needsRender = true;\n\n        /**\n         * the horizontal scale of the object. defaults to 1\n         * @type {number} _scaleWidth\n         */\n        this._scaleWidth = 1;\n\n        /**\n         * the vertical scale of the object. defaults to 1\n         * @type {number} _scaleHeight\n         */\n        this._scaleHeight = 1;\n\n        /**\n         * d is for \"displacement\": a 2D Vector object representing cartesian coordinate\n         * position relative to its parent composition (or [0,0] if this is the scene composition)\n         * @type {object} d\n         */\n        this._d = new Vector([options.x || 0, options.y || 0]);\n\n        /**\n         * style options for this particular object. these are standard context styles\n         * @type {object} style\n         */\n        this.style = Object.assign({}, DEFAULTS, options.style);\n\n        /**\n         * objects with pressPassThrough set to true will allow mouse clicks to pass\n         * through to objects behind them\n         * @type {boolean} pressPassThrough\n         */\n        //this.pressPassThrough = options.pressPassThrough || false;\n\n        /**\n         * if true, the object can be dragged around the canvas\n         * @type {boolean} draggable\n         */\n        this.draggable = options.draggable || false;\n\n        /**\n         * if true, the bounding box of the object will be draw\n         * @type {boolean} drawBoundingBox\n         */\n        //this.drawBoundingBox = false;\n        //this.boundingBoxColor = '#cccccc';\n\n        /**\n         * the prerendering canvas is used to avoid performing mutliple draw operations on the\n         * visible, main canvas. this minimizes the time needed to render by prerendering on a\n         * canvas only as large as necessary for the object\n         * @type {object} _prerenderingCanvas\n         */\n        this._prerenderingCanvas = document.createElement('canvas');\n\n        /**\n         * the 2D context of the prerendering canvas.\n         * @type {object} _prerenderingCanvas\n         */\n        this._prerenderingContext = this._prerenderingCanvas.getContext('2d');\n\n        /**\n         * the parent object of this object. with the exception of the scene composition itself,\n         * the root of all objects ancestry should be the scene composition\n         * @type {object} parent\n         */\n        this._parent = options.parent || null;\n\n        /**\n         * a callback for the mousedown event.\n         * @type {function} onmousedown\n         */\n        this.onmousedown = null;\n\n        /**\n         * a callback for the mouseup event.\n         * @type {function} onmouseup\n         */\n        this.onmouseup = null;\n\n        /**\n         * a callback for the mousemove event.\n         * @type {function} onmousemove\n         */\n        this.onmousemove = null;\n\n        /**\n         * a callback for the mouseout event.\n         * @type {function} onmouseout\n         */\n        this.onmouseout = null;\n\n        /**\n         * a callback for the click event.\n         * @type {function} onclick\n         */\n        this.onclick = null;\n\n\n        if (this.draggable) {\n            this.enableDragging();\n        }\n    }\n\n    /**\n     * the global offset of the object on the canvas.\n     * this is the sum of this object's displacement\n     * and all of its ancestry.\n     * @type {object} offset a 2D Vector representing displacement from [0, 0]\n     */\n    get offset() {\n        return (this.parent ? Vector.add(this.d, this.parent.offset) : this.d);\n    }\n\n    /**\n     * returns true whenever the object needs to be re-drawn to canvas.\n     * when true, this will indicate to the parent tree of composing objects that\n     * the object needs to be re-drawn on the next animation loop.\n     *\n     * objects need to be updated when their displacement changes, or when any thing\n     * that requires a rerender occurs.\n     *\n     * @type {boolean} needsDraw\n     */\n    get needsDraw() {\n        return this._needsDraw;\n    }\n\n    /**\n     * set to true whenever the object needs to be re-drawn to canvas.\n     * when true, this will indicate to the parent tree of composing objects that\n     * the object needs to be re-drawn on the next animation loop.\n     *\n     * objects need to be updated when their displacement changes, or when any thing\n     * that requires a rerender occurs.\n     *\n     * @type {boolean} needsDraw\n     */\n    set needsDraw(val) {\n        if (this.parent && val) {\n            this.parent.needsDraw = val;\n            this.parent.needsRender = true; // if this needs to be redrawn, then the parent needs a full rerender\n        }\n        this._needsDraw = val;\n    }\n\n    /**\n     * returns true whenever the object's properties have changed such that\n     * it needs to be rendered differently\n     *\n     * 1. scale change\n     * 1. physical property change (height, width, radius, etc.)\n     * 1. color change\n     *\n     * @type {boolean} needsRender\n     */\n    get needsRender() {\n        return this._needsRender;\n    }\n\n    /**\n     * set to true whenever the object's properties have changed such that\n     * it needs to be rendered differently\n     *\n     * 1. scale change\n     * 1. physical property change (height, width, radius, etc.)\n     * 1. color change\n     *\n     * @type {boolean} needsRender\n     */\n    set needsRender(val) {\n        if (this.parent && val) {\n            this.parent.needsRender = val;\n        }\n        this._needsRender = val;\n    }\n\n    /**\n     * return the horizontal scale of the object - defaults to 1\n     * @type {number} scaleWidth\n     */\n    get scaleWidth() {\n        return this._scaleWidth;\n    }\n    /**\n     * set the horizontal scale of the object - defaults to 1\n     * @type {number} scaleWidth\n     */\n    set scaleWidth(val) {\n        this._scaleWidth = val;\n        this.needsRender = true;\n        this.needsDraw = true;\n        for (let c of this.children) {\n            c.needsRender = true;\n            c.needsDraw = true;\n        }\n    }\n\n    /**\n     * return the vertical scale of the object - defaults to 1\n     * @type {number} scaleHeight\n     */\n    get scaleHeight() {\n        return this._scaleHeight;\n    }\n    /**\n     * set the vertical scale of the object - defaults to 1\n     * @type {number} scaleHeight\n     * @param {number} val the vertical scale\n     */\n    set scaleHeight(val) {\n        this._scaleHeight = val;\n        this.needsRender = true;\n        this.needsDraw = true;\n        for (let c of this.children) {\n            c.needsRender = true;\n            c.needsDraw = true;\n        }\n    }\n\n    /**\n     * return an object containing the vertical and horizontal scale\n     * @type {object} scale\n     */\n    get scale() {\n        return {\n            scaleWidth: this.scaleWidth,\n            scaleHeight: this.scaleHeight\n        };\n    }\n\n    /**\n     * set the scale width and height in one go\n     * @type {number} scale\n     */\n    set scale(val) {\n        this.scaleHeight = val;\n        this.scaleWidth = val;\n    }\n\n    /**\n     * return the scale of the object, compounded with the parent object's scale\n     * @type {{scaleWidth: number, scaleHeight: number}} compoundScale the scale multiplied by the compound scale of its parent or 1\n     */\n    get compoundScale() {\n        return {\n            scaleWidth: this.parent ? this.scaleWidth * this.parent.compoundScale.scaleWidth : this.scaleWidth,\n            scaleHeight: this.parent ? this.scaleHeight * this.parent.compoundScale.scaleHeight : this.scaleHeight\n        };\n    }\n\n    /**\n     * d is for displacement - returns a vector\n     * @type {object} d\n     */\n    get d() {\n        return this._d;\n    }\n\n    /**\n     * d is for displacement - accepts a vector\n     * @type {object} d\n     * @param {object} val a vector\n     */\n    set d(val) {\n        this._d = val;\n    }\n\n    /**\n     * get the parent of the object. all objects except the scene graph should have a parent\n     * @type {object} parent\n     */\n    get parent() {\n        return this._parent;\n    }\n    //TODO: provide links to things\n    /**\n     * set the parent of the object. all objects except the scene graph should have a parent\n     * @type {object} parent\n     * @param {object} val a composition\n     */\n    set parent(val) {\n        this._parent = val;\n    }\n\n    /**\n     * enable dragging by setting the onmousedown event callback\n     */\n    enableDragging() {\n        //TODO: should probably be using an event registry so\n        //multiple event callbacks can be registered\n        this.onmousedown = this.dragStart;\n    }\n\n    /**\n     * disable dragging by removing event callbacks\n     */\n    disableDragging() {\n        //TODO: should probably be using an event registry so\n        //multiple event callbacks can be registered\n        this.onmousedown = null;\n        this.onmousemove = null;\n        this.onmouseup = null;\n        this.onmouseout = null;\n        this.needsDraw = true;\n    }\n\n    /**\n     * when dragging starts, update events\n     * @param {object} e the event object\n     */\n    dragStart(e) {\n        //TODO: should probably be using an event registry so\n        //multiple event callbacks can be registered\n        this._mouseOffset = new Vector([e.offsetX, e.offsetY]).subtract(this.offset);\n        this.onmousedown = null;\n        this.onmousemove = this.drag;\n        this.onmouseup = this.dragEnd;\n        this.onmouseout = this.dragEnd;\n    }\n\n    /**\n     * update d as the object is moved around\n     * @param {object} e the event object\n     */\n    drag(e) {\n        this.d = new Vector([e.offsetX, e.offsetY]).subtract(this._mouseOffset);\n        this.needsDraw = true;\n    }\n\n    /**\n     * when dragging ends, update events\n     * @param {object} e the event object\n     */\n    dragEnd(e) {\n        this.onmousedown = this.dragStart;\n        this.onmousemove = null;\n        this.onmouseup = null;\n        this.onmouseout = null;\n        this.needsDraw = true;\n    }\n\n    /**\n     * draw the object to canvas, render it if necessary\n     * @param {object} context the final canvas context where this will be drawn\n     * @param {object} offset the offset on the canvas - optional, used for prerendering\n     */\n    draw(context, offset) {\n        let boundingBox = this.boundingBox;\n\n        this.needsDraw = false;\n\n        if (this.needsRender && this.render) {\n            //ditch any old rendering artifacts - they are no longer viable\n            delete this._prerenderingCanvas;\n            delete this._prerenderingContext;\n\n            //create a new canvas and context for rendering\n            this._prerenderingCanvas = document.createElement('canvas');\n            this._prerenderingContext = this._prerenderingCanvas.getContext('2d'); //text needs prerendering context defined for boundingBox measurements\n\n            //make sure the new canvas has the appropriate dimensions\n            this._prerenderingCanvas.width = boundingBox.right - boundingBox.left;\n            this._prerenderingCanvas.height = boundingBox.bottom - boundingBox.top;\n\n            this.render();\n            this.needsRender = false;\n        }\n\n        //TODO: handle debug options\n        //draw bounding boxes\n        if (this._flags.DEBUG) {\n        \tthis._prerenderingContext.beginPath();\n            this._prerenderingContext.setLineDash([5, 15]);\n        \tthis._prerenderingContext.lineWidth=2.0;\n            this._prerenderingContext.strokeStyle='#FF0000';\n        \tthis._prerenderingContext.strokeStyle='#FF0000';\n        \tthis._prerenderingContext.strokeRect(0,0,this._prerenderingCanvas.width, this._prerenderingCanvas.height);\n        \tthis._prerenderingContext.closePath();\n        }\n\n        //TODO: handle bounding box drawing\n        /*if (this.drawBoundingBox){\n        \tthis._prerenderingContext.beginPath();\n        \tthis._prerenderingContext.lineWidth=2.0;\n        \tthis._prerenderingContext.strokeStyle=this.boundingBoxColor;\n        \tthis._prerenderingContext.strokeRect(0,0,this._prerenderingCanvas.width, this._prerenderingCanvas.height);\n        \tthis._prerenderingContext.closePath();\n        }*/\n\n        //offsets are for prerendering contexts of compositions\n        let x = boundingBox.left + (offset && offset.left ? offset.left : 0);\n        let y = boundingBox.top + (offset && offset.top ? offset.top : 0);\n        Renderer.drawImage(x, y, this._prerenderingCanvas, context, this.style);\n    }\n\n    //TODO: provide more doc details around this\n    /**\n     * this method must be overridden by a subclass.\n     *\n     * the render method should be implemented by subclasses\n     * @abstract\n     */\n    render() {}\n\n    /**\n     * check whether the point specified lies *inside* this objects bounding box\n     *\n     * @param {number} x the x coordinate\n     * @param {number} y the y coordinate\n     * @return {boolean} whether the point is within the bounding box\n     */\n    pointIsInBoundingBox(x, y) {\n        let boundingBox = this.boundingBox;\n        return (\n            x > boundingBox.left &&\n            y > boundingBox.top &&\n            x < boundingBox.right &&\n            y < boundingBox.bottom\n        );\n    }\n\n    /**\n     * check whether the point is within the object.\n     * this method should be overridden by subclassess\n     *\n     * @param {number} x the x coordinate\n     * @param {number} y the y coordinate\n     * @return {boolean} whether the point is in the object, as implemented by inheriting classes\n     */\n    pointIsInObject(x, y) {\n        return this.pointIsInBoundingBox(x, y);\n    }\n\n    /**\n     * move the object on top of other objects (render last)\n     */\n    moveToFront() {\n        if (this.parent) {\n            let index = this.parent.children.indexOf(this);\n            if (index >= 0) {\n                this.parent.children.splice(index, 1);\n                this.parent.children.splice(this.parent.children.length, 0, this);\n                this.needsDraw = true;\n            }\n        }\n    }\n\n    /**\n     * move the object below the other objects (render first)\n     */\n    moveToBack() {\n        if (this.parent) {\n            let index = this.parent.children.indexOf(this);\n            if (index >= 0) {\n                this.parent.children.splice(index, 1);\n                this.parent.children.splice(0, 0, this);\n                this.needsDraw = true;\n            }\n        }\n    }\n\n\n    /**\n     * move the object forward in the stack (drawn later)\n     */\n    moveForward() {\n        if (this.parent) {\n            let index = this.parent.children.indexOf(this);\n            if (index >= 0 && index < this.parent.children.length - 1) {\n                this.parent.children.splice(index, 1);\n                this.parent.children.splice(index + 1, 0, this); //if index + 1 > siblings.length, inserts it at end\n                this.parent.UpdateChildrenLists();\n                this.needsRender = true;\n                this.needsDraw = true;\n            }\n        }\n    }\n\n    /**\n     * move the object backward in the stack (drawn sooner)\n     */\n    moveBackward() {\n        if (this.parent) {\n            let index = this.parent.children.indexOf(this);\n            if (index > 0) {\n                this.parent.children.splice(index, 1);\n                this.parent.children.splice(index - 1, 0, this);\n                this.parent.UpdateChildrenLists();\n                this.needsRender = true;\n                this.needsDraw = true;\n            }\n        }\n    }\n}\n",
@@ -1629,7 +1706,7 @@
     "lineNumber": 1
   },
   {
-    "__docId__": 95,
+    "__docId__": 102,
     "kind": "class",
     "name": "PrimitiveComponent",
     "memberof": "src/PrimitiveComponent.js",
@@ -1644,7 +1721,7 @@
     "interface": false
   },
   {
-    "__docId__": 96,
+    "__docId__": 103,
     "kind": "constructor",
     "name": "constructor",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -1669,7 +1746,7 @@
     ]
   },
   {
-    "__docId__": 97,
+    "__docId__": 104,
     "kind": "member",
     "name": "_flags",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -1681,7 +1758,7 @@
     "undocument": true
   },
   {
-    "__docId__": 98,
+    "__docId__": 105,
     "kind": "member",
     "name": "_needsDraw",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -1700,7 +1777,7 @@
     }
   },
   {
-    "__docId__": 99,
+    "__docId__": 106,
     "kind": "member",
     "name": "_needsRender",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -1719,7 +1796,7 @@
     }
   },
   {
-    "__docId__": 100,
+    "__docId__": 107,
     "kind": "member",
     "name": "_scaleWidth",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -1738,7 +1815,7 @@
     }
   },
   {
-    "__docId__": 101,
+    "__docId__": 108,
     "kind": "member",
     "name": "_scaleHeight",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -1757,7 +1834,7 @@
     }
   },
   {
-    "__docId__": 102,
+    "__docId__": 109,
     "kind": "member",
     "name": "_d",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -1776,7 +1853,7 @@
     }
   },
   {
-    "__docId__": 103,
+    "__docId__": 110,
     "kind": "member",
     "name": "style",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -1795,7 +1872,7 @@
     }
   },
   {
-    "__docId__": 104,
+    "__docId__": 111,
     "kind": "member",
     "name": "draggable",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -1814,7 +1891,7 @@
     }
   },
   {
-    "__docId__": 105,
+    "__docId__": 112,
     "kind": "member",
     "name": "_prerenderingCanvas",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -1833,7 +1910,7 @@
     }
   },
   {
-    "__docId__": 106,
+    "__docId__": 113,
     "kind": "member",
     "name": "_prerenderingContext",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -1852,7 +1929,7 @@
     }
   },
   {
-    "__docId__": 107,
+    "__docId__": 114,
     "kind": "member",
     "name": "_parent",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -1871,7 +1948,7 @@
     }
   },
   {
-    "__docId__": 108,
+    "__docId__": 115,
     "kind": "member",
     "name": "onmousedown",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -1890,7 +1967,7 @@
     }
   },
   {
-    "__docId__": 109,
+    "__docId__": 116,
     "kind": "member",
     "name": "onmouseup",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -1909,7 +1986,7 @@
     }
   },
   {
-    "__docId__": 110,
+    "__docId__": 117,
     "kind": "member",
     "name": "onmousemove",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -1928,7 +2005,7 @@
     }
   },
   {
-    "__docId__": 111,
+    "__docId__": 118,
     "kind": "member",
     "name": "onmouseout",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -1947,7 +2024,7 @@
     }
   },
   {
-    "__docId__": 112,
+    "__docId__": 119,
     "kind": "member",
     "name": "onclick",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -1966,7 +2043,7 @@
     }
   },
   {
-    "__docId__": 113,
+    "__docId__": 120,
     "kind": "get",
     "name": "offset",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -1987,7 +2064,7 @@
     }
   },
   {
-    "__docId__": 114,
+    "__docId__": 121,
     "kind": "get",
     "name": "needsDraw",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -2008,7 +2085,7 @@
     }
   },
   {
-    "__docId__": 115,
+    "__docId__": 122,
     "kind": "set",
     "name": "needsDraw",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -2029,7 +2106,7 @@
     }
   },
   {
-    "__docId__": 117,
+    "__docId__": 124,
     "kind": "get",
     "name": "needsRender",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -2050,7 +2127,7 @@
     }
   },
   {
-    "__docId__": 118,
+    "__docId__": 125,
     "kind": "set",
     "name": "needsRender",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -2071,7 +2148,7 @@
     }
   },
   {
-    "__docId__": 120,
+    "__docId__": 127,
     "kind": "get",
     "name": "scaleWidth",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -2092,7 +2169,7 @@
     }
   },
   {
-    "__docId__": 121,
+    "__docId__": 128,
     "kind": "set",
     "name": "scaleWidth",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -2113,7 +2190,7 @@
     }
   },
   {
-    "__docId__": 125,
+    "__docId__": 132,
     "kind": "get",
     "name": "scaleHeight",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -2134,7 +2211,7 @@
     }
   },
   {
-    "__docId__": 126,
+    "__docId__": 133,
     "kind": "set",
     "name": "scaleHeight",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -2167,7 +2244,7 @@
     }
   },
   {
-    "__docId__": 130,
+    "__docId__": 137,
     "kind": "get",
     "name": "scale",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -2188,7 +2265,7 @@
     }
   },
   {
-    "__docId__": 131,
+    "__docId__": 138,
     "kind": "set",
     "name": "scale",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -2209,7 +2286,7 @@
     }
   },
   {
-    "__docId__": 134,
+    "__docId__": 141,
     "kind": "get",
     "name": "compoundScale",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -2230,7 +2307,7 @@
     }
   },
   {
-    "__docId__": 135,
+    "__docId__": 142,
     "kind": "get",
     "name": "d",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -2251,7 +2328,7 @@
     }
   },
   {
-    "__docId__": 136,
+    "__docId__": 143,
     "kind": "set",
     "name": "d",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -2284,7 +2361,7 @@
     }
   },
   {
-    "__docId__": 138,
+    "__docId__": 145,
     "kind": "get",
     "name": "parent",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -2305,7 +2382,7 @@
     }
   },
   {
-    "__docId__": 139,
+    "__docId__": 146,
     "kind": "set",
     "name": "parent",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -2338,7 +2415,7 @@
     }
   },
   {
-    "__docId__": 141,
+    "__docId__": 148,
     "kind": "method",
     "name": "enableDragging",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -2351,7 +2428,7 @@
     "lineNumber": 320
   },
   {
-    "__docId__": 143,
+    "__docId__": 150,
     "kind": "method",
     "name": "disableDragging",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -2364,7 +2441,7 @@
     "lineNumber": 329
   },
   {
-    "__docId__": 149,
+    "__docId__": 156,
     "kind": "method",
     "name": "dragStart",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -2389,7 +2466,7 @@
     ]
   },
   {
-    "__docId__": 150,
+    "__docId__": 157,
     "kind": "member",
     "name": "_mouseOffset",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -2401,7 +2478,7 @@
     "undocument": true
   },
   {
-    "__docId__": 155,
+    "__docId__": 162,
     "kind": "method",
     "name": "drag",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -2426,7 +2503,7 @@
     ]
   },
   {
-    "__docId__": 158,
+    "__docId__": 165,
     "kind": "method",
     "name": "dragEnd",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -2451,7 +2528,7 @@
     ]
   },
   {
-    "__docId__": 164,
+    "__docId__": 171,
     "kind": "method",
     "name": "draw",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -2486,7 +2563,7 @@
     ]
   },
   {
-    "__docId__": 169,
+    "__docId__": 176,
     "kind": "method",
     "name": "render",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -2500,7 +2577,7 @@
     "abstract": true
   },
   {
-    "__docId__": 170,
+    "__docId__": 177,
     "kind": "method",
     "name": "pointIsInBoundingBox",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -2543,7 +2620,7 @@
     }
   },
   {
-    "__docId__": 171,
+    "__docId__": 178,
     "kind": "method",
     "name": "pointIsInObject",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -2586,7 +2663,7 @@
     }
   },
   {
-    "__docId__": 172,
+    "__docId__": 179,
     "kind": "method",
     "name": "moveToFront",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -2599,7 +2676,7 @@
     "lineNumber": 469
   },
   {
-    "__docId__": 174,
+    "__docId__": 181,
     "kind": "method",
     "name": "moveToBack",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -2612,7 +2689,7 @@
     "lineNumber": 483
   },
   {
-    "__docId__": 176,
+    "__docId__": 183,
     "kind": "method",
     "name": "moveForward",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -2625,7 +2702,7 @@
     "lineNumber": 498
   },
   {
-    "__docId__": 179,
+    "__docId__": 186,
     "kind": "method",
     "name": "moveBackward",
     "memberof": "src/PrimitiveComponent.js~PrimitiveComponent",
@@ -2638,7 +2715,7 @@
     "lineNumber": 514
   },
   {
-    "__docId__": 182,
+    "__docId__": 189,
     "kind": "file",
     "name": "src/Rectangle.js",
     "content": "import { Renderer } from './Renderer';\nimport { PrimitiveComponent } from './PrimitiveComponent';\n\n/**\n * A rectangle\n */\nexport class Rectangle extends PrimitiveComponent {\n    /**\n     * @param {object} options the options for the object\n     */\n    constructor(options) {\n        super(options);\n        /**\n         * the width of the rectangle\n         * @type {number} width\n         */\n        this.width = options.width || 0;\n\n        /**\n         * the height of the rectangle\n         * @type {number} height\n         */\n        this.height = options.height || 0;\n    }\n\n    /**\n     * get the bounding box of the rectangle\n     * @type {{top:number, left:number, bottom:number, right:number}} boundingBox\n     */\n    get boundingBox() {\n        let offset = this.offset;\n        let compoundScale = this.compoundScale;\n        return {\n            top: offset.y - (this.style.lineWidth),\n            left: offset.x - (this.style.lineWidth),\n            bottom: offset.y + (compoundScale.scaleHeight * this.height) + (this.style.lineWidth),\n            right: offset.x + (compoundScale.scaleWidth * this.width) + (this.style.lineWidth)\n        };\n    }\n\n    /**\n     * render the rectangle\n     * @override\n     */\n    render() {\n        let compoundScale = this.compoundScale;\n        Renderer.drawRectangle((this.style.lineWidth),\n            (this.style.lineWidth),\n            this.width * compoundScale.scaleWidth,\n            this.height * compoundScale.scaleHeight,\n            this._prerenderingContext,\n            this.style);\n    }\n}\n",
@@ -2649,7 +2726,7 @@
     "lineNumber": 1
   },
   {
-    "__docId__": 183,
+    "__docId__": 190,
     "kind": "class",
     "name": "Rectangle",
     "memberof": "src/Rectangle.js",
@@ -2667,7 +2744,7 @@
     ]
   },
   {
-    "__docId__": 184,
+    "__docId__": 191,
     "kind": "constructor",
     "name": "constructor",
     "memberof": "src/Rectangle.js~Rectangle",
@@ -2692,7 +2769,7 @@
     ]
   },
   {
-    "__docId__": 185,
+    "__docId__": 192,
     "kind": "member",
     "name": "width",
     "memberof": "src/Rectangle.js~Rectangle",
@@ -2711,7 +2788,7 @@
     }
   },
   {
-    "__docId__": 186,
+    "__docId__": 193,
     "kind": "member",
     "name": "height",
     "memberof": "src/Rectangle.js~Rectangle",
@@ -2730,7 +2807,7 @@
     }
   },
   {
-    "__docId__": 187,
+    "__docId__": 194,
     "kind": "get",
     "name": "boundingBox",
     "memberof": "src/Rectangle.js~Rectangle",
@@ -2751,7 +2828,7 @@
     }
   },
   {
-    "__docId__": 188,
+    "__docId__": 195,
     "kind": "method",
     "name": "render",
     "memberof": "src/Rectangle.js~Rectangle",
@@ -2765,7 +2842,7 @@
     "override": true
   },
   {
-    "__docId__": 189,
+    "__docId__": 196,
     "kind": "file",
     "name": "src/Renderer.js",
     "content": "/**\n * Default style values for the renderer\n */\nexport const DEFAULTS = {\n    //direction: 'inherit',\n    fillStyle: 'black',\n    //filter: 'none',\n    strokeStyle: 'black',\n    lineCap: 'round',\n    lineWidth: 1.0,\n    lineJoin: 'round',\n    miterLimit: 10,\n    font: '10px sans-serif',\n    textAlign: 'start',\n    textBaseline: 'alphabetic'\n}\n\n//TODO: masking? it looks like this is done in the Composition, but that may be bugged out.\n\n/**\n * A collection of high level static methods for drawing directly to canvas\n *\n */\nexport class Renderer {\n    /**\n     * Erase everything drawn on the supplied rectangle for the given context.\n     * @param {number} x the x coordinate of the top left corner\n     * @param {number} y the y coordinate of the top left corner\n     * @param {number} width the x coordinate\n     * @param {number} height the y coordinate\n     * @param {object} context the 2D Context object for the canvas we're drawing onto\n     */\n    static clearRect(x, y, width, height, context) {\n        context.clearRect(x, y, width, height);\n    }\n\n    /**\n     * Draw a path, unclosed, with the given vertices\n     * @param {object} vertices the path of vertices to be drawn\n     * @param {object} context the 2D Context object for the canvas we're drawing onto\n     * @param {object} style the style options to be used when drawing the path\n     */\n    static drawPath(vertices, context, style) {\n        Object.assign(context, style);\n        context.beginPath();\n        context.moveTo(vertices[0].x, vertices[0].y);\n        for (let v = 1; v < vertices.length; v++) {\n            context.lineTo(vertices[v].x, vertices[v].y);\n        }\n        context.stroke();\n    }\n\n    /**\n     * Draw a closed polygon with the given vertices\n     * @param {object} vertices the path of vertices to be drawn\n     * @param {object} context the 2D Context object for the canvas we're drawing onto\n     * @param {object} style the style options to be used when drawing the polygon\n     */\n    static drawPolygon(vertices, context, style) {\n        Object.assign(context, style);\n        context.beginPath();\n        context.moveTo(vertices[0].x, vertices[0].y);\n        for (let v = 1; v < vertices.length; v++) {\n            context.lineTo(vertices[v].x, vertices[v].y);\n        }\n        context.closePath();\n        context.stroke();\n\n    }\n\n    static drawBezier(start, end, c1, c2, context, style) {\n        Object.assign(context, style);\n        //must `beginPath()` before `moveTo` to get correct starting position\n        context.beginPath();\n        context.moveTo(start.x, start.y);\n        context.bezierCurveTo(c1.x, c1.y, c2.x, c2.y, end.x, end.y);\n        context.stroke();\n        context.closePath();\n    }\n\n    /**\n     * Draw a rectangle\n     * @param {number} x the x coordinate of the top let corner\n     * @param {number} y the y coordinate of the top left corner\n     * @param {number} width the x coordinate\n     * @param {number} height the y coordinate\n     * @param {object} context the 2D Context object for the canvas we're drawing onto\n     * @param {object} style the style options to be used when drawing the rectangle\n     */\n    static drawRectangle(x, y, width, height, context, style) {\n        Object.assign(context, style);\n        context.rect(x, y, width, height);\n        context.fill();\n        context.stroke();\n    }\n\n    //TODO: provide support for rotation and startAngle parameters\n    /**\n     * Draw an ellipse\n     * @param {number} x the x coordinate of the center of the ellipse\n     * @param {number} y the y coordinate of the center of the ellipse\n     * @param {number} radius the larger radius of the ellipse\n     * @param {number} minorRadius the smaller radius of the ellipse\n     * @param {object} context the 2D Context object for the canvas we're drawing onto\n     * @param {object} style the style options to be used when drawing the ellipse\n     */\n    static drawEllipse(x, y, radius, minorRadius, context, style) {\n        Object.assign(context, style);\n        //TODO: 2017-05-22 this is currently not supported by IE\n        context.ellipse(x, y, radius, minorRadius, 0, 0, 2 * Math.PI);\n        context.fill();\n        context.stroke();\n    }\n\n    /**\n     * Draw a circle\n     * @param {number} x the x coordinate of the center of the circle\n     * @param {number} y the y coordinate of the center of the circle\n     * @param {number} radius of the circle\n     * @param {object} context the 2D Context object for the canvas we're drawing onto\n     * @param {object} style the style options to be used when drawing the circle\n     */\n    static drawCircle(x, y, radius, context, style) {\n        Object.assign(context, style);\n        context.arc(x, y, radius, 0, 2 * Math.PI);\n        //TODO: 2015-03-12 this is currently only supported by chrome & opera\n        //context.ellipse(x, y, radius, radius, 0, 0, 2 * Math.PI);\n        context.fill();\n        context.stroke();\n    }\n\n    /**\n     * Draw text\n     * @param {number} x the x coordinate of the top let corner\n     * @param {number} y the y coordinate of the top left corner\n     * @param {string} text the text to be drawn\n     * @param {object} context the 2D Context object for the canvas we're drawing onto\n     * @param {object} style the style options to be used when drawing the text\n     */\n    static drawText(x, y, text, context, style) {\n        Object.assign(context, style);\n        context.fillText(text, x, y);\n        //TODO: implement stroke text if specified\n    }\n\n    /**\n     * Draw an image\n     * @param {number} x the x coordinate of the top let corner\n     * @param {number} y the y coordinate of the top left corner\n     * @param {object} image the image to be drawn to the canvas\n     * @param {object} context the 2D Context object for the canvas we're drawing onto\n     * @param {object} style the style options to be used when drawing the image\n     */\n    static drawImage(x, y, image, context, style) {\n        Object.assign(context, style);\n        //no reason to draw 0-sized images\n        if (image.width > 0 && image.height > 0) {\n            context.drawImage(image, x, y, image.width, image.height);\n        }\n    }\n\n    //TODO: this should probably be exposed elsewhere/differently\n    /**\n     * Measure the text\n     * @param {string} text the text to be measured\n     * @param {object} context the 2D Context object for a canvas - required for measurement to occur, but may be arbitrary\n     * @param {object} style the style options to be used when measuring the text\n     * @return {object} [TextMetrics](https://developer.mozilla.org/en-US/docs/Web/API/TextMetrics) object containing info like Width\n     */\n    static measureText(text, context, style) {\n        Object.assign(context, style);\n        return context.measureText(text);\n    }\n}\n",
@@ -2776,7 +2853,7 @@
     "lineNumber": 1
   },
   {
-    "__docId__": 190,
+    "__docId__": 197,
     "kind": "variable",
     "name": "DEFAULTS",
     "memberof": "src/Renderer.js",
@@ -2790,7 +2867,7 @@
     "lineNumber": 4
   },
   {
-    "__docId__": 191,
+    "__docId__": 198,
     "kind": "class",
     "name": "Renderer",
     "memberof": "src/Renderer.js",
@@ -2806,7 +2883,7 @@
     "interface": false
   },
   {
-    "__docId__": 192,
+    "__docId__": 199,
     "kind": "method",
     "name": "clearRect",
     "memberof": "src/Renderer.js~Renderer",
@@ -2871,7 +2948,7 @@
     ]
   },
   {
-    "__docId__": 193,
+    "__docId__": 200,
     "kind": "method",
     "name": "drawPath",
     "memberof": "src/Renderer.js~Renderer",
@@ -2916,7 +2993,7 @@
     ]
   },
   {
-    "__docId__": 194,
+    "__docId__": 201,
     "kind": "method",
     "name": "drawPolygon",
     "memberof": "src/Renderer.js~Renderer",
@@ -2961,7 +3038,7 @@
     ]
   },
   {
-    "__docId__": 195,
+    "__docId__": 202,
     "kind": "method",
     "name": "drawBezier",
     "memberof": "src/Renderer.js~Renderer",
@@ -2975,7 +3052,7 @@
     "undocument": true
   },
   {
-    "__docId__": 196,
+    "__docId__": 203,
     "kind": "method",
     "name": "drawRectangle",
     "memberof": "src/Renderer.js~Renderer",
@@ -3050,7 +3127,7 @@
     ]
   },
   {
-    "__docId__": 197,
+    "__docId__": 204,
     "kind": "method",
     "name": "drawEllipse",
     "memberof": "src/Renderer.js~Renderer",
@@ -3125,7 +3202,7 @@
     ]
   },
   {
-    "__docId__": 198,
+    "__docId__": 205,
     "kind": "method",
     "name": "drawCircle",
     "memberof": "src/Renderer.js~Renderer",
@@ -3190,7 +3267,7 @@
     ]
   },
   {
-    "__docId__": 199,
+    "__docId__": 206,
     "kind": "method",
     "name": "drawText",
     "memberof": "src/Renderer.js~Renderer",
@@ -3255,7 +3332,7 @@
     ]
   },
   {
-    "__docId__": 200,
+    "__docId__": 207,
     "kind": "method",
     "name": "drawImage",
     "memberof": "src/Renderer.js~Renderer",
@@ -3320,7 +3397,7 @@
     ]
   },
   {
-    "__docId__": 201,
+    "__docId__": 208,
     "kind": "method",
     "name": "measureText",
     "memberof": "src/Renderer.js~Renderer",
@@ -3373,7 +3450,7 @@
     }
   },
   {
-    "__docId__": 202,
+    "__docId__": 209,
     "kind": "file",
     "name": "src/Text.js",
     "content": "import { Renderer } from './Renderer';\nimport { PrimitiveComponent } from './PrimitiveComponent';\n\nconst ALL_CHARS = `1234567890QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm.,\\`~;:'\"!?@#$%^&*()_+={}[]|\\<>/`;\n\nconst DEFAULTS = {\n    fontSize: '16px',\n    fontFamily: 'sans-serif',\n    fontStyle: 'normal',\n    fontVariant: 'normal',\n    fontWeight: 'normal',\n    lineHeight: 'normal',\n    textAlign: 'start',\n    textBaseline: 'alphabetic'\n};\n\nfunction _getTextHeight(font) {\n    //this is a version of:\n    //http://stackoverflow.com/questions/1134586/how-can-you-find-the-height-of-text-on-an-html-canvas\n    //it's a pretty awful hack.\n    //TODO: figure out how cross-browser this is\n\n    //create an element with every character in it with this font\n    let fontHolder = document.createElement('span');\n    fontHolder.innerText = ALL_CHARS;\n    fontHolder.style.font = font;\n\n    //create an inline-block to place after the element\n    let baselineRuler = document.createElement('div');\n    baselineRuler.style.display = 'inline-block';\n    baselineRuler.style.width = '1px';\n    baselineRuler.style.height = '0';\n    baselineRuler.style.verticalAlign = 'baseline';\n\n    //place them in a wrapper and add it to the body\n    let wrapper = document.createElement('div');\n    wrapper.appendChild(fontHolder);\n    wrapper.appendChild(baselineRuler);\n    wrapper.style.whiteSpace = 'nowrap';\n    document.body.appendChild(wrapper);\n\n    //get their bounding rectangles and...\n    let fontRect = fontHolder.getBoundingClientRect();\n    let baselineRect = baselineRuler.getBoundingClientRect();\n\n    //calculate their offset from top\n    let fontTop = fontRect.top + document.body.scrollTop;\n    let fontBottom = fontTop + fontRect.height;\n\n    let baseline = baselineRect.top + document.body.scrollTop;\n\n    document.body.removeChild(wrapper);\n\n    //ascent equals the baseline location minus text top location\n    let ascentFromBaseline = baseline - fontTop;\n\n    //decent equals the text bottom location minuse the baseline location\n    let descentFromBaseline = fontBottom - baseline;\n\n    return {\n        height: fontRect.height,\n        ascent: ascentFromBaseline,\n        descent: descentFromBaseline\n    };\n}\n\n/**\n * A text object\n */\nexport class Text extends PrimitiveComponent {\n    /**\n     * @param {object} options the options for the text object\n     */\n    constructor(options) {\n        super(options);\n\n        /**\n         * @type {string} text the text to be rendered\n         */\n        this.text = options.text;\n\n        /**\n         * @type {string} fontSize the font size at which to render the text\n         */\n        this.fontSize = options.fontSize || DEFAULTS.fontSize;\n\n        /**\n         * @type {string} fontFamily the font family in which to render the text\n         */\n        this.fontFamily = options.fontFamily || DEFAULTS.fontFamily;\n\n        /**\n         * @type {string} fontStyle the font style with which to render the text\n         */\n        this.fontStyle = options.fontStyle || DEFAULTS.fontStyle;\n\n        /**\n         * @type {string} fontVariant the font variant in which to render the text\n         */\n        this.fontVariant = options.fontVariant || DEFAULTS.fontVariant;\n\n        /**\n         * @type {string} fontWeight the font weight at which to render the text\n         */\n        this.fontWeight = options.fontWeight || DEFAULTS.fontWeight;\n\n        /**\n         * @type {string} lineHeight the line height of the text\n         */\n        this.lineHeight = options.lineHeight || DEFAULTS.lineHeight;\n\n        /**\n         * @type {string} textAlign the alignment with which to render the text\n         */\n        this.textAlign = options.textAlign || DEFAULTS.textAlign;\n\n        /**\n         * @type {string} textBaseline the baseline for the text\n         */\n        this.textBaseline = options.textBaseline || DEFAULTS.textBaseline;\n\n        this._textMetricsNeedUpdate = true;\n    }\n\n    /**\n     * compute the height data and add it to the textMetrics object from the canvas context\n     * @type {object} textMetrics\n     */\n    get textMetrics() {\n        if (this._textMetricsNeedUpdate || this._textMetrics === null) {\n            this._updateStyle();\n            this._textMetrics = Renderer.measureText(this.text, this._prerenderingContext, this.style);\n            Object.assign(this._textMetrics, _getTextHeight(this.style.font));\n            this._textMetricsNeedUpdate = false;\n        }\n        return this._textMetrics;\n    }\n\n    /**\n     * get the bounding box of the text object\n     * @type {top: number, left: number, bottom: number, right: number}\n     */\n    get boundingBox() {\n        return {\n            top: this.offset.y - this.textMetrics.ascent,\n            left: this.offset.x,\n            bottom: this.offset.y + this.textMetrics.descent,\n            right: this.offset.x + this.textMetrics.width\n        };\n    }\n\n    _updateStyle(options) {\n        Object.assign(this.style, options, {\n            font: `${this.fontStyle} ${this.fontVariant} ${this.fontWeight} ${this.fontSize}/${this.lineHeight} ${this.fontFamily}`,\n            textAlign: this.textAlign,\n            textBaseline: this.textBaseline\n        });\n    }\n\n\n    /**\n     * override the render function for text objects\n     * @override\n     */\n    render() {\n        this._textMetricsNeedUpdate = true;\n        this._updateStyle();\n        Renderer.drawText(0, this.textMetrics.ascent, this.text, this._prerenderingContext, this.style);\n\n        /*if (this.flags.DEBUG) {\n            Renderer.drawPath(this._prerenderingContext, [{\n                x: 0,\n                y: this.textMetrics.ascent\n            }, {\n                x: this.textMetrics.width,\n                y: this.textMetrics.ascent\n            }], {\n                strokeStyle: 'Blue'\n            });\n            Renderer.drawCircle(this._prerenderingContext, 0, this.textMetrics.ascent, 3, {\n                strokeStyle: 'Blue',\n                fillStyle: 'Blue'\n            });\n        }*/\n    }\n}\n",
@@ -3384,7 +3461,7 @@
     "lineNumber": 1
   },
   {
-    "__docId__": 203,
+    "__docId__": 210,
     "kind": "variable",
     "name": "ALL_CHARS",
     "memberof": "src/Text.js",
@@ -3399,7 +3476,7 @@
     "undocument": true
   },
   {
-    "__docId__": 204,
+    "__docId__": 211,
     "kind": "variable",
     "name": "DEFAULTS",
     "memberof": "src/Text.js",
@@ -3414,7 +3491,7 @@
     "undocument": true
   },
   {
-    "__docId__": 205,
+    "__docId__": 212,
     "kind": "function",
     "name": "_getTextHeight",
     "memberof": "src/Text.js",
@@ -3431,7 +3508,7 @@
     "undocument": true
   },
   {
-    "__docId__": 206,
+    "__docId__": 213,
     "kind": "class",
     "name": "Text",
     "memberof": "src/Text.js",
@@ -3449,7 +3526,7 @@
     ]
   },
   {
-    "__docId__": 207,
+    "__docId__": 214,
     "kind": "constructor",
     "name": "constructor",
     "memberof": "src/Text.js~Text",
@@ -3474,7 +3551,7 @@
     ]
   },
   {
-    "__docId__": 208,
+    "__docId__": 215,
     "kind": "member",
     "name": "text",
     "memberof": "src/Text.js~Text",
@@ -3493,7 +3570,7 @@
     }
   },
   {
-    "__docId__": 209,
+    "__docId__": 216,
     "kind": "member",
     "name": "fontSize",
     "memberof": "src/Text.js~Text",
@@ -3512,7 +3589,7 @@
     }
   },
   {
-    "__docId__": 210,
+    "__docId__": 217,
     "kind": "member",
     "name": "fontFamily",
     "memberof": "src/Text.js~Text",
@@ -3531,7 +3608,7 @@
     }
   },
   {
-    "__docId__": 211,
+    "__docId__": 218,
     "kind": "member",
     "name": "fontStyle",
     "memberof": "src/Text.js~Text",
@@ -3550,7 +3627,7 @@
     }
   },
   {
-    "__docId__": 212,
+    "__docId__": 219,
     "kind": "member",
     "name": "fontVariant",
     "memberof": "src/Text.js~Text",
@@ -3569,7 +3646,7 @@
     }
   },
   {
-    "__docId__": 213,
+    "__docId__": 220,
     "kind": "member",
     "name": "fontWeight",
     "memberof": "src/Text.js~Text",
@@ -3588,7 +3665,7 @@
     }
   },
   {
-    "__docId__": 214,
+    "__docId__": 221,
     "kind": "member",
     "name": "lineHeight",
     "memberof": "src/Text.js~Text",
@@ -3607,7 +3684,7 @@
     }
   },
   {
-    "__docId__": 215,
+    "__docId__": 222,
     "kind": "member",
     "name": "textAlign",
     "memberof": "src/Text.js~Text",
@@ -3626,7 +3703,7 @@
     }
   },
   {
-    "__docId__": 216,
+    "__docId__": 223,
     "kind": "member",
     "name": "textBaseline",
     "memberof": "src/Text.js~Text",
@@ -3645,7 +3722,7 @@
     }
   },
   {
-    "__docId__": 217,
+    "__docId__": 224,
     "kind": "member",
     "name": "_textMetricsNeedUpdate",
     "memberof": "src/Text.js~Text",
@@ -3657,7 +3734,7 @@
     "undocument": true
   },
   {
-    "__docId__": 218,
+    "__docId__": 225,
     "kind": "get",
     "name": "textMetrics",
     "memberof": "src/Text.js~Text",
@@ -3678,7 +3755,7 @@
     }
   },
   {
-    "__docId__": 219,
+    "__docId__": 226,
     "kind": "member",
     "name": "_textMetrics",
     "memberof": "src/Text.js~Text",
@@ -3690,7 +3767,7 @@
     "undocument": true
   },
   {
-    "__docId__": 221,
+    "__docId__": 228,
     "kind": "get",
     "name": "boundingBox",
     "memberof": "src/Text.js~Text",
@@ -3711,7 +3788,7 @@
     }
   },
   {
-    "__docId__": 222,
+    "__docId__": 229,
     "kind": "method",
     "name": "_updateStyle",
     "memberof": "src/Text.js~Text",
@@ -3725,7 +3802,7 @@
     "undocument": true
   },
   {
-    "__docId__": 223,
+    "__docId__": 230,
     "kind": "method",
     "name": "render",
     "memberof": "src/Text.js~Text",
@@ -3739,7 +3816,7 @@
     "override": true
   },
   {
-    "__docId__": 225,
+    "__docId__": 232,
     "kind": "file",
     "name": "src/VectorPath.js",
     "content": "import { Renderer } from './Renderer';\nimport { PrimitiveComponent } from './PrimitiveComponent';\nimport { Vector } from 'vectorious';\nimport { Line } from './Line';\n\n//would name the file 'path', but damn near everything\n//relies on the filesystem 'path' module\n\n/**\n * An ordered set of vectors defining a path\n */\nexport class VectorPath extends PrimitiveComponent {\n    /**\n     * see PrimitiveComponent for more options\n     * @param {Object} options the options for the object\n     * @param {Object[]} options.vertices the vertices\n     * @param {number} options.vertices[].x the y coordinate for a vertex\n     * @param {number} options.vertices[].y the y coordinate for a vertex\n     */\n    constructor(options) {\n        super(options);\n\n        options.vertices = options.vertices || [];\n\n        //this.unscaledLineWidth = this.style.lineWidth;\n\n        /**\n         * the list of vertices as vectorious Vectors\n         * @type {Vector[]} vertices\n         */\n        this.vertices = options.vertices.map(v => new Vector([v.x, v.y]));\n\n        let yCoordinates = this.vertices.map(v => v.y);\n        let xCoordinates = this.vertices.map(v => v.x);\n\n        //uses `apply` so we can supply the list as a list of arguments\n        this._left = Math.min.apply(null, xCoordinates);\n        this._top = Math.min.apply(null, yCoordinates);\n        this._right = Math.max.apply(null, xCoordinates);\n        this._bottom = Math.max.apply(null, yCoordinates);\n\n        super.d = new Vector([this._left, this._top]);\n\n        let normalizationVector = this.d;\n\n        this._normalizedVertices = this.vertices.map(v => v.subtract(normalizationVector));\n\n        this._normalizedBoundingBox = null;\n    }\n\n    /**\n     * get the bounding box for the vertices\n     * @type {{top:number, left: number, bottom:number, right:number}} boundingBox\n     */\n    get boundingBox() {\n        this._normalizedBoundingBox = {\n            top: 0,\n            left: 0,\n            right: this._right - this._left,\n            bottom: this._bottom - this._top\n        };\n\n        return {\n            top: (this._normalizedBoundingBox.top * this.compoundScale.scaleHeight) + this.offset.y - this.style.lineWidth,\n            left: (this._normalizedBoundingBox.left * this.compoundScale.scaleWidth) + this.offset.x - this.style.lineWidth,\n            bottom: (this._normalizedBoundingBox.bottom * this.compoundScale.scaleHeight) + this.offset.y + this.style.lineWidth,\n            right: (this._normalizedBoundingBox.right * this.compoundScale.scaleWidth) + this.offset.x + this.style.lineWidth\n        };\n    }\n\n\n    /**\n     * determine whether the point is in the object\n     * even/odd line intersection test\n     * @param {number} x the x coordinate\n     * @param {number} y the y coordinate\n     * @return {boolean} whether or not the point is in the object\n     */\n    pointIsInObject(x, y) {\n        let inside = false;\n        if (super.pointIsInObject(x, y)) {\n            //create a line that travels from this point in any direction\n            //if it intersects the polygon an odd number of times, it is inside\n\n            //a line can be described as a vertex and a direction\n            let l = new Line(new Vector([x, y]), new Vector([1, 0]));\n\n            let compoundScale = this.compoundScale;\n            let offset = this.offset;\n\n            for (let i = 0; i < this._normalizedVertices.length; i++) {\n                let j = (i + 1) >= this._normalizedVertices.length ? 0 : i + 1;\n\n                let v = scaleVectorXY(this._normalizedVertices[i], compoundScale.scaleWidth, compoundScale.scaleHeight)\n                    .add(offset);\n\n                let w = scaleVectorXY(this._normalizedVertices[j], compoundScale.scaleWidth, compoundScale.scaleHeight)\n                    .add(offset);\n\n                let edgeDirection = Vector.subtract(w, v).normalize();\n                let edge = new Line(v, edgeDirection);\n                let intersection = edge.intersectionWith(l);\n\n                //if the lines are parallel/colocated, no need to count;\n                if (intersection === null) {\n                    continue;\n                }\n\n                //TODO: should replace 0s with epsilons, where epsilon is\n                //the threshhold for considering two things as touching/intersecting\n                let intersectToTheRight = intersection.x - x >= 0;\n\n                //if the intersection is not to the right, no need to count\n                if (!intersectToTheRight) {\n                    continue;\n                }\n\n                let negativeX = (edgeDirection.x < 0);\n                let negativeY = (edgeDirection.y < 0);\n\n                //technically speaking, bottom and top should be reversed,\n                //since y=0 is the top left corner of the screen - it's\n                //just easier to think about it mathematically this way\n                let leftVertex = negativeX ? w : v;\n                let rightVertex = negativeX ? v : w;\n                let topVertex = negativeY ? w : v;\n                let bottomVertex = negativeY ? v : w;\n\n                let intersectWithinSegment =\n                    (intersection.x - leftVertex.x >= 0) &&\n                    (rightVertex.x - intersection.x >= 0) &&\n                    (intersection.y - topVertex.y >= 0) &&\n                    (bottomVertex.y - intersection.y >= 0);\n\n                if (intersectWithinSegment) {\n                    inside = !inside;\n                }\n            }\n        }\n        return inside;\n    }\n\n    /**\n     * override the render function for drawing vector paths specifically\n     * @override\n     */\n    render() {\n        let boundingBox = this.boundingBox;\n        let offset = this.offset;\n        let compoundScale = this.compoundScale;\n        //normalize the vertices (left- and top-most x/y-values should be 0 and 0)\n        let pathToDraw = this._normalizedVertices.map(vertex =>\n            scaleVectorXY(vertex, compoundScale.scaleWidth, compoundScale.scaleHeight)\n            .subtract(new Vector([boundingBox.left, boundingBox.top]))\n            .add(offset));\n        Renderer.drawPath(pathToDraw, this._prerenderingContext, this.style);\n    };\n}\n\nfunction scaleVectorXY(vector, scaleX, scaleY) {\n    return new Vector([vector.x * scaleX, vector.y * scaleY]);\n}\n",
@@ -3750,7 +3827,7 @@
     "lineNumber": 1
   },
   {
-    "__docId__": 226,
+    "__docId__": 233,
     "kind": "class",
     "name": "VectorPath",
     "memberof": "src/VectorPath.js",
@@ -3768,7 +3845,7 @@
     ]
   },
   {
-    "__docId__": 227,
+    "__docId__": 234,
     "kind": "constructor",
     "name": "constructor",
     "memberof": "src/VectorPath.js~VectorPath",
@@ -3823,7 +3900,7 @@
     ]
   },
   {
-    "__docId__": 228,
+    "__docId__": 235,
     "kind": "member",
     "name": "vertices",
     "memberof": "src/VectorPath.js~VectorPath",
@@ -3842,7 +3919,7 @@
     }
   },
   {
-    "__docId__": 229,
+    "__docId__": 236,
     "kind": "member",
     "name": "_left",
     "memberof": "src/VectorPath.js~VectorPath",
@@ -3854,7 +3931,7 @@
     "undocument": true
   },
   {
-    "__docId__": 230,
+    "__docId__": 237,
     "kind": "member",
     "name": "_top",
     "memberof": "src/VectorPath.js~VectorPath",
@@ -3866,7 +3943,7 @@
     "undocument": true
   },
   {
-    "__docId__": 231,
+    "__docId__": 238,
     "kind": "member",
     "name": "_right",
     "memberof": "src/VectorPath.js~VectorPath",
@@ -3878,7 +3955,7 @@
     "undocument": true
   },
   {
-    "__docId__": 232,
+    "__docId__": 239,
     "kind": "member",
     "name": "_bottom",
     "memberof": "src/VectorPath.js~VectorPath",
@@ -3890,7 +3967,7 @@
     "undocument": true
   },
   {
-    "__docId__": 233,
+    "__docId__": 240,
     "kind": "member",
     "name": "_normalizedVertices",
     "memberof": "src/VectorPath.js~VectorPath",
@@ -3902,7 +3979,7 @@
     "undocument": true
   },
   {
-    "__docId__": 234,
+    "__docId__": 241,
     "kind": "member",
     "name": "_normalizedBoundingBox",
     "memberof": "src/VectorPath.js~VectorPath",
@@ -3914,7 +3991,7 @@
     "undocument": true
   },
   {
-    "__docId__": 235,
+    "__docId__": 242,
     "kind": "get",
     "name": "boundingBox",
     "memberof": "src/VectorPath.js~VectorPath",
@@ -3935,7 +4012,7 @@
     }
   },
   {
-    "__docId__": 237,
+    "__docId__": 244,
     "kind": "method",
     "name": "pointIsInObject",
     "memberof": "src/VectorPath.js~VectorPath",
@@ -3978,7 +4055,7 @@
     }
   },
   {
-    "__docId__": 238,
+    "__docId__": 245,
     "kind": "method",
     "name": "render",
     "memberof": "src/VectorPath.js~VectorPath",
@@ -3992,7 +4069,7 @@
     "override": true
   },
   {
-    "__docId__": 239,
+    "__docId__": 246,
     "kind": "function",
     "name": "scaleVectorXY",
     "memberof": "src/VectorPath.js",
@@ -4018,7 +4095,7 @@
   },
   {
     "kind": "packageJSON",
-    "content": "{\n    \"name\": \"canvas-compositor\",\n    \"version\": \"1.0.0\",\n    \"description\": \"a light and performant canvas compositing engine\",\n    \"main\": \"lib/CanvasCompositor.js\",\n    \"scripts\": {\n        \"build\": \"esdoc && babel src/ -d lib/ -D -s && browserify src/CanvasCompositor.js -s CanvasCompositor -d -t [ babelify ] | uglifyjs > dist/canvas-compositor.min.js\"\n    },\n    \"keywords\": [\n        \"2d\",\n        \"canvas\",\n        \"compositing\"\n    ],\n    \"author\": \"Christopher J Gore\",\n    \"repository\": {\n        \"type\": \"git\",\n        \"url\": \"git@github.com:theOutLiar/canvas-compositor.git\"\n    },\n    \"license\": \"MIT\",\n    \"devDependencies\": {\n        \"@babel/cli\": \"^7.4.4\",\n        \"@babel/core\": \"^7.4.5\",\n        \"@babel/preset-env\": \"^7.4.5\",\n        \"babelify\": \"^10.0.0\",\n        \"browserify\": \"^16.2.3\",\n        \"esdoc\": \"^1.1.0\",\n        \"esdoc-ecmascript-proposal-plugin\": \"^1.0.0\",\n        \"mocha\": \"^6.1.4\",\n        \"uglify-js\": \"^3.6.0\"\n    },\n    \"dependencies\": {\n        \"vectorious\": \"^5.5.0\"\n    },\n    \"babel\": {\n        \"presets\": [\n            \"@babel/env\"\n        ]\n    },\n    \"esdoc\": {\n        \"source\": \"./src\",\n        \"destination\": \"./docs\",\n        \"plugins\": [\n            {\n                \"name\": \"esdoc-ecmascript-proposal-plugin\",\n                \"option\": {\n                    \"all\": true\n                }\n            }\n        ]\n    }\n}\n",
+    "content": "{\n    \"name\": \"canvas-compositor\",\n    \"version\": \"1.0.0\",\n    \"description\": \"a light and performant canvas compositing engine\",\n    \"main\": \"lib/CanvasCompositor.js\",\n    \"scripts\": {\n        \"prebuild\": \"npm prune && npm install\",\n        \"build\": \"esdoc && babel src/ -d lib/ -D -s && browserify src/CanvasCompositor.js -s CanvasCompositor -d -t [ babelify ] | uglifyjs > dist/canvas-compositor.min.js\"\n    },\n    \"keywords\": [\n        \"2d\",\n        \"canvas\",\n        \"compositing\"\n    ],\n    \"author\": \"Christopher J Gore\",\n    \"repository\": {\n        \"type\": \"git\",\n        \"url\": \"git@github.com:theOutLiar/canvas-compositor.git\"\n    },\n    \"license\": \"MIT\",\n    \"devDependencies\": {\n        \"@babel/cli\": \"^7.4.4\",\n        \"@babel/core\": \"^7.4.5\",\n        \"@babel/preset-env\": \"^7.4.5\",\n        \"babelify\": \"^10.0.0\",\n        \"browserify\": \"^16.2.3\",\n        \"esdoc\": \"^1.1.0\",\n        \"esdoc-ecmascript-proposal-plugin\": \"^1.0.0\",\n        \"mocha\": \"^6.1.4\",\n        \"uglify-js\": \"^3.6.0\"\n    },\n    \"dependencies\": {\n        \"vectorious\": \"^5.5.0\"\n    },\n    \"babel\": {\n        \"presets\": [\n            \"@babel/env\"\n        ]\n    },\n    \"esdoc\": {\n        \"source\": \"./src\",\n        \"destination\": \"./docs\",\n        \"plugins\": [\n            {\n                \"name\": \"esdoc-ecmascript-proposal-plugin\",\n                \"option\": {\n                    \"all\": true\n                }\n            }\n        ]\n    }\n}\n",
     "longname": "C:\\Users\\Christopher\\git\\canvas-compositor\\package.json",
     "name": "package.json",
     "static": true,
