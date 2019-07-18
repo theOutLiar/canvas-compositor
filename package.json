@@ -4,7 +4,7 @@
     "description": "a light and performant canvas compositing engine",
     "main": "lib/CanvasCompositor.js",
     "scripts": {
-        "prepublish": "npm prune && npm install && npm run build",
+        "prepare": "npm prune && npm install && npm run build",
         "build": "esdoc && babel src/ -d lib/ -D -s && browserify src/CanvasCompositor.js -s CanvasCompositor -d -t [ babelify ] | uglifyjs > dist/canvas-compositor.min.js"
     },
     "keywords": [
