@@ -20,7 +20,6 @@
         FPS <span id="fps"></span> X: <span id="mousex"></span> Y: <span id="mousey"></span>
     </div>
     <script>
-
         let cc = CanvasCompositor;
         let fpsDebug = document.getElementById('fps');
         let mousexDebug = document.getElementById('mousex');
@@ -33,7 +32,8 @@
             x: 100,
             y: 100,
             style: {
-                fillStyle: '#ccccff'
+                fillStyle: '#ccccff',
+                lineDash: [1, 5]
             },
             draggable: true
         });
@@ -47,7 +47,8 @@
             style: {
                 strokeStyle: '#000000',
                 fillStyle: 'blue',
-                lineWidth: 10
+                lineWidth: 10,
+                lineDash: [1, 31]
             }
         });
 
@@ -58,7 +59,7 @@
             y: 300,
             style: {
                 fillStyle: '#ccffcc',
-                lineWidth: 1.0
+                lineWidth: 1.0,
             },
             draggable: true
         })
@@ -79,7 +80,7 @@
             }],
             style: {
                 strokeStyle: 'orange',
-                lineWidth: 10.0
+                lineWidth: 5.0,
             },
             draggable: true
         });
@@ -115,7 +116,7 @@
             style: {
                 strokeStyle: 'red'
             },
-            draggable: true//,
+            draggable: true //,
             //debug: true
         });
 
@@ -143,7 +144,7 @@
         _myCC.scene.addChild(_bezi);
         _myCC.scene.addChild(_text);
 
-        _myCC.registerEvent('onmousemove', ()=>{
+        _myCC.registerEvent('onmousemove', () => {
             mousexDebug.innerHTML = _myCC.mouseX;
             mouseyDebug.innerHTML = _myCC.mouseY;
         });

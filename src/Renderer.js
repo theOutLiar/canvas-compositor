@@ -12,7 +12,8 @@ export const DEFAULTS = {
     miterLimit: 10,
     font: '10px sans-serif',
     textAlign: 'start',
-    textBaseline: 'alphabetic'
+    textBaseline: 'alphabetic',
+    lineDash: []
 }
 
 //TODO: masking? it looks like this is done in the Composition, but that may be bugged out.
@@ -47,6 +48,8 @@ export class Renderer {
         for (let v = 1; v < vertices.length; v++) {
             context.lineTo(vertices[v].x, vertices[v].y);
         }
+
+        context.setLineDash(style.lineDash);
         context.stroke();
     }
 
@@ -64,8 +67,8 @@ export class Renderer {
             context.lineTo(vertices[v].x, vertices[v].y);
         }
         context.closePath();
+        context.setLineDash(style.lineDash);
         context.stroke();
-
     }
 
     static drawBezier(start, end, c1, c2, context, style) {
@@ -74,6 +77,7 @@ export class Renderer {
         context.beginPath();
         context.moveTo(start.x, start.y);
         context.bezierCurveTo(c1.x, c1.y, c2.x, c2.y, end.x, end.y);
+        context.setLineDash(style.lineDash);
         context.stroke();
         context.closePath();
     }
@@ -91,6 +95,7 @@ export class Renderer {
         Object.assign(context, style);
         context.rect(x, y, width, height);
         context.fill();
+        context.setLineDash(style.lineDash);
         context.stroke();
     }
 
@@ -109,6 +114,7 @@ export class Renderer {
         //TODO: 2017-05-22 this is currently not supported by IE
         context.ellipse(x, y, radius, minorRadius, 0, 0, 2 * Math.PI);
         context.fill();
+        context.setLineDash(style.lineDash);
         context.stroke();
     }
 
@@ -126,6 +132,7 @@ export class Renderer {
         //TODO: 2015-03-12 this is currently only supported by chrome & opera
         //context.ellipse(x, y, radius, radius, 0, 0, 2 * Math.PI);
         context.fill();
+        context.setLineDash(style.lineDash);
         context.stroke();
     }
 
