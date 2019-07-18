@@ -1,10 +1,10 @@
 {
     "name": "canvas-compositor",
-    "version": "1.2.1",
+    "version": "1.3.0",
     "description": "a light and performant canvas compositing engine",
     "main": "lib/CanvasCompositor.js",
     "scripts": {
-        "prebuild": "npm prune && npm install",
+        "prepublish": "npm prune && npm install && npm run build",
         "build": "esdoc && babel src/ -d lib/ -D -s && browserify src/CanvasCompositor.js -s CanvasCompositor -d -t [ babelify ] | uglifyjs > dist/canvas-compositor.min.js"
     },
     "keywords": [

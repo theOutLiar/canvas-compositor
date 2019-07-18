@@ -3819,7 +3819,7 @@
     "__docId__": 232,
     "kind": "file",
     "name": "src/VectorPath.js",
-    "content": "import { Renderer } from './Renderer';\nimport { PrimitiveComponent } from './PrimitiveComponent';\nimport { Vector } from 'vectorious';\nimport { Line } from './Line';\n\n//would name the file 'path', but damn near everything\n//relies on the filesystem 'path' module\n\n/**\n * An ordered set of vectors defining a path\n */\nexport class VectorPath extends PrimitiveComponent {\n    /**\n     * see PrimitiveComponent for more options\n     * @param {Object} options the options for the object\n     * @param {Object[]} options.vertices the vertices\n     * @param {number} options.vertices[].x the y coordinate for a vertex\n     * @param {number} options.vertices[].y the y coordinate for a vertex\n     */\n    constructor(options) {\n        super(options);\n\n        options.vertices = options.vertices || [];\n\n        //this.unscaledLineWidth = this.style.lineWidth;\n\n        /**\n         * the list of vertices as vectorious Vectors\n         * @type {Vector[]} vertices\n         */\n        this.vertices = options.vertices.map(v => new Vector([v.x, v.y]));\n\n        let yCoordinates = this.vertices.map(v => v.y);\n        let xCoordinates = this.vertices.map(v => v.x);\n\n        //uses `apply` so we can supply the list as a list of arguments\n        this._left = Math.min.apply(null, xCoordinates);\n        this._top = Math.min.apply(null, yCoordinates);\n        this._right = Math.max.apply(null, xCoordinates);\n        this._bottom = Math.max.apply(null, yCoordinates);\n\n        super.d = new Vector([this._left, this._top]);\n\n        let normalizationVector = this.d;\n\n        this._normalizedVertices = this.vertices.map(v => v.subtract(normalizationVector));\n\n        this._normalizedBoundingBox = null;\n    }\n\n    /**\n     * get the bounding box for the vertices\n     * @type {{top:number, left: number, bottom:number, right:number}} boundingBox\n     */\n    get boundingBox() {\n        this._normalizedBoundingBox = {\n            top: 0,\n            left: 0,\n            right: this._right - this._left,\n            bottom: this._bottom - this._top\n        };\n\n        return {\n            top: (this._normalizedBoundingBox.top * this.compoundScale.scaleHeight) + this.offset.y - this.style.lineWidth,\n            left: (this._normalizedBoundingBox.left * this.compoundScale.scaleWidth) + this.offset.x - this.style.lineWidth,\n            bottom: (this._normalizedBoundingBox.bottom * this.compoundScale.scaleHeight) + this.offset.y + this.style.lineWidth,\n            right: (this._normalizedBoundingBox.right * this.compoundScale.scaleWidth) + this.offset.x + this.style.lineWidth\n        };\n    }\n\n\n    /**\n     * determine whether the point is in the object\n     * even/odd line intersection test\n     * @param {number} x the x coordinate\n     * @param {number} y the y coordinate\n     * @return {boolean} whether or not the point is in the object\n     */\n    pointIsInObject(x, y) {\n        let inside = false;\n        if (super.pointIsInObject(x, y)) {\n            //create a line that travels from this point in any direction\n            //if it intersects the polygon an odd number of times, it is inside\n\n            //a line can be described as a vertex and a direction\n            let l = new Line(new Vector([x, y]), new Vector([1, 0]));\n\n            let compoundScale = this.compoundScale;\n            let offset = this.offset;\n\n            for (let i = 0; i < this._normalizedVertices.length; i++) {\n                let j = (i + 1) >= this._normalizedVertices.length ? 0 : i + 1;\n\n                let v = scaleVectorXY(this._normalizedVertices[i], compoundScale.scaleWidth, compoundScale.scaleHeight)\n                    .add(offset);\n\n                let w = scaleVectorXY(this._normalizedVertices[j], compoundScale.scaleWidth, compoundScale.scaleHeight)\n                    .add(offset);\n\n                let edgeDirection = Vector.subtract(w, v).normalize();\n                let edge = new Line(v, edgeDirection);\n                let intersection = edge.intersectionWith(l);\n\n                //if the lines are parallel/colocated, no need to count;\n                if (intersection === null) {\n                    continue;\n                }\n\n                //TODO: should replace 0s with epsilons, where epsilon is\n                //the threshhold for considering two things as touching/intersecting\n                let intersectToTheRight = intersection.x - x >= 0;\n\n                //if the intersection is not to the right, no need to count\n                if (!intersectToTheRight) {\n                    continue;\n                }\n\n                let negativeX = (edgeDirection.x < 0);\n                let negativeY = (edgeDirection.y < 0);\n\n                //technically speaking, bottom and top should be reversed,\n                //since y=0 is the top left corner of the screen - it's\n                //just easier to think about it mathematically this way\n                let leftVertex = negativeX ? w : v;\n                let rightVertex = negativeX ? v : w;\n                let topVertex = negativeY ? w : v;\n                let bottomVertex = negativeY ? v : w;\n\n                let intersectWithinSegment =\n                    (intersection.x - leftVertex.x >= 0) &&\n                    (rightVertex.x - intersection.x >= 0) &&\n                    (intersection.y - topVertex.y >= 0) &&\n                    (bottomVertex.y - intersection.y >= 0);\n\n                if (intersectWithinSegment) {\n                    inside = !inside;\n                }\n            }\n        }\n        return inside;\n    }\n\n    /**\n     * override the render function for drawing vector paths specifically\n     * @override\n     */\n    render() {\n        let boundingBox = this.boundingBox;\n        let offset = this.offset;\n        let compoundScale = this.compoundScale;\n        //normalize the vertices (left- and top-most x/y-values should be 0 and 0)\n        let pathToDraw = this._normalizedVertices.map(vertex =>\n            scaleVectorXY(vertex, compoundScale.scaleWidth, compoundScale.scaleHeight)\n            .subtract(new Vector([boundingBox.left, boundingBox.top]))\n            .add(offset));\n        Renderer.drawPath(pathToDraw, this._prerenderingContext, this.style);\n    };\n}\n\nfunction scaleVectorXY(vector, scaleX, scaleY) {\n    return new Vector([vector.x * scaleX, vector.y * scaleY]);\n}\n",
+    "content": "import {\n    Renderer\n} from './Renderer';\nimport {\n    PrimitiveComponent\n} from './PrimitiveComponent';\nimport {\n    Vector\n} from 'vectorious';\nimport {\n    Line\n} from './Line';\n\n//would name the file 'path', but damn near everything\n//relies on the filesystem 'path' module\n\n/**\n * An ordered set of vectors defining a path\n */\nexport class VectorPath extends PrimitiveComponent {\n    /**\n     * see PrimitiveComponent for more options\n     * @param {Object} options the options for the object\n     * @param {Object[]} options.vertices the vertices\n     * @param {number} options.vertices[].x the y coordinate for a vertex\n     * @param {number} options.vertices[].y the y coordinate for a vertex\n     */\n    constructor(options) {\n        super(options);\n\n        this._vertices = [];\n        this.vertices = options.vertices || [];\n\n        //this.unscaledLineWidth = this.style.lineWidth;\n\n\n\n        this._normalizedBoundingBox = null;\n    }\n\n    /**\n     * get the bounding box for the vertices\n     * @type {{top:number, left: number, bottom:number, right:number}} boundingBox\n     */\n    get boundingBox() {\n        this._normalizedBoundingBox = {\n            top: 0,\n            left: 0,\n            right: this._right - this._left,\n            bottom: this._bottom - this._top\n        };\n\n        return {\n            top: (this._normalizedBoundingBox.top * this.compoundScale.scaleHeight) + this.offset.y - this.style.lineWidth,\n            left: (this._normalizedBoundingBox.left * this.compoundScale.scaleWidth) + this.offset.x - this.style.lineWidth,\n            bottom: (this._normalizedBoundingBox.bottom * this.compoundScale.scaleHeight) + this.offset.y + this.style.lineWidth,\n            right: (this._normalizedBoundingBox.right * this.compoundScale.scaleWidth) + this.offset.x + this.style.lineWidth\n        };\n    }\n\n    get vertices() {\n        return this._vertices;\n    }\n\n    set vertices(verts) {\n        /**\n         * the list of vertices as vectorious Vectors\n         * @type {Vector[]} vertices\n         */\n        this._vertices = verts.map(v => new Vector([v.x, v.y]));\n\n        let yCoordinates = this.vertices.map(v => v.y);\n        let xCoordinates = this.vertices.map(v => v.x);\n\n        //uses `apply` so we can supply the list as a list of arguments\n        this._left = Math.min.apply(null, xCoordinates);\n        this._top = Math.min.apply(null, yCoordinates);\n        this._right = Math.max.apply(null, xCoordinates);\n        this._bottom = Math.max.apply(null, yCoordinates);\n\n        super.d = new Vector([this._left, this._top]);\n\n        let normalizationVector = this.d;\n\n        this._normalizedVertices = this.vertices.map(v => v.subtract(normalizationVector));\n\n        this.needsDraw = true;\n        this.needsRender = true;\n    }\n\n    /**\n     * determine whether the point is in the object\n     * even/odd line intersection test\n     * @param {number} x the x coordinate\n     * @param {number} y the y coordinate\n     * @return {boolean} whether or not the point is in the object\n     */\n    pointIsInObject(x, y) {\n        let inside = false;\n        if (super.pointIsInObject(x, y)) {\n            //create a line that travels from this point in any direction\n            //if it intersects the polygon an odd number of times, it is inside\n\n            //a line can be described as a vertex and a direction\n            let l = new Line(new Vector([x, y]), new Vector([1, 0]));\n\n            let compoundScale = this.compoundScale;\n            let offset = this.offset;\n\n            for (let i = 0; i < this._normalizedVertices.length; i++) {\n                let j = (i + 1) >= this._normalizedVertices.length ? 0 : i + 1;\n\n                let v = scaleVectorXY(this._normalizedVertices[i], compoundScale.scaleWidth, compoundScale.scaleHeight)\n                    .add(offset);\n\n                let w = scaleVectorXY(this._normalizedVertices[j], compoundScale.scaleWidth, compoundScale.scaleHeight)\n                    .add(offset);\n\n                let edgeDirection = Vector.subtract(w, v).normalize();\n                let edge = new Line(v, edgeDirection);\n                let intersection = edge.intersectionWith(l);\n\n                //if the lines are parallel/colocated, no need to count;\n                if (intersection === null) {\n                    continue;\n                }\n\n                //TODO: should replace 0s with epsilons, where epsilon is\n                //the threshhold for considering two things as touching/intersecting\n                let intersectToTheRight = intersection.x - x >= 0;\n\n                //if the intersection is not to the right, no need to count\n                if (!intersectToTheRight) {\n                    continue;\n                }\n\n                let negativeX = (edgeDirection.x < 0);\n                let negativeY = (edgeDirection.y < 0);\n\n                //technically speaking, bottom and top should be reversed,\n                //since y=0 is the top left corner of the screen - it's\n                //just easier to think about it mathematically this way\n                let leftVertex = negativeX ? w : v;\n                let rightVertex = negativeX ? v : w;\n                let topVertex = negativeY ? w : v;\n                let bottomVertex = negativeY ? v : w;\n\n                let intersectWithinSegment =\n                    (intersection.x - leftVertex.x >= 0) &&\n                    (rightVertex.x - intersection.x >= 0) &&\n                    (intersection.y - topVertex.y >= 0) &&\n                    (bottomVertex.y - intersection.y >= 0);\n\n                if (intersectWithinSegment) {\n                    inside = !inside;\n                }\n            }\n        }\n        return inside;\n    }\n\n    /**\n     * override the render function for drawing vector paths specifically\n     * @override\n     */\n    render() {\n        let boundingBox = this.boundingBox;\n        let offset = this.offset;\n        let compoundScale = this.compoundScale;\n        //normalize the vertices (left- and top-most x/y-values should be 0 and 0)\n        let pathToDraw = this._normalizedVertices.map(vertex =>\n            scaleVectorXY(vertex, compoundScale.scaleWidth, compoundScale.scaleHeight)\n            .subtract(new Vector([boundingBox.left, boundingBox.top]))\n            .add(offset));\n        Renderer.drawPath(pathToDraw, this._prerenderingContext, this.style);\n    };\n}\n\nfunction scaleVectorXY(vector, scaleX, scaleY) {\n    return new Vector([vector.x * scaleX, vector.y * scaleY]);\n}\n",
     "static": true,
     "longname": "C:/Users/Christopher/git/canvas-compositor/src/VectorPath.js",
     "access": null,
@@ -3838,7 +3838,7 @@
     "importPath": "canvas-compositor/src/VectorPath.js",
     "importStyle": "{VectorPath}",
     "description": "An ordered set of vectors defining a path",
-    "lineNumber": 12,
+    "lineNumber": 20,
     "interface": false,
     "extends": [
       "src/PrimitiveComponent.js~PrimitiveComponent"
@@ -3855,7 +3855,7 @@
     "longname": "src/VectorPath.js~VectorPath#constructor",
     "access": null,
     "description": "see PrimitiveComponent for more options",
-    "lineNumber": 20,
+    "lineNumber": 28,
     "params": [
       {
         "nullable": null,
@@ -3902,84 +3902,17 @@
   {
     "__docId__": 235,
     "kind": "member",
-    "name": "vertices",
+    "name": "_vertices",
     "memberof": "src/VectorPath.js~VectorPath",
     "static": false,
-    "longname": "src/VectorPath.js~VectorPath#vertices",
-    "access": null,
-    "description": "the list of vertices as vectorious Vectors",
-    "lineNumber": 31,
-    "type": {
-      "nullable": null,
-      "types": [
-        "Vector[]"
-      ],
-      "spread": false,
-      "description": null
-    }
-  },
-  {
-    "__docId__": 236,
-    "kind": "member",
-    "name": "_left",
-    "memberof": "src/VectorPath.js~VectorPath",
-    "static": false,
-    "longname": "src/VectorPath.js~VectorPath#_left",
+    "longname": "src/VectorPath.js~VectorPath#_vertices",
     "access": null,
     "description": null,
-    "lineNumber": 37,
+    "lineNumber": 31,
     "undocument": true
   },
   {
     "__docId__": 237,
-    "kind": "member",
-    "name": "_top",
-    "memberof": "src/VectorPath.js~VectorPath",
-    "static": false,
-    "longname": "src/VectorPath.js~VectorPath#_top",
-    "access": null,
-    "description": null,
-    "lineNumber": 38,
-    "undocument": true
-  },
-  {
-    "__docId__": 238,
-    "kind": "member",
-    "name": "_right",
-    "memberof": "src/VectorPath.js~VectorPath",
-    "static": false,
-    "longname": "src/VectorPath.js~VectorPath#_right",
-    "access": null,
-    "description": null,
-    "lineNumber": 39,
-    "undocument": true
-  },
-  {
-    "__docId__": 239,
-    "kind": "member",
-    "name": "_bottom",
-    "memberof": "src/VectorPath.js~VectorPath",
-    "static": false,
-    "longname": "src/VectorPath.js~VectorPath#_bottom",
-    "access": null,
-    "description": null,
-    "lineNumber": 40,
-    "undocument": true
-  },
-  {
-    "__docId__": 240,
-    "kind": "member",
-    "name": "_normalizedVertices",
-    "memberof": "src/VectorPath.js~VectorPath",
-    "static": false,
-    "longname": "src/VectorPath.js~VectorPath#_normalizedVertices",
-    "access": null,
-    "description": null,
-    "lineNumber": 46,
-    "undocument": true
-  },
-  {
-    "__docId__": 241,
     "kind": "member",
     "name": "_normalizedBoundingBox",
     "memberof": "src/VectorPath.js~VectorPath",
@@ -3987,11 +3920,11 @@
     "longname": "src/VectorPath.js~VectorPath#_normalizedBoundingBox",
     "access": null,
     "description": null,
-    "lineNumber": 48,
+    "lineNumber": 38,
     "undocument": true
   },
   {
-    "__docId__": 242,
+    "__docId__": 238,
     "kind": "get",
     "name": "boundingBox",
     "memberof": "src/VectorPath.js~VectorPath",
@@ -4001,7 +3934,7 @@
     "longname": "src/VectorPath.js~VectorPath#boundingBox",
     "access": null,
     "description": "get the bounding box for the vertices",
-    "lineNumber": 55,
+    "lineNumber": 45,
     "type": {
       "nullable": null,
       "types": [
@@ -4012,7 +3945,119 @@
     }
   },
   {
+    "__docId__": 240,
+    "kind": "get",
+    "name": "vertices",
+    "memberof": "src/VectorPath.js~VectorPath",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/VectorPath.js~VectorPath#vertices",
+    "access": null,
+    "description": null,
+    "lineNumber": 61,
+    "undocument": true
+  },
+  {
+    "__docId__": 241,
+    "kind": "set",
+    "name": "vertices",
+    "memberof": "src/VectorPath.js~VectorPath",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/VectorPath.js~VectorPath#vertices",
+    "access": null,
+    "description": null,
+    "lineNumber": 65,
+    "undocument": true
+  },
+  {
+    "__docId__": 243,
+    "kind": "member",
+    "name": "_left",
+    "memberof": "src/VectorPath.js~VectorPath",
+    "static": false,
+    "longname": "src/VectorPath.js~VectorPath#_left",
+    "access": null,
+    "description": null,
+    "lineNumber": 76,
+    "undocument": true
+  },
+  {
     "__docId__": 244,
+    "kind": "member",
+    "name": "_top",
+    "memberof": "src/VectorPath.js~VectorPath",
+    "static": false,
+    "longname": "src/VectorPath.js~VectorPath#_top",
+    "access": null,
+    "description": null,
+    "lineNumber": 77,
+    "undocument": true
+  },
+  {
+    "__docId__": 245,
+    "kind": "member",
+    "name": "_right",
+    "memberof": "src/VectorPath.js~VectorPath",
+    "static": false,
+    "longname": "src/VectorPath.js~VectorPath#_right",
+    "access": null,
+    "description": null,
+    "lineNumber": 78,
+    "undocument": true
+  },
+  {
+    "__docId__": 246,
+    "kind": "member",
+    "name": "_bottom",
+    "memberof": "src/VectorPath.js~VectorPath",
+    "static": false,
+    "longname": "src/VectorPath.js~VectorPath#_bottom",
+    "access": null,
+    "description": null,
+    "lineNumber": 79,
+    "undocument": true
+  },
+  {
+    "__docId__": 247,
+    "kind": "member",
+    "name": "_normalizedVertices",
+    "memberof": "src/VectorPath.js~VectorPath",
+    "static": false,
+    "longname": "src/VectorPath.js~VectorPath#_normalizedVertices",
+    "access": null,
+    "description": null,
+    "lineNumber": 85,
+    "undocument": true
+  },
+  {
+    "__docId__": 248,
+    "kind": "member",
+    "name": "needsDraw",
+    "memberof": "src/VectorPath.js~VectorPath",
+    "static": false,
+    "longname": "src/VectorPath.js~VectorPath#needsDraw",
+    "access": null,
+    "description": null,
+    "lineNumber": 87,
+    "undocument": true
+  },
+  {
+    "__docId__": 249,
+    "kind": "member",
+    "name": "needsRender",
+    "memberof": "src/VectorPath.js~VectorPath",
+    "static": false,
+    "longname": "src/VectorPath.js~VectorPath#needsRender",
+    "access": null,
+    "description": null,
+    "lineNumber": 88,
+    "undocument": true
+  },
+  {
+    "__docId__": 250,
     "kind": "method",
     "name": "pointIsInObject",
     "memberof": "src/VectorPath.js~VectorPath",
@@ -4022,7 +4067,7 @@
     "longname": "src/VectorPath.js~VectorPath#pointIsInObject",
     "access": null,
     "description": "determine whether the point is in the object\neven/odd line intersection test",
-    "lineNumber": 79,
+    "lineNumber": 98,
     "params": [
       {
         "nullable": null,
@@ -4055,7 +4100,7 @@
     }
   },
   {
-    "__docId__": 245,
+    "__docId__": 251,
     "kind": "method",
     "name": "render",
     "memberof": "src/VectorPath.js~VectorPath",
@@ -4065,11 +4110,11 @@
     "longname": "src/VectorPath.js~VectorPath#render",
     "access": null,
     "description": "override the render function for drawing vector paths specifically",
-    "lineNumber": 147,
+    "lineNumber": 166,
     "override": true
   },
   {
-    "__docId__": 246,
+    "__docId__": 252,
     "kind": "function",
     "name": "scaleVectorXY",
     "memberof": "src/VectorPath.js",
@@ -4082,7 +4127,7 @@
     "importPath": "canvas-compositor/src/VectorPath.js",
     "importStyle": null,
     "description": null,
-    "lineNumber": 160,
+    "lineNumber": 179,
     "undocument": true
   },
   {
@@ -4095,7 +4140,7 @@
   },
   {
     "kind": "packageJSON",
-    "content": "{\n    \"name\": \"canvas-compositor\",\n    \"version\": \"1.2.0\",\n    \"description\": \"a light and performant canvas compositing engine\",\n    \"main\": \"lib/CanvasCompositor.js\",\n    \"scripts\": {\n        \"prebuild\": \"npm prune && npm install\",\n        \"build\": \"esdoc && babel src/ -d lib/ -D -s && browserify src/CanvasCompositor.js -s CanvasCompositor -d -t [ babelify ] | uglifyjs > dist/canvas-compositor.min.js\"\n    },\n    \"keywords\": [\n        \"2d\",\n        \"canvas\",\n        \"compositing\"\n    ],\n    \"author\": \"Christopher J Gore\",\n    \"repository\": {\n        \"type\": \"git\",\n        \"url\": \"git@github.com:theOutLiar/canvas-compositor.git\"\n    },\n    \"license\": \"MIT\",\n    \"devDependencies\": {\n        \"@babel/cli\": \"^7.4.4\",\n        \"@babel/core\": \"^7.4.5\",\n        \"@babel/preset-env\": \"^7.4.5\",\n        \"babelify\": \"^10.0.0\",\n        \"browserify\": \"^16.2.3\",\n        \"esdoc\": \"^1.1.0\",\n        \"esdoc-ecmascript-proposal-plugin\": \"^1.0.0\",\n        \"mocha\": \"^6.1.4\",\n        \"uglify-js\": \"^3.6.0\"\n    },\n    \"dependencies\": {\n        \"vectorious\": \"^5.5.0\"\n    },\n    \"babel\": {\n        \"presets\": [\n            \"@babel/env\"\n        ]\n    },\n    \"esdoc\": {\n        \"source\": \"./src\",\n        \"destination\": \"./docs\",\n        \"plugins\": [\n            {\n                \"name\": \"esdoc-ecmascript-proposal-plugin\",\n                \"option\": {\n                    \"all\": true\n                }\n            }\n        ]\n    }\n}\n",
+    "content": "{\n    \"name\": \"canvas-compositor\",\n    \"version\": \"1.3.0\",\n    \"description\": \"a light and performant canvas compositing engine\",\n    \"main\": \"lib/CanvasCompositor.js\",\n    \"scripts\": {\n        \"prepublish\": \"npm prune && npm install && npm run build\",\n        \"build\": \"esdoc && babel src/ -d lib/ -D -s && browserify src/CanvasCompositor.js -s CanvasCompositor -d -t [ babelify ] | uglifyjs > dist/canvas-compositor.min.js\"\n    },\n    \"keywords\": [\n        \"2d\",\n        \"canvas\",\n        \"compositing\"\n    ],\n    \"author\": \"Christopher J Gore\",\n    \"repository\": {\n        \"type\": \"git\",\n        \"url\": \"git@github.com:theOutLiar/canvas-compositor.git\"\n    },\n    \"license\": \"MIT\",\n    \"devDependencies\": {\n        \"@babel/cli\": \"^7.4.4\",\n        \"@babel/core\": \"^7.4.5\",\n        \"@babel/preset-env\": \"^7.4.5\",\n        \"babelify\": \"^10.0.0\",\n        \"browserify\": \"^16.2.3\",\n        \"esdoc\": \"^1.1.0\",\n        \"esdoc-ecmascript-proposal-plugin\": \"^1.0.0\",\n        \"mocha\": \"^6.1.4\",\n        \"uglify-js\": \"^3.6.0\"\n    },\n    \"dependencies\": {\n        \"vectorious\": \"^5.5.0\"\n    },\n    \"babel\": {\n        \"presets\": [\n            \"@babel/env\"\n        ]\n    },\n    \"esdoc\": {\n        \"source\": \"./src\",\n        \"destination\": \"./docs\",\n        \"plugins\": [\n            {\n                \"name\": \"esdoc-ecmascript-proposal-plugin\",\n                \"option\": {\n                    \"all\": true\n                }\n            }\n        ]\n    }\n}\n",
     "longname": "C:\\Users\\Christopher\\git\\canvas-compositor\\package.json",
     "name": "package.json",
     "static": true,

@@ -1,7 +1,15 @@
-import { Renderer } from './Renderer';
-import { PrimitiveComponent } from './PrimitiveComponent';
-import { Vector } from 'vectorious';
-import { Line } from './Line';
+import {
+    Renderer
+} from './Renderer';
+import {
+    PrimitiveComponent
+} from './PrimitiveComponent';
+import {
+    Vector
+} from 'vectorious';
+import {
+    Line
+} from './Line';
 
 //would name the file 'path', but damn near everything
 //relies on the filesystem 'path' module
@@ -20,30 +28,12 @@ export class VectorPath extends PrimitiveComponent {
     constructor(options) {
         super(options);
 
-        options.vertices = options.vertices || [];
+        this._vertices = [];
+        this.vertices = options.vertices || [];
 
         //this.unscaledLineWidth = this.style.lineWidth;
 
-        /**
-         * the list of vertices as vectorious Vectors
-         * @type {Vector[]} vertices
-         */
-        this.vertices = options.vertices.map(v => new Vector([v.x, v.y]));
 
-        let yCoordinates = this.vertices.map(v => v.y);
-        let xCoordinates = this.vertices.map(v => v.x);
-
-        //uses `apply` so we can supply the list as a list of arguments
-        this._left = Math.min.apply(null, xCoordinates);
-        this._top = Math.min.apply(null, yCoordinates);
-        this._right = Math.max.apply(null, xCoordinates);
-        this._bottom = Math.max.apply(null, yCoordinates);
-
-        super.d = new Vector([this._left, this._top]);
-
-        let normalizationVector = this.d;
-
-        this._normalizedVertices = this.vertices.map(v => v.subtract(normalizationVector));
 
         this._normalizedBoundingBox = null;
     }
@@ -68,6 +58,35 @@ export class VectorPath extends PrimitiveComponent {
         };
     }
 
+    get vertices() {
+        return this._vertices;
+    }
+
+    set vertices(verts) {
+        /**
+         * the list of vertices as vectorious Vectors
+         * @type {Vector[]} vertices
+         */
+        this._vertices = verts.map(v => new Vector([v.x, v.y]));
+
+        let yCoordinates = this.vertices.map(v => v.y);
+        let xCoordinates = this.vertices.map(v => v.x);
+
+        //uses `apply` so we can supply the list as a list of arguments
+        this._left = Math.min.apply(null, xCoordinates);
+        this._top = Math.min.apply(null, yCoordinates);
+        this._right = Math.max.apply(null, xCoordinates);
+        this._bottom = Math.max.apply(null, yCoordinates);
+
+        super.d = new Vector([this._left, this._top]);
+
+        let normalizationVector = this.d;
+
+        this._normalizedVertices = this.vertices.map(v => v.subtract(normalizationVector));
+
+        this.needsDraw = true;
+        this.needsRender = true;
+    }
 
     /**
      * determine whether the point is in the object
