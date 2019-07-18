@@ -193,7 +193,7 @@
     "__docId__": 16,
     "kind": "file",
     "name": "src/CanvasCompositor.js",
-    "content": "import { DEFAULTS, Renderer } from './Renderer';\nimport { Composition}  from './Composition';\nimport { PrimitiveComponent } from './PrimitiveComponent';\nimport { Circle } from './Circle';\nimport { Ellipse } from './Ellipse';\nimport { Rectangle } from './Rectangle';\nimport { Line } from './Line';\nimport { VectorPath } from './VectorPath';\nimport { Bezier } from './Bezier';\nimport { Image } from './Image';\nimport { Text } from './Text';\n\n//const FPS_EPSILON = 10; // +/- 10ms for animation loop to determine if enough time has passed to render\nconst DEFAULT_TARGET_FPS = 1000 / 60; //amount of time that must pass before rendering\n\nconst EVENTS = {\n    MOUSEUP: 'onmouseup',\n    MOUSEDOWN: 'onmousedown',\n    MOUSEMOVE: 'onmousemove',\n    MOUSEOUT: 'onmouseout',\n    CLICK: 'onclick'\n};\n\n/**\n * The CanvasCompositor class is the entry-point to usage of the `canvas-compositor`.\n * The application programmer is expected to hand over low-level control of the canvas\n * context to the high-level classes and methods exposed by CanvasCompositor.\n *\n * The CanvasCompositor class establishes an event dispatcher, animation loop, and scene graph for\n * compositions.\n */\nclass CanvasCompositor {\n    /**\n     * The CanvasCompositor class establishes an event dispatcher, animation loop, and scene graph for\n     * compositions\n     *\n     * @param {object} canvas This should be a canvas, either from the DOM or an equivalent API\n     *\n     * @example\n     * let cc = new CanvasCompositor(document.getElementById('myCanvas'));\n     */\n    constructor(canvas) {\n        this._canvas = canvas;\n        this._context = this._canvas.getContext('2d');\n\n        //acquire the padding on the canvas – this is necessary to properly\n        //locate the mouse position\n        //TODO: determine if border-box affects this, and adjust accordingly\n        let style = window.getComputedStyle(this._canvas);\n\n        this._rect = canvas.getBoundingClientRect();\n        this._mouseX=null;\n        this._mouseY=null;\n\n        let borderLeft = style.getPropertyValue('border-left') ? parseFloat(style.getPropertyValue('border-left')) : 0;\n        let paddingLeft = style.getPropertyValue('padding-left') ? parseFloat(style.getPropertyValue('padding-left')) : 0;\n\n        this._leftPadding = borderLeft + paddingLeft;\n\n        let borderTop = style.getPropertyValue('border-top') ? parseFloat(style.getPropertyValue('border-top')) : 0;\n        let paddingTop = style.getPropertyValue('padding-top') ? parseFloat(style.getPropertyValue('padding-top')) : 0;\n\n        this._topPadding = borderTop + paddingTop;\n\n        this._currentTime = 0;\n        this._lastFrameTimestamp = 0;\n        this._lastRenderTime = 0;\n\n        this._targetObject = null;\n\n        this._scene = new Composition(this.canvas);\n\n        this._bindEvents();\n\n        this._eventRegistry = {\n            onmouseup: [],\n            onmousedown: [],\n            onmousemove: [],\n            onmouseout: [],\n            onclick: []\n        };\n\n        this._animationLoop();\n        this._framerate = 0;\n    }\n\n    //TODO: expose the framerate\n    set framerate(val) {\n        this._framerate = val;\n    }\n\n    get framerate() {\n        //var framerateUpdatedEvent = new Event();\n        return this._framerate;\n    }\n\n    //TODO: multiple target objects? in reverse order of render? in order of composition?\n    /**\n     * the object currently selected for interaction\n     * @type {object}\n     */\n    get targetObject() {\n        return this._targetObject;\n    }\n    /**\n     * the object currently selected for interaction\n     * @param {object} val\n     * @type {object}\n     */\n    set targetObject(val) {\n        this._targetObject = val;\n    }\n\n    /**\n     * the root of the scene graph. add primitives to this to compose an image\n     * @type {object}\n     */\n    get scene() {\n        return this._scene;\n    }\n\n    /**\n    * get the X position of the mouse on the canvas\n    * @type {number}\n    */\n    get mouseX(){\n        return this._mouseX;\n    }\n\n    /**\n    * get the Y position of the mouse on the canvas\n    * @type {number}\n    */\n    get mouseY(){\n        return this._mouseY;\n    }\n\n    /**\n     * The animation loop for this instance of CanvasCompositor.\n     * Upon receipt of the animation frame from `requestAnimationFrame`, the loop will check\n     * whether enough time has passed to redraw for the target framerate.\n     * It will only draw if somewhere along the scene graph, an object needs updating.\n     * There is no need to invoke this directly, the constructor will do it.\n     */\n    _animationLoop() {\n        window.requestAnimationFrame(this._animationLoop.bind(this));\n        this._currentTime = +new Date();\n        //set maximum of 60 fps and only redraw if necessary\n        if ( /*this._currentTime - this._lastFrameTimestamp >= this._targetFPS &&*/ this.scene.needsDraw) {\n            this._lastRenderTime = +new Date();\n            Renderer.clearRect(0, 0, this._canvas.width, this._canvas.height, this._context);\n            this.scene.draw(this._context);\n        }\n        this.framerate = parseInt(1000 / (this._currentTime - this._lastFrameTimestamp));\n        this._lastFrameTimestamp = +new Date();\n\n    }\n\n    /**\n     * add an event to the event registry\n     *\n     * @param {string} eventType the name of the type of event\n     * @param {function} callback the callback to be triggered when the event occurs\n     */\n    registerEvent(eventType, callback) {\n        if (this._eventRegistry[eventType]) {\n            this._eventRegistry[eventType].push(callback);\n        }\n    }\n\n    /**\n     * remove an event to the event registry\n     *\n     * @param {string} eventType the name of the type of event\n     * @param {function} callback the callback to be removed from the event\n     * @return {function} the callback that was removed\n     */\n    removeEvent(eventType, callback) {\n        if (this._eventRegistry[eventType]) {\n            let index = this._eventRegistry[eventType].indexOf(callback);\n            if (index >= 0) {\n                return this._eventRegistry[eventType].splice(index, 1);\n            }\n        }\n    }\n\n    /**\n     * attach interaction events to the canvas. the canvas compositor dispatches\n     * events to relevant objects through bridges to the scene graph\n     */\n    _bindEvents() {\n        //TODO: reimplement touch events?\n        //must bind to `this` to retain reference\n        this._canvas.addEventListener('mousedown', this._handleMouseDown.bind(this));\n        this._canvas.addEventListener('mouseup', this._handleMouseUp.bind(this));\n        this._canvas.addEventListener('mousemove', this._handleMouseMove.bind(this));\n        this._canvas.addEventListener('mouseout', this._handleMouseOut.bind(this));\n        this._canvas.addEventListener('click', this._handleClick.bind(this));\n    }\n\n    /**\n     * bridge the mouse down event on the canvas to the\n     * the objects in the scene graph\n     */\n    _handleMouseDown(e) {\n        e.preventDefault();\n\n        let x = e.clientX - this._rect.left - this._leftPadding;\n        let y = e.clientY - this._rect.top - this._topPadding;\n\n        //pass through x and y to propagated events\n        e.canvasX = x;\n        e.canvasY = y;\n\n        for (let callback of this._eventRegistry[EVENTS.MOUSEDOWN]) {\n            callback(e);\n        };\n\n        let clickedObject = this.scene.childAt(x, y);\n\n        if (clickedObject && clickedObject.onmousedown) {\n            clickedObject.onmousedown(e);\n        }\n    }\n\n    /**\n     * bridge the mouse up event on the canvas to the\n     * the objects in the scene graph\n     */\n    _handleMouseUp(e) {\n        e.preventDefault();\n\n        let x = e.clientX - this._rect.left - this._leftPadding;\n        let y = e.clientY - this._rect.top - this._topPadding;\n\n        //pass through x and y to propagated events\n        e.canvasX = x;\n        e.canvasY = y;\n\n        for (let c of this.scene.children) {\n            if (c.draggable && c.onmouseup) {\n                c.onmouseup(e);\n            }\n        }\n\n        for (let callback of this._eventRegistry[EVENTS.MOUSEUP]) {\n            callback(e);\n        }\n\n        let clickedObject = this.scene.childAt(x, y);\n\n        if (clickedObject && clickedObject.onmouseup) {\n            clickedObject.onmouseup(e);\n        }\n    };\n\n    /**\n     * bridge the mouse move event on the canvas to the\n     * the objects in the scene graph\n     */\n    _handleMouseMove(e) {\n        e.preventDefault();\n        this._mouseX = e.clientX - this._rect.left - this._leftPadding;\n        this._mouseY = e.clientY - this._rect.top - this._topPadding;\n\n        let objects = this.scene.children.filter((c) => !!(c.onmousemove));\n\n        for (let callback of this._eventRegistry[EVENTS.MOUSEMOVE]) {\n            callback(e);\n        }\n\n        for (let o of objects) {\n            o.onmousemove(e);\n        }\n    };\n\n    /**\n     * bridge the click event on the canvas to the\n     * the objects in the scene graph\n     */\n    _handleClick(e) {\n        e.preventDefault();\n\n        let x = e.clientX - this._rect.left - this._leftPadding;\n        let y = e.clientY - this._rect.top - this._topPadding;\n\n        //pass through x and y to propagated events\n        e.canvasX = x;\n        e.canvasY = y;\n\n        //TODO: FF doesn't get this\n        let objects = this.scene.children.filter((c) => !!(c.onclick));\n\n        for (let callback of this._eventRegistry[EVENTS.CLICK]) {\n            callback(e);\n        }\n\n        for (let o of objects) {\n            o.onclick(e);\n        }\n    };\n\n    /**\n     * bridge the mouse out event on the canvas to the\n     * the objects in the scene graph\n     */\n    _handleMouseOut(e) {\n        e.preventDefault();\n\n        let objects = this.scene.children.filter((c) => !!(c.onmouseout));\n\n        for (let o of objects) {\n            o.onmouseout(e);\n        };\n\n        for (let callback of this._eventRegistry[EVENTS.MOUSEOUT]) {\n            callback(e);\n        };\n    };\n\n    drawBezier(start, end, c1, c2, style) {\n        Renderer.drawBezier(start, end, c1, c2, this._context, style);\n    }\n}\n\n/**\n * The initialization function\n */\n\nexport function init(canvas) {\n    return new CanvasCompositor(canvas);\n}\n\nexport {\n    Renderer,\n    PrimitiveComponent,\n    Composition,\n    Circle,\n    Ellipse,\n    Rectangle,\n    Line,\n    VectorPath,\n    Bezier,\n    Image,\n    Text,\n    DEFAULTS\n}\n",
+    "content": "import {\n    DEFAULTS,\n    Renderer\n} from './Renderer';\nimport {\n    Composition\n} from './Composition';\nimport {\n    PrimitiveComponent\n} from './PrimitiveComponent';\nimport {\n    Circle\n} from './Circle';\nimport {\n    Ellipse\n} from './Ellipse';\nimport {\n    Rectangle\n} from './Rectangle';\nimport {\n    Line\n} from './Line';\nimport {\n    VectorPath\n} from './VectorPath';\nimport {\n    Bezier\n} from './Bezier';\nimport {\n    Image\n} from './Image';\nimport {\n    Text\n} from './Text';\n\n//const FPS_EPSILON = 10; // +/- 10ms for animation loop to determine if enough time has passed to render\nconst DEFAULT_TARGET_FPS = 1000 / 60; //amount of time that must pass before rendering\n\nconst EVENTS = {\n    MOUSEUP: 'onmouseup',\n    MOUSEDOWN: 'onmousedown',\n    MOUSEMOVE: 'onmousemove',\n    MOUSEOUT: 'onmouseout',\n    CLICK: 'onclick'\n};\n\n/**\n * The CanvasCompositor class is the entry-point to usage of the `canvas-compositor`.\n * The application programmer is expected to hand over low-level control of the canvas\n * context to the high-level classes and methods exposed by CanvasCompositor.\n *\n * The CanvasCompositor class establishes an event dispatcher, animation loop, and scene graph for\n * compositions.\n */\nclass CanvasCompositor {\n    /**\n     * The CanvasCompositor class establishes an event dispatcher, animation loop, and scene graph for\n     * compositions\n     *\n     * @param {object} canvas This should be a canvas, either from the DOM or an equivalent API\n     *\n     * @example\n     * let cc = new CanvasCompositor(document.getElementById('myCanvas'));\n     */\n    constructor(canvas) {\n        this._canvas = canvas;\n        this._context = this._canvas.getContext('2d');\n\n        //acquire the padding on the canvas – this is necessary to properly\n        //locate the mouse position\n        //TODO: determine if border-box affects this, and adjust accordingly\n        let style = window.getComputedStyle(this._canvas);\n\n        this._rect = canvas.getBoundingClientRect();\n        this._mouseX = null;\n        this._mouseY = null;\n\n        let borderLeft = style.getPropertyValue('border-left') ? parseFloat(style.getPropertyValue('border-left')) : 0;\n        let paddingLeft = style.getPropertyValue('padding-left') ? parseFloat(style.getPropertyValue('padding-left')) : 0;\n\n        this._leftPadding = borderLeft + paddingLeft;\n\n        let borderTop = style.getPropertyValue('border-top') ? parseFloat(style.getPropertyValue('border-top')) : 0;\n        let paddingTop = style.getPropertyValue('padding-top') ? parseFloat(style.getPropertyValue('padding-top')) : 0;\n\n        this._topPadding = borderTop + paddingTop;\n\n        this._currentTime = 0;\n        this._lastFrameTimestamp = 0;\n        this._lastRenderTime = 0;\n\n        this._targetObject = null;\n\n        this._scene = new Composition(this.canvas);\n\n        this._bindEvents();\n\n        this._eventRegistry = {\n            onmouseup: [],\n            onmousedown: [],\n            onmousemove: [],\n            onmouseout: [],\n            onclick: []\n        };\n\n        this._animationLoop();\n        this._framerate = 0;\n    }\n\n    //TODO: expose the framerate\n    set framerate(val) {\n        this._framerate = val;\n    }\n\n    get framerate() {\n        //var framerateUpdatedEvent = new Event();\n        return this._framerate;\n    }\n\n    //TODO: multiple target objects? in reverse order of render? in order of composition?\n    /**\n     * the object currently selected for interaction\n     * @type {object}\n     */\n    get targetObject() {\n        return this._targetObject;\n    }\n    /**\n     * the object currently selected for interaction\n     * @param {object} val\n     * @type {object}\n     */\n    set targetObject(val) {\n        this._targetObject = val;\n    }\n\n    /**\n     * the root of the scene graph. add primitives to this to compose an image\n     * @type {object}\n     */\n    get scene() {\n        return this._scene;\n    }\n\n    /**\n     * get the X position of the mouse on the canvas\n     * @type {number}\n     */\n    get mouseX() {\n        return this._mouseX;\n    }\n\n    /**\n     * get the Y position of the mouse on the canvas\n     * @type {number}\n     */\n    get mouseY() {\n        return this._mouseY;\n    }\n\n    /**\n     * The animation loop for this instance of CanvasCompositor.\n     * Upon receipt of the animation frame from `requestAnimationFrame`, the loop will check\n     * whether enough time has passed to redraw for the target framerate.\n     * It will only draw if somewhere along the scene graph, an object needs updating.\n     * There is no need to invoke this directly, the constructor will do it.\n     */\n    _animationLoop() {\n        window.requestAnimationFrame(this._animationLoop.bind(this));\n        this._currentTime = +new Date();\n        //set maximum of 60 fps and only redraw if necessary\n        if ( /*this._currentTime - this._lastFrameTimestamp >= this._targetFPS &&*/ this.scene.needsDraw) {\n            this._lastRenderTime = +new Date();\n            Renderer.clearRect(0, 0, this._canvas.width, this._canvas.height, this._context);\n            this.scene.draw(this._context);\n        }\n        this.framerate = parseInt(1000 / (this._currentTime - this._lastFrameTimestamp));\n        this._lastFrameTimestamp = +new Date();\n\n    }\n\n    /**\n     * add an event to the event registry\n     *\n     * @param {string} eventType the name of the type of event\n     * @param {function} callback the callback to be triggered when the event occurs\n     */\n    registerEvent(eventType, callback) {\n        if (this._eventRegistry[eventType]) {\n            this._eventRegistry[eventType].push(callback);\n        }\n    }\n\n    /**\n     * remove an event to the event registry\n     *\n     * @param {string} eventType the name of the type of event\n     * @param {function} callback the callback to be removed from the event\n     * @return {function} the callback that was removed\n     */\n    removeEvent(eventType, callback) {\n        if (this._eventRegistry[eventType]) {\n            let index = this._eventRegistry[eventType].indexOf(callback);\n            if (index >= 0) {\n                return this._eventRegistry[eventType].splice(index, 1);\n            }\n        }\n    }\n\n    /**\n     * attach interaction events to the canvas. the canvas compositor dispatches\n     * events to relevant objects through bridges to the scene graph\n     */\n    _bindEvents() {\n        //TODO: reimplement touch events?\n        //must bind to `this` to retain reference\n        this._canvas.addEventListener('mousedown', this._handleMouseDown.bind(this));\n        this._canvas.addEventListener('mouseup', this._handleMouseUp.bind(this));\n        this._canvas.addEventListener('mousemove', this._handleMouseMove.bind(this));\n        this._canvas.addEventListener('mouseout', this._handleMouseOut.bind(this));\n        this._canvas.addEventListener('click', this._handleClick.bind(this));\n    }\n\n    /**\n     * bridge the mouse down event on the canvas to the\n     * the objects in the scene graph\n     */\n    _handleMouseDown(e) {\n        e.preventDefault();\n\n        let x = e.offsetX - this._leftPadding;\n        let y = e.offsetY - this._topPadding;\n\n        //pass through x and y to propagated events\n        e.canvasX = x;\n        e.canvasY = y;\n\n        for (let callback of this._eventRegistry[EVENTS.MOUSEDOWN]) {\n            callback(e);\n        };\n\n        let clickedObject = this.scene.childAt(x, y);\n\n        if (clickedObject && clickedObject.onmousedown) {\n            clickedObject.onmousedown(e);\n        }\n    }\n\n    /**\n     * bridge the mouse up event on the canvas to the\n     * the objects in the scene graph\n     */\n    _handleMouseUp(e) {\n        e.preventDefault();\n\n        let x = e.offsetX - this._leftPadding;\n        let y = e.offsetY - this._topPadding;\n\n        //pass through x and y to propagated events\n        e.canvasX = x;\n        e.canvasY = y;\n\n        for (let c of this.scene.children) {\n            if (c.draggable && c.onmouseup) {\n                c.onmouseup(e);\n            }\n        }\n\n        for (let callback of this._eventRegistry[EVENTS.MOUSEUP]) {\n            callback(e);\n        }\n\n        let clickedObject = this.scene.childAt(x, y);\n\n        if (clickedObject && clickedObject.onmouseup) {\n            clickedObject.onmouseup(e);\n        }\n    };\n\n    /**\n     * bridge the mouse move event on the canvas to the\n     * the objects in the scene graph\n     */\n    _handleMouseMove(e) {\n        e.preventDefault();\n        this._mouseX = e.offsetX - this._leftPadding;\n        this._mouseY = e.offsetY - this._topPadding;\n\n        let objects = this.scene.children.filter((c) => !!(c.onmousemove));\n\n        for (let callback of this._eventRegistry[EVENTS.MOUSEMOVE]) {\n            callback(e);\n        }\n\n        for (let o of objects) {\n            o.onmousemove(e);\n        }\n    };\n\n    /**\n     * bridge the click event on the canvas to the\n     * the objects in the scene graph\n     */\n    _handleClick(e) {\n        e.preventDefault();\n\n        let x = e.offsetX - this._leftPadding;\n        let y = e.offsetY - this._topPadding;\n\n        //pass through x and y to propagated events\n        e.canvasX = x;\n        e.canvasY = y;\n\n        //TODO: FF doesn't get this\n        let objects = this.scene.children.filter((c) => !!(c.onclick));\n\n        for (let callback of this._eventRegistry[EVENTS.CLICK]) {\n            callback(e);\n        }\n\n        for (let o of objects) {\n            o.onclick(e);\n        }\n    };\n\n    /**\n     * bridge the mouse out event on the canvas to the\n     * the objects in the scene graph\n     */\n    _handleMouseOut(e) {\n        e.preventDefault();\n\n        let objects = this.scene.children.filter((c) => !!(c.onmouseout));\n\n        for (let o of objects) {\n            o.onmouseout(e);\n        };\n\n        for (let callback of this._eventRegistry[EVENTS.MOUSEOUT]) {\n            callback(e);\n        };\n    };\n\n    drawBezier(start, end, c1, c2, style) {\n        Renderer.drawBezier(start, end, c1, c2, this._context, style);\n    }\n}\n\n/**\n * The initialization function\n */\n\nexport function init(canvas) {\n    return new CanvasCompositor(canvas);\n}\n\nexport {\n    Renderer,\n    PrimitiveComponent,\n    Composition,\n    Circle,\n    Ellipse,\n    Rectangle,\n    Line,\n    VectorPath,\n    Bezier,\n    Image,\n    Text,\n    DEFAULTS\n}\n",
     "static": true,
     "longname": "C:/Users/Christopher/git/canvas-compositor/src/CanvasCompositor.js",
     "access": null,
@@ -212,7 +212,7 @@
     "importPath": "canvas-compositor/src/CanvasCompositor.js",
     "importStyle": null,
     "description": null,
-    "lineNumber": 14,
+    "lineNumber": 37,
     "undocument": true
   },
   {
@@ -227,7 +227,7 @@
     "importPath": "canvas-compositor/src/CanvasCompositor.js",
     "importStyle": null,
     "description": null,
-    "lineNumber": 16,
+    "lineNumber": 39,
     "undocument": true
   },
   {
@@ -242,7 +242,7 @@
     "importPath": "canvas-compositor/src/CanvasCompositor.js",
     "importStyle": null,
     "description": "The CanvasCompositor class is the entry-point to usage of the `canvas-compositor`.\nThe application programmer is expected to hand over low-level control of the canvas\ncontext to the high-level classes and methods exposed by CanvasCompositor.\n\nThe CanvasCompositor class establishes an event dispatcher, animation loop, and scene graph for\ncompositions.",
-    "lineNumber": 32,
+    "lineNumber": 55,
     "interface": false
   },
   {
@@ -259,7 +259,7 @@
     "examples": [
       "let cc = new CanvasCompositor(document.getElementById('myCanvas'));"
     ],
-    "lineNumber": 42,
+    "lineNumber": 65,
     "params": [
       {
         "nullable": null,
@@ -282,7 +282,7 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#_canvas",
     "access": null,
     "description": null,
-    "lineNumber": 43,
+    "lineNumber": 66,
     "undocument": true
   },
   {
@@ -294,7 +294,7 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#_context",
     "access": null,
     "description": null,
-    "lineNumber": 44,
+    "lineNumber": 67,
     "undocument": true
   },
   {
@@ -306,7 +306,7 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#_rect",
     "access": null,
     "description": null,
-    "lineNumber": 51,
+    "lineNumber": 74,
     "undocument": true
   },
   {
@@ -318,7 +318,7 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#_mouseX",
     "access": null,
     "description": null,
-    "lineNumber": 52,
+    "lineNumber": 75,
     "undocument": true
   },
   {
@@ -330,7 +330,7 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#_mouseY",
     "access": null,
     "description": null,
-    "lineNumber": 53,
+    "lineNumber": 76,
     "undocument": true
   },
   {
@@ -342,7 +342,7 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#_leftPadding",
     "access": null,
     "description": null,
-    "lineNumber": 58,
+    "lineNumber": 81,
     "undocument": true
   },
   {
@@ -354,7 +354,7 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#_topPadding",
     "access": null,
     "description": null,
-    "lineNumber": 63,
+    "lineNumber": 86,
     "undocument": true
   },
   {
@@ -366,7 +366,7 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#_currentTime",
     "access": null,
     "description": null,
-    "lineNumber": 65,
+    "lineNumber": 88,
     "undocument": true
   },
   {
@@ -378,7 +378,7 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#_lastFrameTimestamp",
     "access": null,
     "description": null,
-    "lineNumber": 66,
+    "lineNumber": 89,
     "undocument": true
   },
   {
@@ -390,7 +390,7 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#_lastRenderTime",
     "access": null,
     "description": null,
-    "lineNumber": 67,
+    "lineNumber": 90,
     "undocument": true
   },
   {
@@ -402,7 +402,7 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#_targetObject",
     "access": null,
     "description": null,
-    "lineNumber": 69,
+    "lineNumber": 92,
     "undocument": true
   },
   {
@@ -414,7 +414,7 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#_scene",
     "access": null,
     "description": null,
-    "lineNumber": 71,
+    "lineNumber": 94,
     "undocument": true
   },
   {
@@ -426,7 +426,7 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#_eventRegistry",
     "access": null,
     "description": null,
-    "lineNumber": 75,
+    "lineNumber": 98,
     "undocument": true
   },
   {
@@ -438,7 +438,7 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#_framerate",
     "access": null,
     "description": null,
-    "lineNumber": 84,
+    "lineNumber": 107,
     "undocument": true
   },
   {
@@ -452,7 +452,7 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#framerate",
     "access": null,
     "description": null,
-    "lineNumber": 88,
+    "lineNumber": 111,
     "undocument": true
   },
   {
@@ -466,7 +466,7 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#framerate",
     "access": null,
     "description": null,
-    "lineNumber": 92,
+    "lineNumber": 115,
     "undocument": true
   },
   {
@@ -480,7 +480,7 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#targetObject",
     "access": null,
     "description": "the object currently selected for interaction",
-    "lineNumber": 102,
+    "lineNumber": 125,
     "type": {
       "nullable": null,
       "types": [
@@ -501,7 +501,7 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#targetObject",
     "access": null,
     "description": "the object currently selected for interaction",
-    "lineNumber": 110,
+    "lineNumber": 133,
     "params": [
       {
         "nullable": null,
@@ -534,7 +534,7 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#scene",
     "access": null,
     "description": "the root of the scene graph. add primitives to this to compose an image",
-    "lineNumber": 118,
+    "lineNumber": 141,
     "type": {
       "nullable": null,
       "types": [
@@ -555,7 +555,7 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#mouseX",
     "access": null,
     "description": "get the X position of the mouse on the canvas",
-    "lineNumber": 126,
+    "lineNumber": 149,
     "type": {
       "nullable": null,
       "types": [
@@ -576,7 +576,7 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#mouseY",
     "access": null,
     "description": "get the Y position of the mouse on the canvas",
-    "lineNumber": 134,
+    "lineNumber": 157,
     "type": {
       "nullable": null,
       "types": [
@@ -597,7 +597,7 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#_animationLoop",
     "access": null,
     "description": "The animation loop for this instance of CanvasCompositor.\nUpon receipt of the animation frame from `requestAnimationFrame`, the loop will check\nwhether enough time has passed to redraw for the target framerate.\nIt will only draw if somewhere along the scene graph, an object needs updating.\nThere is no need to invoke this directly, the constructor will do it.",
-    "lineNumber": 145
+    "lineNumber": 168
   },
   {
     "__docId__": 49,
@@ -610,7 +610,7 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#registerEvent",
     "access": null,
     "description": "add an event to the event registry",
-    "lineNumber": 165,
+    "lineNumber": 188,
     "params": [
       {
         "nullable": null,
@@ -645,7 +645,7 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#removeEvent",
     "access": null,
     "description": "remove an event to the event registry",
-    "lineNumber": 178,
+    "lineNumber": 201,
     "params": [
       {
         "nullable": null,
@@ -688,7 +688,7 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#_bindEvents",
     "access": null,
     "description": "attach interaction events to the canvas. the canvas compositor dispatches\nevents to relevant objects through bridges to the scene graph",
-    "lineNumber": 191
+    "lineNumber": 214
   },
   {
     "__docId__": 52,
@@ -701,7 +701,7 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#_handleMouseDown",
     "access": null,
     "description": "bridge the mouse down event on the canvas to the\nthe objects in the scene graph",
-    "lineNumber": 205
+    "lineNumber": 228
   },
   {
     "__docId__": 53,
@@ -714,7 +714,7 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#_handleMouseUp",
     "access": null,
     "description": "bridge the mouse up event on the canvas to the\nthe objects in the scene graph",
-    "lineNumber": 230
+    "lineNumber": 253
   },
   {
     "__docId__": 54,
@@ -727,7 +727,7 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#_handleMouseMove",
     "access": null,
     "description": "bridge the mouse move event on the canvas to the\nthe objects in the scene graph",
-    "lineNumber": 261
+    "lineNumber": 284
   },
   {
     "__docId__": 57,
@@ -740,7 +740,7 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#_handleClick",
     "access": null,
     "description": "bridge the click event on the canvas to the\nthe objects in the scene graph",
-    "lineNumber": 281
+    "lineNumber": 304
   },
   {
     "__docId__": 58,
@@ -753,7 +753,7 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#_handleMouseOut",
     "access": null,
     "description": "bridge the mouse out event on the canvas to the\nthe objects in the scene graph",
-    "lineNumber": 307
+    "lineNumber": 330
   },
   {
     "__docId__": 59,
@@ -766,7 +766,7 @@
     "longname": "src/CanvasCompositor.js~CanvasCompositor#drawBezier",
     "access": null,
     "description": null,
-    "lineNumber": 321,
+    "lineNumber": 344,
     "undocument": true
   },
   {
@@ -783,7 +783,7 @@
     "importPath": "canvas-compositor/src/CanvasCompositor.js",
     "importStyle": "{init}",
     "description": "The initialization function",
-    "lineNumber": 330
+    "lineNumber": 353
   },
   {
     "__docId__": 61,
@@ -4095,7 +4095,7 @@
   },
   {
     "kind": "packageJSON",
-    "content": "{\n    \"name\": \"canvas-compositor\",\n    \"version\": \"1.1.0\",\n    \"description\": \"a light and performant canvas compositing engine\",\n    \"main\": \"lib/CanvasCompositor.js\",\n    \"scripts\": {\n        \"prebuild\": \"npm prune && npm install\",\n        \"build\": \"esdoc && babel src/ -d lib/ -D -s && browserify src/CanvasCompositor.js -s CanvasCompositor -d -t [ babelify ] | uglifyjs > dist/canvas-compositor.min.js\"\n    },\n    \"keywords\": [\n        \"2d\",\n        \"canvas\",\n        \"compositing\"\n    ],\n    \"author\": \"Christopher J Gore\",\n    \"repository\": {\n        \"type\": \"git\",\n        \"url\": \"git@github.com:theOutLiar/canvas-compositor.git\"\n    },\n    \"license\": \"MIT\",\n    \"devDependencies\": {\n        \"@babel/cli\": \"^7.4.4\",\n        \"@babel/core\": \"^7.4.5\",\n        \"@babel/preset-env\": \"^7.4.5\",\n        \"babelify\": \"^10.0.0\",\n        \"browserify\": \"^16.2.3\",\n        \"esdoc\": \"^1.1.0\",\n        \"esdoc-ecmascript-proposal-plugin\": \"^1.0.0\",\n        \"mocha\": \"^6.1.4\",\n        \"uglify-js\": \"^3.6.0\"\n    },\n    \"dependencies\": {\n        \"vectorious\": \"^5.5.0\"\n    },\n    \"babel\": {\n        \"presets\": [\n            \"@babel/env\"\n        ]\n    },\n    \"esdoc\": {\n        \"source\": \"./src\",\n        \"destination\": \"./docs\",\n        \"plugins\": [\n            {\n                \"name\": \"esdoc-ecmascript-proposal-plugin\",\n                \"option\": {\n                    \"all\": true\n                }\n            }\n        ]\n    }\n}\n",
+    "content": "{\n    \"name\": \"canvas-compositor\",\n    \"version\": \"1.2.0\",\n    \"description\": \"a light and performant canvas compositing engine\",\n    \"main\": \"lib/CanvasCompositor.js\",\n    \"scripts\": {\n        \"prebuild\": \"npm prune && npm install\",\n        \"build\": \"esdoc && babel src/ -d lib/ -D -s && browserify src/CanvasCompositor.js -s CanvasCompositor -d -t [ babelify ] | uglifyjs > dist/canvas-compositor.min.js\"\n    },\n    \"keywords\": [\n        \"2d\",\n        \"canvas\",\n        \"compositing\"\n    ],\n    \"author\": \"Christopher J Gore\",\n    \"repository\": {\n        \"type\": \"git\",\n        \"url\": \"git@github.com:theOutLiar/canvas-compositor.git\"\n    },\n    \"license\": \"MIT\",\n    \"devDependencies\": {\n        \"@babel/cli\": \"^7.4.4\",\n        \"@babel/core\": \"^7.4.5\",\n        \"@babel/preset-env\": \"^7.4.5\",\n        \"babelify\": \"^10.0.0\",\n        \"browserify\": \"^16.2.3\",\n        \"esdoc\": \"^1.1.0\",\n        \"esdoc-ecmascript-proposal-plugin\": \"^1.0.0\",\n        \"mocha\": \"^6.1.4\",\n        \"uglify-js\": \"^3.6.0\"\n    },\n    \"dependencies\": {\n        \"vectorious\": \"^5.5.0\"\n    },\n    \"babel\": {\n        \"presets\": [\n            \"@babel/env\"\n        ]\n    },\n    \"esdoc\": {\n        \"source\": \"./src\",\n        \"destination\": \"./docs\",\n        \"plugins\": [\n            {\n                \"name\": \"esdoc-ecmascript-proposal-plugin\",\n                \"option\": {\n                    \"all\": true\n                }\n            }\n        ]\n    }\n}\n",
     "longname": "C:\\Users\\Christopher\\git\\canvas-compositor\\package.json",
     "name": "package.json",
     "static": true,

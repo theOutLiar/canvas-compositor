@@ -1,14 +1,37 @@
-import { DEFAULTS, Renderer } from './Renderer';
-import { Composition}  from './Composition';
-import { PrimitiveComponent } from './PrimitiveComponent';
-import { Circle } from './Circle';
-import { Ellipse } from './Ellipse';
-import { Rectangle } from './Rectangle';
-import { Line } from './Line';
-import { VectorPath } from './VectorPath';
-import { Bezier } from './Bezier';
-import { Image } from './Image';
-import { Text } from './Text';
+import {
+    DEFAULTS,
+    Renderer
+} from './Renderer';
+import {
+    Composition
+} from './Composition';
+import {
+    PrimitiveComponent
+} from './PrimitiveComponent';
+import {
+    Circle
+} from './Circle';
+import {
+    Ellipse
+} from './Ellipse';
+import {
+    Rectangle
+} from './Rectangle';
+import {
+    Line
+} from './Line';
+import {
+    VectorPath
+} from './VectorPath';
+import {
+    Bezier
+} from './Bezier';
+import {
+    Image
+} from './Image';
+import {
+    Text
+} from './Text';
 
 //const FPS_EPSILON = 10; // +/- 10ms for animation loop to determine if enough time has passed to render
 const DEFAULT_TARGET_FPS = 1000 / 60; //amount of time that must pass before rendering
@@ -49,8 +72,8 @@ class CanvasCompositor {
         let style = window.getComputedStyle(this._canvas);
 
         this._rect = canvas.getBoundingClientRect();
-        this._mouseX=null;
-        this._mouseY=null;
+        this._mouseX = null;
+        this._mouseY = null;
 
         let borderLeft = style.getPropertyValue('border-left') ? parseFloat(style.getPropertyValue('border-left')) : 0;
         let paddingLeft = style.getPropertyValue('padding-left') ? parseFloat(style.getPropertyValue('padding-left')) : 0;
@@ -120,18 +143,18 @@ class CanvasCompositor {
     }
 
     /**
-    * get the X position of the mouse on the canvas
-    * @type {number}
-    */
-    get mouseX(){
+     * get the X position of the mouse on the canvas
+     * @type {number}
+     */
+    get mouseX() {
         return this._mouseX;
     }
 
     /**
-    * get the Y position of the mouse on the canvas
-    * @type {number}
-    */
-    get mouseY(){
+     * get the Y position of the mouse on the canvas
+     * @type {number}
+     */
+    get mouseY() {
         return this._mouseY;
     }
 
@@ -205,8 +228,8 @@ class CanvasCompositor {
     _handleMouseDown(e) {
         e.preventDefault();
 
-        let x = e.clientX - this._rect.left - this._leftPadding;
-        let y = e.clientY - this._rect.top - this._topPadding;
+        let x = e.offsetX - this._leftPadding;
+        let y = e.offsetY - this._topPadding;
 
         //pass through x and y to propagated events
         e.canvasX = x;
@@ -230,8 +253,8 @@ class CanvasCompositor {
     _handleMouseUp(e) {
         e.preventDefault();
 
-        let x = e.clientX - this._rect.left - this._leftPadding;
-        let y = e.clientY - this._rect.top - this._topPadding;
+        let x = e.offsetX - this._leftPadding;
+        let y = e.offsetY - this._topPadding;
 
         //pass through x and y to propagated events
         e.canvasX = x;
@@ -260,8 +283,8 @@ class CanvasCompositor {
      */
     _handleMouseMove(e) {
         e.preventDefault();
-        this._mouseX = e.clientX - this._rect.left - this._leftPadding;
-        this._mouseY = e.clientY - this._rect.top - this._topPadding;
+        this._mouseX = e.offsetX - this._leftPadding;
+        this._mouseY = e.offsetY - this._topPadding;
 
         let objects = this.scene.children.filter((c) => !!(c.onmousemove));
 
@@ -281,8 +304,8 @@ class CanvasCompositor {
     _handleClick(e) {
         e.preventDefault();
 
-        let x = e.clientX - this._rect.left - this._leftPadding;
-        let y = e.clientY - this._rect.top - this._topPadding;
+        let x = e.offsetX - this._leftPadding;
+        let y = e.offsetY - this._topPadding;
 
         //pass through x and y to propagated events
         e.canvasX = x;
