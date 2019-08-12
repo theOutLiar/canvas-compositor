@@ -1,6 +1,8 @@
 import { Vector } from 'vectorious';
 import { DEFAULTS, Renderer } from './Renderer';
 
+import { EventEmitter } from 'micro-mvc';
+
 /**
  * The base class of things that may be drawn on the canvas.
  * All drawable objects should inherit from this class.
@@ -8,11 +10,12 @@ import { DEFAULTS, Renderer } from './Renderer';
  * call this directly, although they may wish to extend their own
  * classes with it.
  */
-export class PrimitiveComponent {
+export class PrimitiveComponent extends EventEmitter {
     /**
      * @param {object} options
      */
     constructor(options) {
+        super();
 
         options = options || {};
 
@@ -56,6 +59,8 @@ export class PrimitiveComponent {
          */
         this.style = Object.assign({}, DEFAULTS, options.style);
 
+        //TODO: determine whether this is the best place to implement click passthrough -
+        //it might be better left implemented by consuming modules
         /**
          * objects with pressPassThrough set to true will allow mouse clicks to pass
          * through to objects behind them
@@ -63,12 +68,15 @@ export class PrimitiveComponent {
          */
         //this.pressPassThrough = options.pressPassThrough || false;
 
+        //TODO: determine whether this is the best place to implement draggability -
+        //it might be better left implemented by consuming modules
         /**
          * if true, the object can be dragged around the canvas
          * @type {boolean} draggable
          */
-        this.draggable = options.draggable || false;
+        /*this.draggable = options.draggable || false;*/
 
+        //TODO: determine whether this is the best place to implement debug features
         /**
          * if true, the bounding box of the object will be draw
          * @type {boolean} drawBoundingBox
@@ -84,6 +92,7 @@ export class PrimitiveComponent {
          */
         this._prerenderingCanvas = document.createElement('canvas');
 
+        //TODO: enable alternative rendering contexts for WebGL and 3d
         /**
          * the 2D context of the prerendering canvas.
          * @type {object} _prerenderingCanvas
@@ -101,36 +110,36 @@ export class PrimitiveComponent {
          * a callback for the mousedown event.
          * @type {function} onmousedown
          */
-        this.onmousedown = null;
+        //this.onmousedown = null;
 
         /**
          * a callback for the mouseup event.
          * @type {function} onmouseup
          */
-        this.onmouseup = null;
+        //this.onmouseup = null;
 
         /**
          * a callback for the mousemove event.
          * @type {function} onmousemove
          */
-        this.onmousemove = null;
+        //this.onmousemove = null;
 
         /**
          * a callback for the mouseout event.
          * @type {function} onmouseout
          */
-        this.onmouseout = null;
+        //this.onmouseout = null;
 
         /**
          * a callback for the click event.
          * @type {function} onclick
          */
-        this.onclick = null;
+        //this.onclick = null;
 
 
-        if (this.draggable) {
+        /*if (this.draggable) {
             this.enableDragging();
-        }
+        }*/
     }
 
     /**
@@ -317,16 +326,16 @@ export class PrimitiveComponent {
     /**
      * enable dragging by setting the onmousedown event callback
      */
-    enableDragging() {
+    /*enableDragging() {
         //TODO: should probably be using an event registry so
         //multiple event callbacks can be registered
         this.onmousedown = this.dragStart;
-    }
+    }*/
 
     /**
      * disable dragging by removing event callbacks
      */
-    disableDragging() {
+    /*disableDragging() {
         //TODO: should probably be using an event registry so
         //multiple event callbacks can be registered
         this.onmousedown = null;
@@ -334,13 +343,13 @@ export class PrimitiveComponent {
         this.onmouseup = null;
         this.onmouseout = null;
         this.needsDraw = true;
-    }
+    }*/
 
     /**
      * when dragging starts, update events
      * @param {object} e the event object
      */
-    dragStart(e) {
+    /*dragStart(e) {
         //TODO: should probably be using an event registry so
         //multiple event callbacks can be registered
         this._mouseOffset = new Vector([e.offsetX, e.offsetY]).subtract(this.offset);
@@ -348,28 +357,28 @@ export class PrimitiveComponent {
         this.onmousemove = this.drag;
         this.onmouseup = this.dragEnd;
         this.onmouseout = this.dragEnd;
-    }
+    }*/
 
     /**
      * update d as the object is moved around
      * @param {object} e the event object
      */
-    drag(e) {
+    /*drag(e) {
         this.d = new Vector([e.offsetX, e.offsetY]).subtract(this._mouseOffset);
         this.needsDraw = true;
-    }
+    }*/
 
     /**
      * when dragging ends, update events
      * @param {object} e the event object
      */
-    dragEnd(e) {
+    /*dragEnd(e) {
         this.onmousedown = this.dragStart;
         this.onmousemove = null;
         this.onmouseup = null;
         this.onmouseout = null;
         this.needsDraw = true;
-    }
+    }*/
 
     /**
      * draw the object to canvas, render it if necessary

@@ -33,15 +33,22 @@ import {
     Text
 } from './Text';
 
+import EventEmitter from 'micro-mvc';
+
 //const FPS_EPSILON = 10; // +/- 10ms for animation loop to determine if enough time has passed to render
 const DEFAULT_TARGET_FPS = 1000 / 60; //amount of time that must pass before rendering
 
-const EVENTS = {
-    MOUSEUP: 'onmouseup',
-    MOUSEDOWN: 'onmousedown',
-    MOUSEMOVE: 'onmousemove',
-    MOUSEOUT: 'onmouseout',
-    CLICK: 'onclick'
+export const EPSILON = Number.EPSILON;
+
+export const EVENTS = {
+    MOUSEUP: 'mouseup',
+    MOUSEDOWN: 'mousedown',
+    MOUSEMOVE: 'mousemove',
+    MOUSEOUT: 'mouseout',
+    CLICK: 'click',
+    KEYDOWN: 'keydown',
+    KEYUP: 'keyup',
+    KEYPRESS: 'keypress'
 };
 
 /**
@@ -52,7 +59,7 @@ const EVENTS = {
  * The CanvasCompositor class establishes an event dispatcher, animation loop, and scene graph for
  * compositions.
  */
-class CanvasCompositor {
+class CanvasCompositor extends EventEmitter {
     /**
      * The CanvasCompositor class establishes an event dispatcher, animation loop, and scene graph for
      * compositions
@@ -71,7 +78,6 @@ class CanvasCompositor {
         //TODO: determine if border-box affects this, and adjust accordingly
         let style = window.getComputedStyle(this._canvas);
 
-        this._rect = canvas.getBoundingClientRect();
         this._mouseX = null;
         this._mouseY = null;
 
@@ -93,23 +99,21 @@ class CanvasCompositor {
 
         this._scene = new Composition(this.canvas);
 
-        this._bindEvents();
+        //this._bindEvents();
 
-        this._eventRegistry = {
-            onmouseup: [],
-            onmousedown: [],
-            onmousemove: [],
-            onmouseout: [],
-            onclick: []
-        };
+        /*this._eventRegistry = {
+            mouseup: [],
+            mousedown: [],
+            mousemove: [],
+            mouseout: [],
+            click: [],
+            keyup: [],
+            keydown: [],
+            keypress: []
+        };*/
 
         this._animationLoop();
         this._framerate = 0;
-    }
-
-    //TODO: expose the framerate
-    set framerate(val) {
-        this._framerate = val;
     }
 
     get framerate() {
@@ -174,7 +178,7 @@ class CanvasCompositor {
             Renderer.clearRect(0, 0, this._canvas.width, this._canvas.height, this._context);
             this.scene.draw(this._context);
         }
-        this.framerate = parseInt(1000 / (this._currentTime - this._lastFrameTimestamp));
+        this._framerate = parseInt(1000 / (this._currentTime - this._lastFrameTimestamp));
         this._lastFrameTimestamp = +new Date();
 
     }
@@ -185,11 +189,11 @@ class CanvasCompositor {
      * @param {string} eventType the name of the type of event
      * @param {function} callback the callback to be triggered when the event occurs
      */
-    registerEvent(eventType, callback) {
+    /*registerEvent(eventType, callback) {
         if (this._eventRegistry[eventType]) {
             this._eventRegistry[eventType].push(callback);
         }
-    }
+    }*/
 
     /**
      * remove an event to the event registry
@@ -198,27 +202,41 @@ class CanvasCompositor {
      * @param {function} callback the callback to be removed from the event
      * @return {function} the callback that was removed
      */
-    removeEvent(eventType, callback) {
+    /*removeEvent(eventType, callback) {
         if (this._eventRegistry[eventType]) {
             let index = this._eventRegistry[eventType].indexOf(callback);
             if (index >= 0) {
                 return this._eventRegistry[eventType].splice(index, 1);
             }
         }
-    }
+    }*/
 
     /**
      * attach interaction events to the canvas. the canvas compositor dispatches
      * events to relevant objects through bridges to the scene graph
      */
     _bindEvents() {
-        //TODO: reimplement touch events?
         //must bind to `this` to retain reference
-        this._canvas.addEventListener('mousedown', this._handleMouseDown.bind(this));
-        this._canvas.addEventListener('mouseup', this._handleMouseUp.bind(this));
-        this._canvas.addEventListener('mousemove', this._handleMouseMove.bind(this));
-        this._canvas.addEventListener('mouseout', this._handleMouseOut.bind(this));
-        this._canvas.addEventListener('click', this._handleClick.bind(this));
+
+        this.addEventListener('mousedown', this._handleMouseDown);
+        this.addEventListener('mousemove', this._handleMouseMove);
+        this.addEventListener('mouseout', this._handleMouseOut);
+        this.addEventListener('click', this._handleClick);
+
+        let _cc = this;
+        this._canvas.addEventListener('mousedown', (e) => {
+            _cc.dispatchEvent(e);
+        });
+
+        this._canvas.addEventListener('mousemove', (e) => {
+            _cc.dispatchEvent(e);
+        });
+        this._canvas.addEventListener('mouseout', (e) => {
+            _cc.dispatchEvent(e);
+        });
+        this._canvas.addEventListener('click', (e) => {
+            _cc.dispatchEvent(e);
+        });
     }
 
     /**
@@ -235,14 +253,10 @@ class CanvasCompositor {
         e.canvasX = x;
         e.canvasY = y;
 
-        for (let callback of this._eventRegistry[EVENTS.MOUSEDOWN]) {
-            callback(e);
-        };
-
         let clickedObject = this.scene.childAt(x, y);
 
-        if (clickedObject && clickedObject.onmousedown) {
-            clickedObject.onmousedown(e);
+        if (clickedObject) {
+            clickedObject.dispatchEvent(e);
         }
     }
 
@@ -261,19 +275,13 @@ class CanvasCompositor {
         e.canvasY = y;
 
         for (let c of this.scene.children) {
-            if (c.draggable && c.onmouseup) {
-                c.onmouseup(e);
-            }
-        }
-
-        for (let callback of this._eventRegistry[EVENTS.MOUSEUP]) {
-            callback(e);
+            c.dispatchEvent(e);
         }
 
         let clickedObject = this.scene.childAt(x, y);
 
-        if (clickedObject && clickedObject.onmouseup) {
-            clickedObject.onmouseup(e);
+        if (clickedObject) {
+            clickedObject.dispatchEvent(e);
         }
     };
 
@@ -286,14 +294,8 @@ class CanvasCompositor {
         this._mouseX = e.offsetX - this._leftPadding;
         this._mouseY = e.offsetY - this._topPadding;
 
-        let objects = this.scene.children.filter((c) => !!(c.onmousemove));
-
-        for (let callback of this._eventRegistry[EVENTS.MOUSEMOVE]) {
-            callback(e);
-        }
-
-        for (let o of objects) {
-            o.onmousemove(e);
+        for (let c of this.scene.children) {
+            c.dispatchEvent(e)
         }
     };
 
@@ -312,15 +314,9 @@ class CanvasCompositor {
         e.canvasY = y;
 
         //TODO: FF doesn't get this
-        let objects = this.scene.children.filter((c) => !!(c.onclick));
 
-        for (let callback of this._eventRegistry[EVENTS.CLICK]) {
-            callback(e);
-        }
-
-        for (let o of objects) {
-            o.onclick(e);
-        }
+        let clickedObject = this.scene.childAt(x, y);
+        clickedObject.onclick(e);
     };
 
     /**
@@ -340,10 +336,6 @@ class CanvasCompositor {
             callback(e);
         };
     };
-
-    drawBezier(start, end, c1, c2, style) {
-        Renderer.drawBezier(start, end, c1, c2, this._context, style);
-    }
 }
 
 /**
