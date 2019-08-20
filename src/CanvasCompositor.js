@@ -33,7 +33,9 @@ import {
     Text
 } from './Text';
 
-import EventEmitter from 'micro-mvc';
+import {
+    EventEmitter
+} from 'micro-mvc';
 
 //const FPS_EPSILON = 10; // +/- 10ms for animation loop to determine if enough time has passed to render
 const DEFAULT_TARGET_FPS = 1000 / 60; //amount of time that must pass before rendering
@@ -70,6 +72,7 @@ class CanvasCompositor extends EventEmitter {
      * let cc = new CanvasCompositor(document.getElementById('myCanvas'));
      */
     constructor(canvas) {
+        super();
         this._canvas = canvas;
         this._context = this._canvas.getContext('2d');
 
@@ -99,18 +102,7 @@ class CanvasCompositor extends EventEmitter {
 
         this._scene = new Composition(this.canvas);
 
-        //this._bindEvents();
-
-        /*this._eventRegistry = {
-            mouseup: [],
-            mousedown: [],
-            mousemove: [],
-            mouseout: [],
-            click: [],
-            keyup: [],
-            keydown: [],
-            keypress: []
-        };*/
+        this._bindEvents();
 
         this._animationLoop();
         this._framerate = 0;
@@ -184,44 +176,11 @@ class CanvasCompositor extends EventEmitter {
     }
 
     /**
-     * add an event to the event registry
-     *
-     * @param {string} eventType the name of the type of event
-     * @param {function} callback the callback to be triggered when the event occurs
-     */
-    /*registerEvent(eventType, callback) {
-        if (this._eventRegistry[eventType]) {
-            this._eventRegistry[eventType].push(callback);
-        }
-    }*/
-
-    /**
-     * remove an event to the event registry
-     *
-     * @param {string} eventType the name of the type of event
-     * @param {function} callback the callback to be removed from the event
-     * @return {function} the callback that was removed
-     */
-    /*removeEvent(eventType, callback) {
-        if (this._eventRegistry[eventType]) {
-            let index = this._eventRegistry[eventType].indexOf(callback);
-            if (index >= 0) {
-                return this._eventRegistry[eventType].splice(index, 1);
-            }
-        }
-    }*/
-
-    /**
      * attach interaction events to the canvas. the canvas compositor dispatches
      * events to relevant objects through bridges to the scene graph
      */
     _bindEvents() {
         //must bind to `this` to retain reference
-
-        this.addEventListener('mousedown', this._handleMouseDown);
-        this.addEventListener('mousemove', this._handleMouseMove);
-        this.addEventListener('mouseout', this._handleMouseOut);
-        this.addEventListener('click', this._handleClick);
 
         let _cc = this;
         this._canvas.addEventListener('mousedown', (e) => {
@@ -231,12 +190,21 @@ class CanvasCompositor extends EventEmitter {
         this._canvas.addEventListener('mousemove', (e) => {
             _cc.dispatchEvent(e);
         });
+        this._canvas.addEventListener('mouseup', (e) => {
+            _cc.dispatchEvent(e);
+        });
         this._canvas.addEventListener('mouseout', (e) => {
             _cc.dispatchEvent(e);
         });
         this._canvas.addEventListener('click', (e) => {
             _cc.dispatchEvent(e);
         });
+
+        this.addEventListener('mousedown', this._handleMouseDown);
+        this.addEventListener('mousemove', this._handleMouseMove);
+        this.addEventListener('mouseup', this._handleMouseUp);
+        this.addEventListener('mouseout', this._handleMouseOut);
+        this.addEventListener('click', this._handleClick);
     }
 
     /**
@@ -313,10 +281,10 @@ class CanvasCompositor extends EventEmitter {
         e.canvasX = x;
         e.canvasY = y;
 
-        //TODO: FF doesn't get this
-
         let clickedObject = this.scene.childAt(x, y);
-        clickedObject.onclick(e);
+        if (clickedObject) {
+            clickedObject.dispatchEvent(e);
+        }
     };
 
     /**
@@ -326,14 +294,8 @@ class CanvasCompositor extends EventEmitter {
     _handleMouseOut(e) {
         e.preventDefault();
 
-        let objects = this.scene.children.filter((c) => !!(c.onmouseout));
-
-        for (let o of objects) {
-            o.onmouseout(e);
-        };
-
-        for (let callback of this._eventRegistry[EVENTS.MOUSEOUT]) {
-            callback(e);
+        for (let c of this.scene.children) {
+            c.dispatchEvent(e);
         };
     };
 }

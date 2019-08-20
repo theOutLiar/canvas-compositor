@@ -96,6 +96,16 @@ export class Composition extends PrimitiveComponent {
     }
 
     /**
+     * add multiple children to the composition
+     * @param {object} children the list of children to be added
+     */
+    addChildren(children){
+        for (let c of children){
+            this.addChild(c);
+        }
+    }
+
+    /**
      * remove a child from this composition
      * @param {object} child the child to be removed
      * @return {object} the child removed

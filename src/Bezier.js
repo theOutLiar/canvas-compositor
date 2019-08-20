@@ -8,7 +8,6 @@ function _cubicBezier(start, c1, c2, end, t) {
     return start * (1 - t) * (1 - t) * (1 - t) + 3 * c1 * t * (1 - t) * (1 - t) + 3 * c2 * t * t * (1 - t) + end * t * t * t;
 }
 
-
 function _getExtremes(start, c1, c2, end) {
 
     let a = 3 * end - 9 * c2 + 9 * c1 - 3 * start;

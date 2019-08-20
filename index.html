@@ -34,8 +34,7 @@
             style: {
                 fillStyle: '#ccccff',
                 lineDash: [1, 5]
-            },
-            draggable: true
+            }
         });
 
         let _elip = new cc.Ellipse({
@@ -43,7 +42,6 @@
             y: 200,
             radius: 50,
             minorRadius: 30,
-            draggable: true,
             style: {
                 strokeStyle: '#000000',
                 fillStyle: 'blue',
@@ -60,8 +58,7 @@
             style: {
                 fillStyle: '#ccffcc',
                 lineWidth: 1.0,
-            },
-            draggable: true
+            }
         })
 
         let _path = new cc.VectorPath({
@@ -81,8 +78,7 @@
             style: {
                 strokeStyle: 'orange',
                 lineWidth: 5.0,
-            },
-            draggable: true
+            }
         });
 
         var _text = new cc.Text({
@@ -92,8 +88,7 @@
             fontSize: '28px',
             style: {
                 fillStyle: 'green'
-            },
-            draggable: true
+            }
         });
 
         var _bezi = new cc.Bezier({
@@ -115,8 +110,7 @@
             },
             style: {
                 strokeStyle: 'red'
-            },
-            draggable: true //,
+            }
             //debug: true
         });
 
@@ -131,23 +125,65 @@
                 style: {
                     strokeStyle: 'orange',
                     lineWidth: 10.0
-                },
-                draggable: true
+                }
             });
             _myCC.scene.addChild(_image);
         }
 
-        _myCC.scene.addChild(_circ);
-        _myCC.scene.addChild(_elip);
-        _myCC.scene.addChild(_rect);
-        _myCC.scene.addChild(_path);
-        _myCC.scene.addChild(_bezi);
-        _myCC.scene.addChild(_text);
+        let sceneObjects = [_circ, _elip, _rect, _path, _bezi, _text];
 
-        _myCC.registerEvent('onmousemove', () => {
+        _myCC.scene.addChildren(sceneObjects);
+
+        _myCC.addEventListener('mousemove', () => {
             mousexDebug.innerHTML = _myCC.mouseX;
             mouseyDebug.innerHTML = _myCC.mouseY;
         });
+
+        for (let c of sceneObjects) {
+            c.addEventListener('mousedown', dragStart);
+        }
+
+        let mouseOffset = null;
+
+        /**
+         * when dragging starts, update events
+         * @param {object} e the event object
+         */
+        function dragStart(e) {
+            mouseOffset = new Vector([e.offsetX, e.offsetY]).subtract(this.offset);
+            //this.removeEventListener('mousedown', dragStart);
+            this.addEventListener('mousemove', drag);
+            this.addEventListener('mouseup', dragEnd);
+
+            //TODO: not sure how to handle mouse out with the new event system
+            //this.onmouseout = this.dragEnd;
+        }
+
+        /**
+         * update d as the object is moved around
+         * @param {object} e the event object
+         */
+        function drag(e) {
+            this.d = new Vector([e.offsetX, e.offsetY]).subtract(mouseOffset);
+            this.needsDraw = true;
+        }
+
+        /**
+         * when dragging ends, update events
+         * @param {object} e the event object
+         */
+        function dragEnd(e) {
+            //this.onmousedown = this.dragStart;
+            this.removeEventListener('mousemove', drag);
+            this.removeEventListener('mouseup', dragEnd);
+            this.needsDraw = true;
+        }
+
+        _rect.addEventListener('click', (e) => {
+            _rect.style.fillStyle = 'purple'
+            _rect.needsRender = true;
+            _rect.needsDraw = true;
+        })
 
         function _updateFPS() {
             fpsDebug.innerHTML = _myCC.framerate;

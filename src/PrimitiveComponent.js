@@ -68,22 +68,6 @@ export class PrimitiveComponent extends EventEmitter {
          */
         //this.pressPassThrough = options.pressPassThrough || false;
 
-        //TODO: determine whether this is the best place to implement draggability -
-        //it might be better left implemented by consuming modules
-        /**
-         * if true, the object can be dragged around the canvas
-         * @type {boolean} draggable
-         */
-        /*this.draggable = options.draggable || false;*/
-
-        //TODO: determine whether this is the best place to implement debug features
-        /**
-         * if true, the bounding box of the object will be draw
-         * @type {boolean} drawBoundingBox
-         */
-        //this.drawBoundingBox = false;
-        //this.boundingBoxColor = '#cccccc';
-
         /**
          * the prerendering canvas is used to avoid performing mutliple draw operations on the
          * visible, main canvas. this minimizes the time needed to render by prerendering on a
@@ -105,41 +89,6 @@ export class PrimitiveComponent extends EventEmitter {
          * @type {object} parent
          */
         this._parent = options.parent || null;
-
-        /**
-         * a callback for the mousedown event.
-         * @type {function} onmousedown
-         */
-        //this.onmousedown = null;
-
-        /**
-         * a callback for the mouseup event.
-         * @type {function} onmouseup
-         */
-        //this.onmouseup = null;
-
-        /**
-         * a callback for the mousemove event.
-         * @type {function} onmousemove
-         */
-        //this.onmousemove = null;
-
-        /**
-         * a callback for the mouseout event.
-         * @type {function} onmouseout
-         */
-        //this.onmouseout = null;
-
-        /**
-         * a callback for the click event.
-         * @type {function} onclick
-         */
-        //this.onclick = null;
-
-
-        /*if (this.draggable) {
-            this.enableDragging();
-        }*/
     }
 
     /**
@@ -243,6 +192,7 @@ export class PrimitiveComponent extends EventEmitter {
     get scaleHeight() {
         return this._scaleHeight;
     }
+
     /**
      * set the vertical scale of the object - defaults to 1
      * @type {number} scaleHeight
@@ -324,63 +274,6 @@ export class PrimitiveComponent extends EventEmitter {
     }
 
     /**
-     * enable dragging by setting the onmousedown event callback
-     */
-    /*enableDragging() {
-        //TODO: should probably be using an event registry so
-        //multiple event callbacks can be registered
-        this.onmousedown = this.dragStart;
-    }*/
-
-    /**
-     * disable dragging by removing event callbacks
-     */
-    /*disableDragging() {
-        //TODO: should probably be using an event registry so
-        //multiple event callbacks can be registered
-        this.onmousedown = null;
-        this.onmousemove = null;
-        this.onmouseup = null;
-        this.onmouseout = null;
-        this.needsDraw = true;
-    }*/
-
-    /**
-     * when dragging starts, update events
-     * @param {object} e the event object
-     */
-    /*dragStart(e) {
-        //TODO: should probably be using an event registry so
-        //multiple event callbacks can be registered
-        this._mouseOffset = new Vector([e.offsetX, e.offsetY]).subtract(this.offset);
-        this.onmousedown = null;
-        this.onmousemove = this.drag;
-        this.onmouseup = this.dragEnd;
-        this.onmouseout = this.dragEnd;
-    }*/
-
-    /**
-     * update d as the object is moved around
-     * @param {object} e the event object
-     */
-    /*drag(e) {
-        this.d = new Vector([e.offsetX, e.offsetY]).subtract(this._mouseOffset);
-        this.needsDraw = true;
-    }*/
-
-    /**
-     * when dragging ends, update events
-     * @param {object} e the event object
-     */
-    /*dragEnd(e) {
-        this.onmousedown = this.dragStart;
-        this.onmousemove = null;
-        this.onmouseup = null;
-        this.onmouseout = null;
-        this.needsDraw = true;
-    }*/
-
-    /**
      * draw the object to canvas, render it if necessary
      * @param {object} context the final canvas context where this will be drawn
      * @param {object} offset the offset on the canvas - optional, used for prerendering
@@ -418,15 +311,6 @@ export class PrimitiveComponent extends EventEmitter {
         	this._prerenderingContext.strokeRect(0,0,this._prerenderingCanvas.width, this._prerenderingCanvas.height);
         	this._prerenderingContext.closePath();
         }
-
-        //TODO: handle bounding box drawing
-        /*if (this.drawBoundingBox){
-        	this._prerenderingContext.beginPath();
-        	this._prerenderingContext.lineWidth=2.0;
-        	this._prerenderingContext.strokeStyle=this.boundingBoxColor;
-        	this._prerenderingContext.strokeRect(0,0,this._prerenderingCanvas.width, this._prerenderingCanvas.height);
-        	this._prerenderingContext.closePath();
-        }*/
 
         //offsets are for prerendering contexts of compositions
         let x = boundingBox.left + (offset && offset.left ? offset.left : 0);
