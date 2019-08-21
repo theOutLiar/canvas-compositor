@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../">
+  <title data-ice="title">src/Composition.js | canvas-compositor</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+<meta name="description" content="a light and performant canvas compositing engine"><meta property="twitter:card" content="summary"><meta property="twitter:title" content="canvas-compositor"><meta property="twitter:description" content="a light and performant canvas compositing engine"></head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+<a style="position:relative; top:3px;" href="https://github.com/theOutLiar/canvas-compositor"><img width="20px" src="./image/github.png"></a></header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Bezier.js~Bezier.html">Bezier</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Circle.js~Circle.html">Circle</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Composition.js~Composition.html">Composition</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Ellipse.js~Ellipse.html">Ellipse</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Image.js~Image.html">Image</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Line.js~Line.html">Line</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/PrimitiveComponent.js~PrimitiveComponent.html">PrimitiveComponent</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Rectangle.js~Rectangle.html">Rectangle</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Renderer.js~Renderer.html">Renderer</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Text.js~Text.html">Text</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/VectorPath.js~VectorPath.html">VectorPath</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-init">init</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-EPSILON">EPSILON</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-CLICK">CLICK</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-KEYDOWN">KEYDOWN</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-KEYPRESS">KEYPRESS</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-KEYUP">KEYUP</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-MOUSEDOWN">MOUSEDOWN</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-MOUSEMOVE">MOUSEMOVE</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-MOUSEOUT">MOUSEOUT</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-MOUSEUP">MOUSEUP</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-DEFAULTS">DEFAULTS</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">src/Composition.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import { PrimitiveComponent } from &apos;./PrimitiveComponent&apos;;
+
+/**
+ * The Composition class is an extension of the Primitive that is
+ * composed of other extensions of the Primitive. The Composition
+ * is used to establish the Scene graph as the parent of all other
+ * objects on screen. This is the key abstraction of the [composite
+ * pattern](https://en.wikipedia.org/wiki/Composite_pattern): an
+ * action taken on the parent element acts upon all of the children,
+ * and transatively, all of their children.
+ */
+export class Composition extends PrimitiveComponent {
+    /**
+     * @param {object} options object settings
+     */
+    constructor(options) {
+        super(options);
+        options = options || {};
+        this._children = options.children || [];
+    }
+
+    /**
+     * children of this composition
+     * @type {Array} children the which compose this object
+     */
+    get children() {
+        return this._children;
+    }
+
+    /**
+     * the bounding box of the composition (i.e., the containing bounds of all the children of this composition)
+     * @type {{top:number, left:number, right:number, bottom:number}} boundingBox
+     */
+    get boundingBox() {
+        let top = Infinity,
+            left = Infinity,
+            bottom = -Infinity,
+            right = -Infinity;
+
+        for (let c of this.children) {
+            let boundingBox = c.boundingBox;
+            top = Math.min(boundingBox.top, top);
+            left = Math.min(boundingBox.left, left);
+            bottom = Math.max(boundingBox.bottom, bottom);
+            right = Math.max(boundingBox.right, right);
+        };
+
+        return {
+            top: top,
+            left: left,
+            bottom: bottom,
+            right: right
+        };
+    }
+
+
+    /**
+     * the an array of children that are found at (x, y)
+     * @return {object} childrenAt all the children below the point
+     * @param {number} x the x coordinate
+     * @param {number} y the y coordinate
+     */
+    childrenAt(x, y) {
+        return this.children.filter((c) =&gt; c.PointIsInObject(x, y));
+    }
+
+    /**
+     * get the top-most child at the (x, y)
+     * @return {object} childAt the first child below the point
+     * @param {number} x the x coordinate
+     * @param {number} y the y coordinate
+     */
+    childAt(x, y) {
+        //loop over the children in reverse because drawing order
+        for (var c = this.children.length - 1; c &gt;= 0; c--) {
+            if (this.children[c].pointIsInObject(x, y)) {
+                return this.children[c];
+            }
+        }
+    }
+
+    /**
+     * add a child to this composition
+     * @param {object} child the child to be added
+     */
+    addChild(child) {
+        child.parent = this;
+        this.children.push(child);
+        super.needsRender = true;
+        super.needsDraw = true;
+        //TODO: make this hook more generic
+        //by using a registry
+        //if (this.onchildadded) {
+        //  this.onchildadded();
+        //}
+    }
+
+    /**
+     * add multiple children to the composition
+     * @param {object} children the list of children to be added
+     */
+    addChildren(children){
+        for (let c of children){
+            this.addChild(c);
+        }
+    }
+
+    /**
+     * remove a child from this composition
+     * @param {object} child the child to be removed
+     * @return {object} the child removed
+     */
+    removeChild(child) {
+        if (child) {
+            var index = this.children.indexOf(child);
+            if (index &gt;= 0) {
+                super.needsRender = true;
+                super.needsDraw = true;
+                return this.children.splice(index, 1);
+            }
+        }
+    };
+
+    /**
+     * @override
+     * override the render functiont to render the children onto this compositions prerendering canvas
+     */
+    render() {
+        // required to make sure that the drawing occurs within the bounds of this composition
+        let boundingBox = this.boundingBox;
+        var offset = {
+            top: -boundingBox.top,
+            left: -boundingBox.left,
+            bottom: -boundingBox.bottom,
+            right: -boundingBox.right
+        };
+
+        for (let c of this.children) {
+            c.draw(this._prerenderingContext, offset);
+        };
+
+        // `destination-out` will erase things
+        //this._prerenderingContext.globalCompositeOperation = &apos;destination-out&apos;;
+        //_.each(this.masks, function (m) {
+        //m.draw(renderContext, contextOffset);
+        //});
+        //renderContext.globalCompositeOperation = &apos;normal&apos;;
+    };
+}
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.1.0)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

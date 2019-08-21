@@ -1,0 +1,198 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Canvas Compositor</title>
+    <script src="../dist/canvas-compositor.min.js" type="text/javascript" charset="utf-8"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+
+    </style>
+</head>
+
+<body>
+    <canvas id="test-canvas" width="800" height="600" style="margin-top:20px;"></canvas>
+    <div id="canvas-debug">
+        FPS <span id="fps"></span> X: <span id="mousex"></span> Y: <span id="mousey"></span>
+    </div>
+    <script>
+        let cc = CanvasCompositor;
+        let fpsDebug = document.getElementById('fps');
+        let mousexDebug = document.getElementById('mousex');
+        let mouseyDebug = document.getElementById('mousey');
+
+        let _myCC = new cc.init(document.getElementById('test-canvas'));
+
+        let _circ = new cc.Circle({
+            radius: 50,
+            x: 100,
+            y: 100,
+            style: {
+                fillStyle: '#ccccff',
+                lineDash: [1, 5]
+            }
+        });
+
+        let _elip = new cc.Ellipse({
+            x: 200,
+            y: 200,
+            radius: 50,
+            minorRadius: 30,
+            style: {
+                strokeStyle: '#000000',
+                fillStyle: 'blue',
+                lineWidth: 10,
+                lineDash: [1, 31]
+            }
+        });
+
+        let _rect = new cc.Rectangle({
+            width: 100,
+            height: 50,
+            x: 300,
+            y: 300,
+            style: {
+                fillStyle: '#ccffcc',
+                lineWidth: 1.0,
+            }
+        })
+
+        let _path = new cc.VectorPath({
+            vertices: [{
+                x: 200,
+                y: 100
+            }, {
+                x: 100,
+                y: 400
+            }, {
+                x: 400,
+                y: 200
+            }, {
+                x: 800,
+                y: 200
+            }],
+            style: {
+                strokeStyle: 'orange',
+                lineWidth: 5.0,
+            }
+        });
+
+        var _text = new cc.Text({
+            x: 100,
+            y: 400,
+            text: 'The quick red fox jumps over the lazy brown dog.',
+            fontSize: '28px',
+            style: {
+                fillStyle: 'green'
+            }
+        });
+
+        var _bezi = new cc.Bezier({
+            start: {
+                x: 50,
+                y: 50
+            },
+            end: {
+                x: 300,
+                y: 50
+            },
+            control1: {
+                x: 50,
+                y: 201
+            },
+            control2: {
+                x: 300,
+                y: 199
+            },
+            style: {
+                strokeStyle: 'red'
+            }
+            //debug: true
+        });
+
+        let _image = null;
+        let i = new window.Image();
+        i.src = '../demo.png';
+        i.onload = function(e) {
+            _image = new cc.Image({
+                image: i,
+                x: 100,
+                y: 100,
+                style: {
+                    strokeStyle: 'orange',
+                    lineWidth: 10.0
+                }
+            });
+            _myCC.scene.addChild(_image);
+            _image.addEventListener('mousedown', dragStart);
+        }
+
+        let sceneObjects = [_circ, _elip, _rect, _path, _bezi, _text];
+
+        _myCC.scene.addChildren(sceneObjects);
+
+        _myCC.addEventListener('mousemove', () => {
+            mousexDebug.innerHTML = _myCC.mouseX;
+            mouseyDebug.innerHTML = _myCC.mouseY;
+        });
+
+        for (let c of sceneObjects) {
+            c.addEventListener('mousedown', dragStart);
+        }
+
+        let mouseOffset = null;
+
+        /**
+         * when dragging starts, update events
+         * @param {object} e the event object
+         */
+        function dragStart(e) {
+            mouseOffset = new Vector([e.offsetX, e.offsetY]).subtract(this.offset);
+            //this.removeEventListener('mousedown', dragStart);
+            this.addEventListener('mousemove', drag);
+            this.addEventListener('mouseup', dragEnd);
+
+            //TODO: not sure how to handle mouse out with the new event system
+            //this.onmouseout = this.dragEnd;
+        }
+
+        /**
+         * update d as the object is moved around
+         * @param {object} e the event object
+         */
+        function drag(e) {
+            this.d = new Vector([e.offsetX, e.offsetY]).subtract(mouseOffset);
+            this.needsDraw = true;
+        }
+
+        /**
+         * when dragging ends, update events
+         * @param {object} e the event object
+         */
+        function dragEnd(e) {
+            //this.onmousedown = this.dragStart;
+            this.removeEventListener('mousemove', drag);
+            this.removeEventListener('mouseup', dragEnd);
+            this.needsDraw = true;
+        }
+
+        _rect.addEventListener('click', (e) => {
+            _rect.style.fillStyle = 'purple'
+            _rect.needsRender = true;
+            _rect.needsDraw = true;
+        })
+
+        function _updateFPS() {
+            fpsDebug.innerHTML = _myCC.framerate;
+        }
+
+        setInterval(_updateFPS, 250);
+
+    </script>
+</body>
+
+</html>

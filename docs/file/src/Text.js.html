@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../">
+  <title data-ice="title">src/Text.js | canvas-compositor</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+<meta name="description" content="a light and performant canvas compositing engine"><meta property="twitter:card" content="summary"><meta property="twitter:title" content="canvas-compositor"><meta property="twitter:description" content="a light and performant canvas compositing engine"></head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+<a style="position:relative; top:3px;" href="https://github.com/theOutLiar/canvas-compositor"><img width="20px" src="./image/github.png"></a></header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Bezier.js~Bezier.html">Bezier</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Circle.js~Circle.html">Circle</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Composition.js~Composition.html">Composition</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Ellipse.js~Ellipse.html">Ellipse</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Image.js~Image.html">Image</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Line.js~Line.html">Line</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/PrimitiveComponent.js~PrimitiveComponent.html">PrimitiveComponent</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Rectangle.js~Rectangle.html">Rectangle</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Renderer.js~Renderer.html">Renderer</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Text.js~Text.html">Text</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/VectorPath.js~VectorPath.html">VectorPath</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-init">init</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-EPSILON">EPSILON</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-CLICK">CLICK</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-KEYDOWN">KEYDOWN</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-KEYPRESS">KEYPRESS</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-KEYUP">KEYUP</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-MOUSEDOWN">MOUSEDOWN</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-MOUSEMOVE">MOUSEMOVE</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-MOUSEOUT">MOUSEOUT</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-MOUSEUP">MOUSEUP</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-DEFAULTS">DEFAULTS</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">src/Text.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import { Renderer } from &apos;./Renderer&apos;;
+import { PrimitiveComponent } from &apos;./PrimitiveComponent&apos;;
+
+const ALL_CHARS = `1234567890QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm.,\`~;:&apos;&quot;!?@#$%^&amp;*()_+={}[]|\&lt;&gt;/`;
+
+const DEFAULTS = {
+    fontSize: &apos;16px&apos;,
+    fontFamily: &apos;sans-serif&apos;,
+    fontStyle: &apos;normal&apos;,
+    fontVariant: &apos;normal&apos;,
+    fontWeight: &apos;normal&apos;,
+    lineHeight: &apos;normal&apos;,
+    textAlign: &apos;start&apos;,
+    textBaseline: &apos;alphabetic&apos;
+};
+
+function _getTextHeight(font) {
+    //this is a version of:
+    //http://stackoverflow.com/questions/1134586/how-can-you-find-the-height-of-text-on-an-html-canvas
+    //it&apos;s a pretty awful hack.
+    //TODO: figure out how cross-browser this is
+
+    //create an element with every character in it with this font
+    let fontHolder = document.createElement(&apos;span&apos;);
+    fontHolder.innerText = ALL_CHARS;
+    fontHolder.style.font = font;
+
+    //create an inline-block to place after the element
+    let baselineRuler = document.createElement(&apos;div&apos;);
+    baselineRuler.style.display = &apos;inline-block&apos;;
+    baselineRuler.style.width = &apos;1px&apos;;
+    baselineRuler.style.height = &apos;0&apos;;
+    baselineRuler.style.verticalAlign = &apos;baseline&apos;;
+
+    //place them in a wrapper and add it to the body
+    let wrapper = document.createElement(&apos;div&apos;);
+    wrapper.appendChild(fontHolder);
+    wrapper.appendChild(baselineRuler);
+    wrapper.style.whiteSpace = &apos;nowrap&apos;;
+    document.body.appendChild(wrapper);
+
+    //get their bounding rectangles and...
+    let fontRect = fontHolder.getBoundingClientRect();
+    let baselineRect = baselineRuler.getBoundingClientRect();
+
+    //calculate their offset from top
+    let fontTop = fontRect.top + document.body.scrollTop;
+    let fontBottom = fontTop + fontRect.height;
+
+    let baseline = baselineRect.top + document.body.scrollTop;
+
+    document.body.removeChild(wrapper);
+
+    //ascent equals the baseline location minus text top location
+    let ascentFromBaseline = baseline - fontTop;
+
+    //decent equals the text bottom location minuse the baseline location
+    let descentFromBaseline = fontBottom - baseline;
+
+    return {
+        height: fontRect.height,
+        ascent: ascentFromBaseline,
+        descent: descentFromBaseline
+    };
+}
+
+/**
+ * A text object
+ */
+export class Text extends PrimitiveComponent {
+    /**
+     * @param {object} options the options for the text object
+     */
+    constructor(options) {
+        super(options);
+
+        /**
+         * @type {string} text the text to be rendered
+         */
+        this.text = options.text;
+
+        /**
+         * @type {string} fontSize the font size at which to render the text
+         */
+        this.fontSize = options.fontSize || DEFAULTS.fontSize;
+
+        /**
+         * @type {string} fontFamily the font family in which to render the text
+         */
+        this.fontFamily = options.fontFamily || DEFAULTS.fontFamily;
+
+        /**
+         * @type {string} fontStyle the font style with which to render the text
+         */
+        this.fontStyle = options.fontStyle || DEFAULTS.fontStyle;
+
+        /**
+         * @type {string} fontVariant the font variant in which to render the text
+         */
+        this.fontVariant = options.fontVariant || DEFAULTS.fontVariant;
+
+        /**
+         * @type {string} fontWeight the font weight at which to render the text
+         */
+        this.fontWeight = options.fontWeight || DEFAULTS.fontWeight;
+
+        /**
+         * @type {string} lineHeight the line height of the text
+         */
+        this.lineHeight = options.lineHeight || DEFAULTS.lineHeight;
+
+        /**
+         * @type {string} textAlign the alignment with which to render the text
+         */
+        this.textAlign = options.textAlign || DEFAULTS.textAlign;
+
+        /**
+         * @type {string} textBaseline the baseline for the text
+         */
+        this.textBaseline = options.textBaseline || DEFAULTS.textBaseline;
+
+        this._textMetricsNeedUpdate = true;
+    }
+
+    /**
+     * compute the height data and add it to the textMetrics object from the canvas context
+     * @type {object} textMetrics
+     */
+    get textMetrics() {
+        if (this._textMetricsNeedUpdate || this._textMetrics === null) {
+            this._updateStyle();
+            this._textMetrics = Renderer.measureText(this.text, this._prerenderingContext, this.style);
+            Object.assign(this._textMetrics, _getTextHeight(this.style.font));
+            this._textMetricsNeedUpdate = false;
+        }
+        return this._textMetrics;
+    }
+
+    /**
+     * get the bounding box of the text object
+     * @type {top: number, left: number, bottom: number, right: number}
+     */
+    get boundingBox() {
+        return {
+            top: this.offset.y - this.textMetrics.ascent,
+            left: this.offset.x,
+            bottom: this.offset.y + this.textMetrics.descent,
+            right: this.offset.x + this.textMetrics.width
+        };
+    }
+
+    _updateStyle(options) {
+        Object.assign(this.style, options, {
+            font: `${this.fontStyle} ${this.fontVariant} ${this.fontWeight} ${this.fontSize}/${this.lineHeight} ${this.fontFamily}`,
+            textAlign: this.textAlign,
+            textBaseline: this.textBaseline
+        });
+    }
+
+
+    /**
+     * override the render function for text objects
+     * @override
+     */
+    render() {
+        this._textMetricsNeedUpdate = true;
+        this._updateStyle();
+        Renderer.drawText(0, this.textMetrics.ascent, this.text, this._prerenderingContext, this.style);
+
+        /*if (this.flags.DEBUG) {
+            Renderer.drawPath(this._prerenderingContext, [{
+                x: 0,
+                y: this.textMetrics.ascent
+            }, {
+                x: this.textMetrics.width,
+                y: this.textMetrics.ascent
+            }], {
+                strokeStyle: &apos;Blue&apos;
+            });
+            Renderer.drawCircle(this._prerenderingContext, 0, this.textMetrics.ascent, 3, {
+                strokeStyle: &apos;Blue&apos;,
+                fillStyle: &apos;Blue&apos;
+            });
+        }*/
+    }
+}
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.1.0)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

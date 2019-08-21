@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../">
+  <title data-ice="title">src/Ellipse.js | canvas-compositor</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+<meta name="description" content="a light and performant canvas compositing engine"><meta property="twitter:card" content="summary"><meta property="twitter:title" content="canvas-compositor"><meta property="twitter:description" content="a light and performant canvas compositing engine"></head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+<a style="position:relative; top:3px;" href="https://github.com/theOutLiar/canvas-compositor"><img width="20px" src="./image/github.png"></a></header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Bezier.js~Bezier.html">Bezier</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Circle.js~Circle.html">Circle</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Composition.js~Composition.html">Composition</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Ellipse.js~Ellipse.html">Ellipse</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Image.js~Image.html">Image</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Line.js~Line.html">Line</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/PrimitiveComponent.js~PrimitiveComponent.html">PrimitiveComponent</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Rectangle.js~Rectangle.html">Rectangle</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Renderer.js~Renderer.html">Renderer</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Text.js~Text.html">Text</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/VectorPath.js~VectorPath.html">VectorPath</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-init">init</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-EPSILON">EPSILON</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-CLICK">CLICK</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-KEYDOWN">KEYDOWN</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-KEYPRESS">KEYPRESS</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-KEYUP">KEYUP</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-MOUSEDOWN">MOUSEDOWN</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-MOUSEMOVE">MOUSEMOVE</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-MOUSEOUT">MOUSEOUT</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-MOUSEUP">MOUSEUP</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-DEFAULTS">DEFAULTS</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">src/Ellipse.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import { Renderer } from &apos;./Renderer&apos;;
+import { PrimitiveComponent } from &apos;./PrimitiveComponent&apos;;
+
+
+
+/**
+ * An ellipse
+ */
+export class Ellipse extends PrimitiveComponent {
+    /**
+     * @param {object} options options for the ellipse
+     * @param {number} options.radius the major (horizontal) radius of the ellipse
+     * @param {number} options.minorRadius the minor (vertical) radius of the ellipse
+     */
+    constructor(options) {
+        super(options);
+        /**
+         * @type {number} radius the major radius (horizontal) of the ellipse
+         */
+        this.radius = options.radius || 0;
+        /**
+         * @type {number} minorRadius the minor radius (vertical) of the ellipse
+         */
+        this.minorRadius = options.minorRadius || this.radius || 0;
+    }
+
+    /**
+     * the bounding box for the ellipse
+     * @type {{top: number, left: number, bottom: number, right: number}} boundingBox
+     */
+    get boundingBox() {
+        let offset = this.offset;
+        let scale = this.compoundScale;
+        let lineWidth = this.style.lineWidth;
+        return {
+            top: offset.y -
+                ((this.minorRadius * scale.scaleHeight) + lineWidth),
+            left: offset.x -
+                ((this.radius * scale.scaleWidth) + lineWidth),
+            bottom: offset.y +
+                (this.minorRadius * scale.scaleHeight) + lineWidth,
+            right: offset.x +
+                (this.radius * scale.scaleWidth) + lineWidth
+        };
+    }
+
+    /**
+     * override the render function specifically for ellipses
+     * @override
+     */
+    render() {
+        let scale = this.compoundScale;
+        let lineWidth = this.style.lineWidth;
+        //TODO: work out scaling of major/minor radius
+        //this doesn&apos;t make sense
+        Renderer.drawEllipse(
+            (this.radius * scale.scaleWidth) + lineWidth,
+            (this.minorRadius * scale.scaleHeight) + lineWidth,
+            (this.radius * scale.scaleWidth),
+            (this.minorRadius * scale.scaleHeight),
+            this._prerenderingContext,
+            this.style
+        );
+    }
+    /**
+     * determine whether the point is in the object
+     * basically just the pythagorean theorem
+     * @param {number} x the x coordinate
+     * @param {number} y the y coordinate
+     * @return {boolean} whether or not the point is in the object
+     */
+    pointIsInObject(x, y) {
+        let scale = this.compoundScale;
+        let offset = this.offset;
+
+        let a = x - offset.x;
+        let b = y - offset.y;
+
+        let c1 = this.radius * scale.scaleWidth;
+        let c2 = this.minorRadius * scale.scaleHeight;
+
+        //see: http://math.stackexchange.com/questions/76457/check-if-a-point-is-within-an-ellipse
+        return ((a*a) / (c1*c1)) + ((b*b) / (c2*c2)) &lt;= 1;
+    };
+}
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.1.0)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

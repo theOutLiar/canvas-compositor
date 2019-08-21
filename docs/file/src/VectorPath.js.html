@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../">
+  <title data-ice="title">src/VectorPath.js | canvas-compositor</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+<meta name="description" content="a light and performant canvas compositing engine"><meta property="twitter:card" content="summary"><meta property="twitter:title" content="canvas-compositor"><meta property="twitter:description" content="a light and performant canvas compositing engine"></head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+<a style="position:relative; top:3px;" href="https://github.com/theOutLiar/canvas-compositor"><img width="20px" src="./image/github.png"></a></header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Bezier.js~Bezier.html">Bezier</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Circle.js~Circle.html">Circle</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Composition.js~Composition.html">Composition</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Ellipse.js~Ellipse.html">Ellipse</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Image.js~Image.html">Image</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Line.js~Line.html">Line</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/PrimitiveComponent.js~PrimitiveComponent.html">PrimitiveComponent</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Rectangle.js~Rectangle.html">Rectangle</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Renderer.js~Renderer.html">Renderer</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Text.js~Text.html">Text</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/VectorPath.js~VectorPath.html">VectorPath</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-init">init</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-EPSILON">EPSILON</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-CLICK">CLICK</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-KEYDOWN">KEYDOWN</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-KEYPRESS">KEYPRESS</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-KEYUP">KEYUP</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-MOUSEDOWN">MOUSEDOWN</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-MOUSEMOVE">MOUSEMOVE</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-MOUSEOUT">MOUSEOUT</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-MOUSEUP">MOUSEUP</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-DEFAULTS">DEFAULTS</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">src/VectorPath.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import {
+    Renderer
+} from &apos;./Renderer&apos;;
+import {
+    PrimitiveComponent
+} from &apos;./PrimitiveComponent&apos;;
+import {
+    Vector
+} from &apos;vectorious&apos;;
+import {
+    Line
+} from &apos;./Line&apos;;
+
+//would name the file &apos;path&apos;, but damn near everything
+//relies on the filesystem &apos;path&apos; module
+
+/**
+ * An ordered set of vectors defining a path
+ */
+export class VectorPath extends PrimitiveComponent {
+    /**
+     * see PrimitiveComponent for more options
+     * @param {Object} options the options for the object
+     * @param {Object[]} options.vertices the vertices
+     * @param {number} options.vertices[].x the y coordinate for a vertex
+     * @param {number} options.vertices[].y the y coordinate for a vertex
+     */
+    constructor(options) {
+        super(options);
+
+        this._vertices = [];
+        this.vertices = options.vertices || [];
+
+        //this.unscaledLineWidth = this.style.lineWidth;
+
+
+
+        this._normalizedBoundingBox = null;
+    }
+
+    /**
+     * get the bounding box for the vertices
+     * @type {{top:number, left: number, bottom:number, right:number}} boundingBox
+     */
+    get boundingBox() {
+        this._normalizedBoundingBox = {
+            top: 0,
+            left: 0,
+            right: this._right - this._left,
+            bottom: this._bottom - this._top
+        };
+
+        return {
+            top: (this._normalizedBoundingBox.top * this.compoundScale.scaleHeight) + this.offset.y - this.style.lineWidth,
+            left: (this._normalizedBoundingBox.left * this.compoundScale.scaleWidth) + this.offset.x - this.style.lineWidth,
+            bottom: (this._normalizedBoundingBox.bottom * this.compoundScale.scaleHeight) + this.offset.y + this.style.lineWidth,
+            right: (this._normalizedBoundingBox.right * this.compoundScale.scaleWidth) + this.offset.x + this.style.lineWidth
+        };
+    }
+
+    get vertices() {
+        return this._vertices;
+    }
+
+    set vertices(verts) {
+        /**
+         * the list of vertices as vectorious Vectors
+         * @type {Vector[]} vertices
+         */
+        this._vertices = verts.map(v =&gt; new Vector([v.x, v.y]));
+
+        let yCoordinates = this.vertices.map(v =&gt; v.y);
+        let xCoordinates = this.vertices.map(v =&gt; v.x);
+
+        //uses `apply` so we can supply the list as a list of arguments
+        this._left = Math.min.apply(null, xCoordinates);
+        this._top = Math.min.apply(null, yCoordinates);
+        this._right = Math.max.apply(null, xCoordinates);
+        this._bottom = Math.max.apply(null, yCoordinates);
+
+        super.d = new Vector([this._left, this._top]);
+
+        let normalizationVector = this.d;
+
+        this._normalizedVertices = this.vertices.map(v =&gt; v.subtract(normalizationVector));
+
+        this.needsDraw = true;
+        this.needsRender = true;
+    }
+
+    /**
+     * determine whether the point is in the object
+     * even/odd line intersection test
+     * @param {number} x the x coordinate
+     * @param {number} y the y coordinate
+     * @return {boolean} whether or not the point is in the object
+     */
+    pointIsInObject(x, y) {
+        let inside = false;
+        if (super.pointIsInObject(x, y)) {
+            //create a line that travels from this point in any direction
+            //if it intersects the polygon an odd number of times, it is inside
+
+            //a line can be described as a vertex and a direction
+            let l = new Line(new Vector([x, y]), new Vector([1, 0]));
+
+            let compoundScale = this.compoundScale;
+            let offset = this.offset;
+
+            for (let i = 0; i &lt; this._normalizedVertices.length; i++) {
+                let j = (i + 1) &gt;= this._normalizedVertices.length ? 0 : i + 1;
+
+                let v = scaleVectorXY(this._normalizedVertices[i], compoundScale.scaleWidth, compoundScale.scaleHeight)
+                    .add(offset);
+
+                let w = scaleVectorXY(this._normalizedVertices[j], compoundScale.scaleWidth, compoundScale.scaleHeight)
+                    .add(offset);
+
+                let edgeDirection = Vector.subtract(w, v).normalize();
+                let edge = new Line(v, edgeDirection);
+                let intersection = edge.intersectionWith(l);
+
+                //if the lines are parallel/colocated, no need to count;
+                if (intersection === null) {
+                    continue;
+                }
+
+                //TODO: should replace 0s with epsilons, where epsilon is
+                //the threshhold for considering two things as touching/intersecting
+                let intersectToTheRight = intersection.x - x &gt;= 0;
+
+                //if the intersection is not to the right, no need to count
+                if (!intersectToTheRight) {
+                    continue;
+                }
+
+                let negativeX = (edgeDirection.x &lt; 0);
+                let negativeY = (edgeDirection.y &lt; 0);
+
+                //technically speaking, bottom and top should be reversed,
+                //since y=0 is the top left corner of the screen - it&apos;s
+                //just easier to think about it mathematically this way
+                let leftVertex = negativeX ? w : v;
+                let rightVertex = negativeX ? v : w;
+                let topVertex = negativeY ? w : v;
+                let bottomVertex = negativeY ? v : w;
+
+                let intersectWithinSegment =
+                    (intersection.x - leftVertex.x &gt;= 0) &amp;&amp;
+                    (rightVertex.x - intersection.x &gt;= 0) &amp;&amp;
+                    (intersection.y - topVertex.y &gt;= 0) &amp;&amp;
+                    (bottomVertex.y - intersection.y &gt;= 0);
+
+                if (intersectWithinSegment) {
+                    inside = !inside;
+                }
+            }
+        }
+        return inside;
+    }
+
+    /**
+     * override the render function for drawing vector paths specifically
+     * @override
+     */
+    render() {
+        let boundingBox = this.boundingBox;
+        let offset = this.offset;
+        let compoundScale = this.compoundScale;
+        //normalize the vertices (left- and top-most x/y-values should be 0 and 0)
+        let pathToDraw = this._normalizedVertices.map(vertex =&gt;
+            scaleVectorXY(vertex, compoundScale.scaleWidth, compoundScale.scaleHeight)
+            .subtract(new Vector([boundingBox.left, boundingBox.top]))
+            .add(offset));
+        Renderer.drawPath(pathToDraw, this._prerenderingContext, this.style);
+    };
+}
+
+function scaleVectorXY(vector, scaleX, scaleY) {
+    return new Vector([vector.x * scaleX, vector.y * scaleY]);
+}
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.1.0)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

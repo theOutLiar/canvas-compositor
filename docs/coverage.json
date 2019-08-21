@@ -1,0 +1,128 @@
+{
+  "coverage": "72.47%",
+  "expectCount": 178,
+  "actualCount": 129,
+  "files": {
+    "src/Bezier.js": {
+      "expectCount": 13,
+      "actualCount": 0,
+      "undocumentLines": [
+        7,
+        11,
+        45,
+        46,
+        54,
+        55,
+        61,
+        63,
+        64,
+        65,
+        66,
+        69,
+        92
+      ]
+    },
+    "src/CanvasCompositor.js": {
+      "expectCount": 30,
+      "actualCount": 16,
+      "undocumentLines": [
+        43,
+        70,
+        71,
+        78,
+        79,
+        84,
+        89,
+        91,
+        92,
+        93,
+        95,
+        97,
+        102,
+        105
+      ]
+    },
+    "src/Circle.js": {
+      "expectCount": 6,
+      "actualCount": 6,
+      "undocumentLines": []
+    },
+    "src/Composition.js": {
+      "expectCount": 11,
+      "actualCount": 10,
+      "undocumentLines": [
+        19
+      ]
+    },
+    "src/Ellipse.js": {
+      "expectCount": 7,
+      "actualCount": 7,
+      "undocumentLines": []
+    },
+    "src/Events.js": {
+      "expectCount": 8,
+      "actualCount": 8,
+      "undocumentLines": []
+    },
+    "src/Image.js": {
+      "expectCount": 5,
+      "actualCount": 5,
+      "undocumentLines": []
+    },
+    "src/Line.js": {
+      "expectCount": 7,
+      "actualCount": 7,
+      "undocumentLines": []
+    },
+    "src/PrimitiveComponent.js": {
+      "expectCount": 36,
+      "actualCount": 35,
+      "undocumentLines": [
+        29
+      ]
+    },
+    "src/Rectangle.js": {
+      "expectCount": 6,
+      "actualCount": 6,
+      "undocumentLines": []
+    },
+    "src/Renderer.js": {
+      "expectCount": 12,
+      "actualCount": 10,
+      "undocumentLines": [
+        23,
+        72
+      ]
+    },
+    "src/Text.js": {
+      "expectCount": 20,
+      "actualCount": 14,
+      "undocumentLines": [
+        4,
+        6,
+        17,
+        122,
+        132,
+        152
+      ]
+    },
+    "src/VectorPath.js": {
+      "expectCount": 17,
+      "actualCount": 5,
+      "undocumentLines": [
+        31,
+        38,
+        61,
+        65,
+        76,
+        77,
+        78,
+        79,
+        85,
+        87,
+        88,
+        179
+      ]
+    }
+  }
+}

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../">
+  <title data-ice="title">src/Bezier.js | canvas-compositor</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+<meta name="description" content="a light and performant canvas compositing engine"><meta property="twitter:card" content="summary"><meta property="twitter:title" content="canvas-compositor"><meta property="twitter:description" content="a light and performant canvas compositing engine"></head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+<a style="position:relative; top:3px;" href="https://github.com/theOutLiar/canvas-compositor"><img width="20px" src="./image/github.png"></a></header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Bezier.js~Bezier.html">Bezier</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Circle.js~Circle.html">Circle</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Composition.js~Composition.html">Composition</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Ellipse.js~Ellipse.html">Ellipse</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Image.js~Image.html">Image</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Line.js~Line.html">Line</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/PrimitiveComponent.js~PrimitiveComponent.html">PrimitiveComponent</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Rectangle.js~Rectangle.html">Rectangle</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Renderer.js~Renderer.html">Renderer</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Text.js~Text.html">Text</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/VectorPath.js~VectorPath.html">VectorPath</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-init">init</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-EPSILON">EPSILON</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-CLICK">CLICK</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-KEYDOWN">KEYDOWN</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-KEYPRESS">KEYPRESS</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-KEYUP">KEYUP</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-MOUSEDOWN">MOUSEDOWN</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-MOUSEMOVE">MOUSEMOVE</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-MOUSEOUT">MOUSEOUT</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-MOUSEUP">MOUSEUP</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-DEFAULTS">DEFAULTS</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">src/Bezier.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import { Renderer } from &apos;./Renderer&apos;;
+import { PrimitiveComponent } from &apos;./PrimitiveComponent&apos;;
+import { Vector } from &apos;vectorious&apos;;
+
+//uhh... i looked up *SO* much stuff on this, and even tried to work out the math myself,
+//but this is ridiculous - where does this come from?
+function _cubicBezier(start, c1, c2, end, t) {
+    return start * (1 - t) * (1 - t) * (1 - t) + 3 * c1 * t * (1 - t) * (1 - t) + 3 * c2 * t * t * (1 - t) + end * t * t * t;
+}
+
+function _getExtremes(start, c1, c2, end) {
+
+    let a = 3 * end - 9 * c2 + 9 * c1 - 3 * start;
+    let b = 6 * c2 - 12 * c1 + 6 * start;
+    let c = 3 * c1 - 3 * start;
+
+    let solutions = [];
+    let localExtrema = [];
+
+    //&quot;discriminant&quot;
+    let disc = b * b - 4 * a * c;
+
+    if (disc &gt;= 0) {
+        if (!Math.abs(a) &gt; 0 &amp;&amp; Math.abs(b) &gt; 0) {
+            solutions.push(-c / b);
+        } else if (Math.abs(a) &gt; 0) {
+            solutions.push((-b + Math.sqrt(disc)) / (2 * a));
+            solutions.push((-b - Math.sqrt(disc)) / (2 * a));
+        } else {
+            throw new Error(&quot;no solutions!?!?!&quot;);
+        }
+
+        for (let t of solutions) {
+            if (0 &lt;= t &amp;&amp; t &lt;= 1) {
+                localExtrema.push(_cubicBezier(start, c1, c2, end, t));
+            }
+        }
+    }
+
+    localExtrema.push(start, end);
+
+    return localExtrema;
+}
+
+export class Bezier extends PrimitiveComponent {
+    constructor(options) {
+        super(options);
+
+        let start = new Vector([options.start.x, options.start.y]);
+        let end = new Vector([options.end.x, options.end.y]);
+        let control1 = new Vector([options.control1.x, options.control1.y]);
+        let control2 = new Vector([options.control2.x, options.control2.y]);
+
+        this._boundingBox = null;
+        this._boundingBoxNeedsUpdate = true;
+
+        let xExtrema = _getExtremes(start.x, control1.x, control2, end.x);
+        let yExtrema = _getExtremes(start.y, control1.y, control2.y, end.y);
+        super.d = new Vector([Math.min.apply(null, xExtrema), Math.min.apply(null, yExtrema)])
+
+        this._normalizationVector = this.d;
+
+        this._start = Vector.subtract(start, this._normalizationVector);
+        this._end = Vector.subtract(end, this._normalizationVector);
+        this._control1 = Vector.subtract(control1, this._normalizationVector);
+        this._control2 = Vector.subtract(control2, this._normalizationVector);
+    }
+
+    get boundingBox() {
+        //if (this._boundingBox === null || this._boundingBoxNeedsUpdate) {
+        let lineWidth = this.style.lineWidth;
+
+        let offset = this.offset;
+        let start = Vector.add(this._start, this.offset);
+        let control1 = Vector.add(this._control1, this.offset);
+        let control2 = Vector.add(this._control2, this.offset);
+        let end = Vector.add(this._end, this.offset);
+
+        let xExtrema = _getExtremes(start.x, control1.x, control2, end.x);
+        let yExtrema = _getExtremes(start.y, control1.y, control2.y, end.y);
+        this._boundingBox = {
+            top: Math.min.apply(null, yExtrema) - lineWidth,
+            right: Math.max.apply(null, xExtrema) + lineWidth,
+            bottom: Math.max.apply(null, yExtrema) + lineWidth,
+            left: Math.min.apply(null, xExtrema) - lineWidth
+        }
+        this._boundingBoxNeedsUpdate = false;
+        //}
+        return this._boundingBox;
+    }
+
+    render() {
+        Renderer.drawBezier(
+            this._start,
+            this._end,
+            this._control1,
+            this._control2,
+            this._prerenderingContext,
+            this.style
+        );
+    }
+}
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.1.0)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>
