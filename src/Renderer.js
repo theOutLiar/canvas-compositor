@@ -16,8 +16,6 @@ export const DEFAULTS = {
     lineDash: []
 }
 
-//TODO: masking? it looks like this is done in the Composition, but that may be bugged out.
-
 /**
  * A collection of high level static methods for drawing directly to canvas
  *

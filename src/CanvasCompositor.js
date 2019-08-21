@@ -37,21 +37,15 @@ import {
     EventEmitter
 } from 'micro-mvc';
 
+import * as Events from './Events';
+
 //const FPS_EPSILON = 10; // +/- 10ms for animation loop to determine if enough time has passed to render
 const DEFAULT_TARGET_FPS = 1000 / 60; //amount of time that must pass before rendering
 
+/**
+ * EPSILON is the smallest floating number able to be represented by the runtime, and can be used as a threshold to determine if something is "touching" another thing.
+ */
 export const EPSILON = Number.EPSILON;
-
-export const EVENTS = {
-    MOUSEUP: 'mouseup',
-    MOUSEDOWN: 'mousedown',
-    MOUSEMOVE: 'mousemove',
-    MOUSEOUT: 'mouseout',
-    CLICK: 'click',
-    KEYDOWN: 'keydown',
-    KEYUP: 'keyup',
-    KEYPRESS: 'keypress'
-};
 
 /**
  * The CanvasCompositor class is the entry-point to usage of the `canvas-compositor`.
@@ -183,28 +177,28 @@ class CanvasCompositor extends EventEmitter {
         //must bind to `this` to retain reference
 
         let _cc = this;
-        this._canvas.addEventListener('mousedown', (e) => {
+        this._canvas.addEventListener(Events.MOUSEDOWN, (e) => {
             _cc.dispatchEvent(e);
         });
 
-        this._canvas.addEventListener('mousemove', (e) => {
+        this._canvas.addEventListener(Events.MOUSEMOVE, (e) => {
             _cc.dispatchEvent(e);
         });
-        this._canvas.addEventListener('mouseup', (e) => {
+        this._canvas.addEventListener(Events.MOUSEUP, (e) => {
             _cc.dispatchEvent(e);
         });
-        this._canvas.addEventListener('mouseout', (e) => {
+        this._canvas.addEventListener(Events.MOUSEOUT, (e) => {
             _cc.dispatchEvent(e);
         });
-        this._canvas.addEventListener('click', (e) => {
+        this._canvas.addEventListener(Events.CLICK, (e) => {
             _cc.dispatchEvent(e);
         });
 
-        this.addEventListener('mousedown', this._handleMouseDown);
-        this.addEventListener('mousemove', this._handleMouseMove);
-        this.addEventListener('mouseup', this._handleMouseUp);
-        this.addEventListener('mouseout', this._handleMouseOut);
-        this.addEventListener('click', this._handleClick);
+        this.addEventListener(Events.MOUSEDOWN, this._handleMouseDown);
+        this.addEventListener(Events.MOUSEMOVE, this._handleMouseMove);
+        this.addEventListener(Events.MOUSEUP, this._handleMouseUp);
+        this.addEventListener(Events.MOUSEOUT, this._handleMouseOut);
+        this.addEventListener(Events.CLICK, this._handleClick);
     }
 
     /**
@@ -302,8 +296,8 @@ class CanvasCompositor extends EventEmitter {
 
 /**
  * The initialization function
+ * @param {object} canvas This should be a canvas, either from the DOM or an equivalent API
  */
-
 export function init(canvas) {
     return new CanvasCompositor(canvas);
 }
@@ -320,5 +314,6 @@ export {
     Bezier,
     Image,
     Text,
-    DEFAULTS
+    DEFAULTS,
+    Events
 }

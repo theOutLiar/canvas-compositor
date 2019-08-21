@@ -1,7 +1,14 @@
-import { Vector } from 'vectorious';
-import { DEFAULTS, Renderer } from './Renderer';
+import {
+    Vector
+} from 'vectorious';
+import {
+    DEFAULTS,
+    Renderer
+} from './Renderer';
 
-import { EventEmitter } from 'micro-mvc';
+import {
+    EventEmitter
+} from 'micro-mvc';
 
 /**
  * The base class of things that may be drawn on the canvas.
@@ -284,17 +291,22 @@ export class PrimitiveComponent extends EventEmitter {
         this.needsDraw = false;
 
         if (this.needsRender && this.render) {
-            //ditch any old rendering artifacts - they are no longer viable
-            delete this._prerenderingCanvas;
-            delete this._prerenderingContext;
+            /*
+                TODO: AB-test this,
+                it may be faster than clearRect
+            */
+            //delete this._prerenderingCanvas;
+            //delete this._prerenderingContext;
 
             //create a new canvas and context for rendering
-            this._prerenderingCanvas = document.createElement('canvas');
-            this._prerenderingContext = this._prerenderingCanvas.getContext('2d'); //text needs prerendering context defined for boundingBox measurements
+            //this._prerenderingCanvas = document.createElement('canvas');
+            //this._prerenderingContext = this._prerenderingCanvas.getContext('2d'); //text needs prerendering context defined for boundingBox measurements
 
             //make sure the new canvas has the appropriate dimensions
             this._prerenderingCanvas.width = boundingBox.right - boundingBox.left;
             this._prerenderingCanvas.height = boundingBox.bottom - boundingBox.top;
+            //clear any old rendering artifacts - they are no longer viable
+            Renderer.clearRect(0, 0, this._prerenderingCanvas.width, this._prerenderingCanvas.height, this._prerenderingContext);
 
             this.render();
             this.needsRender = false;
@@ -302,15 +314,15 @@ export class PrimitiveComponent extends EventEmitter {
 
         //TODO: handle debug options
         //draw bounding boxes
-        if (this._flags.DEBUG) {
-        	this._prerenderingContext.beginPath();
+        /*if (this._flags.DEBUG) {
+            this._prerenderingContext.beginPath();
             this._prerenderingContext.setLineDash([5, 15]);
-        	this._prerenderingContext.lineWidth=2.0;
-            this._prerenderingContext.strokeStyle='#FF0000';
-        	this._prerenderingContext.strokeStyle='#FF0000';
-        	this._prerenderingContext.strokeRect(0,0,this._prerenderingCanvas.width, this._prerenderingCanvas.height);
-        	this._prerenderingContext.closePath();
-        }
+            this._prerenderingContext.lineWidth = 2.0;
+            this._prerenderingContext.strokeStyle = '#FF0000';
+            this._prerenderingContext.strokeStyle = '#FF0000';
+            this._prerenderingContext.strokeRect(0, 0, this._prerenderingCanvas.width, this._prerenderingCanvas.height);
+            this._prerenderingContext.closePath();
+        }*/
 
         //offsets are for prerendering contexts of compositions
         let x = boundingBox.left + (offset && offset.left ? offset.left : 0);
