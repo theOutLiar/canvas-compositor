@@ -1,4 +1,4 @@
-import { Renderer } from './Renderer';
+import { drawCircle } from './Renderer';
 import { PrimitiveComponent } from './PrimitiveComponent';
 
 /**
@@ -58,7 +58,7 @@ export class Circle extends PrimitiveComponent {
         //the below is to ensure the proper placement when scaling/line widths are accounted for
         let scale = this.compoundScale;
         let lineWidth = this.style.lineWidth;
-        Renderer.drawCircle(
+        drawCircle(
             (this.radius * scale.scaleWidth) + lineWidth,
             (this.radius * scale.scaleHeight) + lineWidth,
             (this.radius * scale.scaleWidth),

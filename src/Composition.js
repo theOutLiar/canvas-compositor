@@ -16,6 +16,9 @@ export class Composition extends PrimitiveComponent {
     constructor(options) {
         super(options);
         options = options || {};
+        /**
+         * The children of this composition
+         */
         this._children = options.children || [];
     }
 

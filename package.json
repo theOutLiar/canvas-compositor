@@ -1,11 +1,11 @@
 {
     "name": "canvas-compositor",
-    "version": "2.1.2",
+    "version": "3.0.0",
     "description": "a light and performant canvas compositing engine",
     "main": "lib/CanvasCompositor.js",
     "scripts": {
         "prepare": "npm run build",
-        "build": "esdoc && babel src/ -d lib/ -D -s && browserify src/CanvasCompositor.js -s CanvasCompositor -d -t [ babelify ] | uglifyjs > dist/canvas-compositor.min.js"
+        "build": "esdoc && babel src/ -d lib/ -D -s && browserify src/Compositor.js -s CanvasCompositor -d -t [ babelify ] | uglifyjs > dist/canvas-compositor.min.js"
     },
     "keywords": [
         "2d",
@@ -15,7 +15,7 @@
     "author": "Christopher J Gore",
     "repository": {
         "type": "git",
-        "url": "git@github.com:theOutLiar/canvas-compositor.git"
+        "url": "git@github.com:christophergorexyz/canvas-compositor.git"
     },
     "license": "MIT",
     "devDependencies": {

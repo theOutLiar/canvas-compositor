@@ -1,4 +1,4 @@
-import { Renderer } from './Renderer';
+import { drawRectangle } from './Renderer';
 import { PrimitiveComponent } from './PrimitiveComponent';
 
 /**
@@ -25,7 +25,7 @@ export class Rectangle extends PrimitiveComponent {
 
     /**
      * get the bounding box of the rectangle
-     * @type {{top:number, left:number, bottom:number, right:number}} boundingBox
+     * @type {{top:number, left:number, bottom:number, right:number}}
      */
     get boundingBox() {
         let offset = this.offset;
@@ -44,7 +44,7 @@ export class Rectangle extends PrimitiveComponent {
      */
     render() {
         let compoundScale = this.compoundScale;
-        Renderer.drawRectangle((this.style.lineWidth),
+        drawRectangle((this.style.lineWidth),
             (this.style.lineWidth),
             this.width * compoundScale.scaleWidth,
             this.height * compoundScale.scaleHeight,

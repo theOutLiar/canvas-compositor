@@ -1,4 +1,4 @@
-import { Renderer } from './Renderer';
+import { drawImage } from './Renderer';
 import { PrimitiveComponent } from './PrimitiveComponent';
 
 /**
@@ -41,6 +41,6 @@ export class Image extends PrimitiveComponent {
         image.src = this.unscaledImage.src;
         image.width = this.unscaledImage.width * scale.scaleWidth;
         image.height = this.unscaledImage.height * scale.scaleHeight;
-        Renderer.drawImage(0, 0, image, this._prerenderingContext, this.style);
+        drawImage(0, 0, image, this._prerenderingContext, this.style);
     };
 }

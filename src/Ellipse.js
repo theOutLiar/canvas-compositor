@@ -1,7 +1,5 @@
-import { Renderer } from './Renderer';
+import { drawEllipse } from './Renderer';
 import { PrimitiveComponent } from './PrimitiveComponent';
-
-
 
 /**
  * An ellipse
@@ -53,7 +51,7 @@ export class Ellipse extends PrimitiveComponent {
         let lineWidth = this.style.lineWidth;
         //TODO: work out scaling of major/minor radius
         //this doesn't make sense
-        Renderer.drawEllipse(
+        drawEllipse(
             (this.radius * scale.scaleWidth) + lineWidth,
             (this.minorRadius * scale.scaleHeight) + lineWidth,
             (this.radius * scale.scaleWidth),

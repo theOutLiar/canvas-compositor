@@ -24,22 +24,58 @@ window.esdocSearchIndex = [
     "class"
   ],
   [
-    "canvas-compositor/src/renderer.js~defaults",
-    "variable/index.html#static-variable-DEFAULTS",
-    "<span>DEFAULTS</span> <span class=\"search-result-import-path\">canvas-compositor/src/Renderer.js</span>",
-    "variable"
-  ],
-  [
-    "canvas-compositor/src/canvascompositor.js~epsilon",
-    "variable/index.html#static-variable-EPSILON",
-    "<span>EPSILON</span> <span class=\"search-result-import-path\">canvas-compositor/src/CanvasCompositor.js</span>",
-    "variable"
+    "canvas-compositor/src/compositor.js~compositor",
+    "class/src/Compositor.js~Compositor.html",
+    "<span>Compositor</span> <span class=\"search-result-import-path\">canvas-compositor/src/Compositor.js</span>",
+    "class"
   ],
   [
     "canvas-compositor/src/ellipse.js~ellipse",
     "class/src/Ellipse.js~Ellipse.html",
     "<span>Ellipse</span> <span class=\"search-result-import-path\">canvas-compositor/src/Ellipse.js</span>",
     "class"
+  ],
+  [
+    "canvas-compositor/src/defaults.js~fill_style",
+    "variable/index.html#static-variable-FILL_STYLE",
+    "<span>FILL_STYLE</span> <span class=\"search-result-import-path\">canvas-compositor/src/Defaults.js</span>",
+    "variable"
+  ],
+  [
+    "canvas-compositor/src/defaults.js~font",
+    "variable/index.html#static-variable-FONT",
+    "<span>FONT</span> <span class=\"search-result-import-path\">canvas-compositor/src/Defaults.js</span>",
+    "variable"
+  ],
+  [
+    "canvas-compositor/src/textdefaults.js~font_family",
+    "variable/index.html#static-variable-FONT_FAMILY",
+    "<span>FONT_FAMILY</span> <span class=\"search-result-import-path\">canvas-compositor/src/TextDefaults.js</span>",
+    "variable"
+  ],
+  [
+    "canvas-compositor/src/textdefaults.js~font_size",
+    "variable/index.html#static-variable-FONT_SIZE",
+    "<span>FONT_SIZE</span> <span class=\"search-result-import-path\">canvas-compositor/src/TextDefaults.js</span>",
+    "variable"
+  ],
+  [
+    "canvas-compositor/src/textdefaults.js~font_style",
+    "variable/index.html#static-variable-FONT_STYLE",
+    "<span>FONT_STYLE</span> <span class=\"search-result-import-path\">canvas-compositor/src/TextDefaults.js</span>",
+    "variable"
+  ],
+  [
+    "canvas-compositor/src/textdefaults.js~font_variant",
+    "variable/index.html#static-variable-FONT_VARIANT",
+    "<span>FONT_VARIANT</span> <span class=\"search-result-import-path\">canvas-compositor/src/TextDefaults.js</span>",
+    "variable"
+  ],
+  [
+    "canvas-compositor/src/textdefaults.js~font_weight",
+    "variable/index.html#static-variable-FONT_WEIGHT",
+    "<span>FONT_WEIGHT</span> <span class=\"search-result-import-path\">canvas-compositor/src/TextDefaults.js</span>",
+    "variable"
   ],
   [
     "canvas-compositor/src/image.js~image",
@@ -66,10 +102,40 @@ window.esdocSearchIndex = [
     "variable"
   ],
   [
+    "canvas-compositor/src/defaults.js~line_cap",
+    "variable/index.html#static-variable-LINE_CAP",
+    "<span>LINE_CAP</span> <span class=\"search-result-import-path\">canvas-compositor/src/Defaults.js</span>",
+    "variable"
+  ],
+  [
+    "canvas-compositor/src/textdefaults.js~line_height",
+    "variable/index.html#static-variable-LINE_HEIGHT",
+    "<span>LINE_HEIGHT</span> <span class=\"search-result-import-path\">canvas-compositor/src/TextDefaults.js</span>",
+    "variable"
+  ],
+  [
+    "canvas-compositor/src/defaults.js~line_join",
+    "variable/index.html#static-variable-LINE_JOIN",
+    "<span>LINE_JOIN</span> <span class=\"search-result-import-path\">canvas-compositor/src/Defaults.js</span>",
+    "variable"
+  ],
+  [
+    "canvas-compositor/src/defaults.js~line_width",
+    "variable/index.html#static-variable-LINE_WIDTH",
+    "<span>LINE_WIDTH</span> <span class=\"search-result-import-path\">canvas-compositor/src/Defaults.js</span>",
+    "variable"
+  ],
+  [
     "canvas-compositor/src/line.js~line",
     "class/src/Line.js~Line.html",
     "<span>Line</span> <span class=\"search-result-import-path\">canvas-compositor/src/Line.js</span>",
     "class"
+  ],
+  [
+    "canvas-compositor/src/defaults.js~miter_limit",
+    "variable/index.html#static-variable-MITER_LIMIT",
+    "<span>MITER_LIMIT</span> <span class=\"search-result-import-path\">canvas-compositor/src/Defaults.js</span>",
+    "variable"
   ],
   [
     "canvas-compositor/src/events.js~mousedown",
@@ -108,10 +174,34 @@ window.esdocSearchIndex = [
     "class"
   ],
   [
-    "canvas-compositor/src/renderer.js~renderer",
-    "class/src/Renderer.js~Renderer.html",
-    "<span>Renderer</span> <span class=\"search-result-import-path\">canvas-compositor/src/Renderer.js</span>",
-    "class"
+    "canvas-compositor/src/defaults.js~stroke_style",
+    "variable/index.html#static-variable-STROKE_STYLE",
+    "<span>STROKE_STYLE</span> <span class=\"search-result-import-path\">canvas-compositor/src/Defaults.js</span>",
+    "variable"
+  ],
+  [
+    "canvas-compositor/src/defaults.js~text_align",
+    "variable/index.html#static-variable-TEXT_ALIGN",
+    "<span>TEXT_ALIGN</span> <span class=\"search-result-import-path\">canvas-compositor/src/Defaults.js</span>",
+    "variable"
+  ],
+  [
+    "canvas-compositor/src/textdefaults.js~text_align",
+    "variable/index.html#static-variable-TEXT_ALIGN",
+    "<span>TEXT_ALIGN</span> <span class=\"search-result-import-path\">canvas-compositor/src/TextDefaults.js</span>",
+    "variable"
+  ],
+  [
+    "canvas-compositor/src/defaults.js~text_baseline",
+    "variable/index.html#static-variable-TEXT_BASELINE",
+    "<span>TEXT_BASELINE</span> <span class=\"search-result-import-path\">canvas-compositor/src/Defaults.js</span>",
+    "variable"
+  ],
+  [
+    "canvas-compositor/src/textdefaults.js~text_baseline",
+    "variable/index.html#static-variable-TEXT_BASELINE",
+    "<span>TEXT_BASELINE</span> <span class=\"search-result-import-path\">canvas-compositor/src/TextDefaults.js</span>",
+    "variable"
   ],
   [
     "canvas-compositor/src/text.js~text",
@@ -126,9 +216,75 @@ window.esdocSearchIndex = [
     "class"
   ],
   [
-    "canvas-compositor/src/canvascompositor.js~init",
-    "function/index.html#static-function-init",
-    "<span>init</span> <span class=\"search-result-import-path\">canvas-compositor/src/CanvasCompositor.js</span>",
+    "canvas-compositor/src/renderer.js~clearrect",
+    "function/index.html#static-function-clearRect",
+    "<span>clearRect</span> <span class=\"search-result-import-path\">canvas-compositor/src/Renderer.js</span>",
+    "function"
+  ],
+  [
+    "canvas-compositor/src/renderer.js~drawbezier",
+    "function/index.html#static-function-drawBezier",
+    "<span>drawBezier</span> <span class=\"search-result-import-path\">canvas-compositor/src/Renderer.js</span>",
+    "function"
+  ],
+  [
+    "canvas-compositor/src/renderer.js~drawcircle",
+    "function/index.html#static-function-drawCircle",
+    "<span>drawCircle</span> <span class=\"search-result-import-path\">canvas-compositor/src/Renderer.js</span>",
+    "function"
+  ],
+  [
+    "canvas-compositor/src/renderer.js~drawellipse",
+    "function/index.html#static-function-drawEllipse",
+    "<span>drawEllipse</span> <span class=\"search-result-import-path\">canvas-compositor/src/Renderer.js</span>",
+    "function"
+  ],
+  [
+    "canvas-compositor/src/renderer.js~drawimage",
+    "function/index.html#static-function-drawImage",
+    "<span>drawImage</span> <span class=\"search-result-import-path\">canvas-compositor/src/Renderer.js</span>",
+    "function"
+  ],
+  [
+    "canvas-compositor/src/renderer.js~drawpath",
+    "function/index.html#static-function-drawPath",
+    "<span>drawPath</span> <span class=\"search-result-import-path\">canvas-compositor/src/Renderer.js</span>",
+    "function"
+  ],
+  [
+    "canvas-compositor/src/renderer.js~drawpolygon",
+    "function/index.html#static-function-drawPolygon",
+    "<span>drawPolygon</span> <span class=\"search-result-import-path\">canvas-compositor/src/Renderer.js</span>",
+    "function"
+  ],
+  [
+    "canvas-compositor/src/renderer.js~drawrectangle",
+    "function/index.html#static-function-drawRectangle",
+    "<span>drawRectangle</span> <span class=\"search-result-import-path\">canvas-compositor/src/Renderer.js</span>",
+    "function"
+  ],
+  [
+    "canvas-compositor/src/renderer.js~drawtext",
+    "function/index.html#static-function-drawText",
+    "<span>drawText</span> <span class=\"search-result-import-path\">canvas-compositor/src/Renderer.js</span>",
+    "function"
+  ],
+  [
+    "canvas-compositor/src/textutilities.js~formatfontstring",
+    "function/index.html#static-function-formatFontString",
+    "<span>formatFontString</span> <span class=\"search-result-import-path\">canvas-compositor/src/TextUtilities.js</span>",
+    "function"
+  ],
+  [
+    "canvas-compositor/src/textutilities.js~gettextheight",
+    "function/index.html#static-function-getTextHeight",
+    "<span>getTextHeight</span> <span class=\"search-result-import-path\">canvas-compositor/src/TextUtilities.js</span>",
+    "function"
+  ],
+  [
+    "canvas-compositor/src/textutilities.js~measuretext",
+    "function/index.html#static-function-measureText",
+    "<span>measureText</span> <span class=\"search-result-import-path\">canvas-compositor/src/TextUtilities.js</span>",
     "function"
   ],
   [
@@ -450,12 +606,6 @@ window.esdocSearchIndex = [
     "member"
   ],
   [
-    "src/bezier.js~bezier#_normalizationvector",
-    "class/src/Bezier.js~Bezier.html#instance-member-_normalizationVector",
-    "src/Bezier.js~Bezier#_normalizationVector",
-    "member"
-  ],
-  [
     "src/bezier.js~bezier#_start",
     "class/src/Bezier.js~Bezier.html#instance-member-_start",
     "src/Bezier.js~Bezier#_start",
@@ -478,12 +628,6 @@ window.esdocSearchIndex = [
     "class/src/Bezier.js~Bezier.html#instance-method-render",
     "src/Bezier.js~Bezier#render",
     "method"
-  ],
-  [
-    "src/canvascompositor.js",
-    "file/src/CanvasCompositor.js.html",
-    "src/CanvasCompositor.js",
-    "file"
   ],
   [
     "src/circle.js",
@@ -586,6 +730,168 @@ window.esdocSearchIndex = [
     "class/src/Composition.js~Composition.html#instance-method-render",
     "src/Composition.js~Composition#render",
     "method"
+  ],
+  [
+    "src/compositor.js",
+    "file/src/Compositor.js.html",
+    "src/Compositor.js",
+    "file"
+  ],
+  [
+    "src/compositor.js~compositor#_animationloop",
+    "class/src/Compositor.js~Compositor.html#instance-method-_animationLoop",
+    "src/Compositor.js~Compositor#_animationLoop",
+    "method"
+  ],
+  [
+    "src/compositor.js~compositor#_bindevents",
+    "class/src/Compositor.js~Compositor.html#instance-method-_bindEvents",
+    "src/Compositor.js~Compositor#_bindEvents",
+    "method"
+  ],
+  [
+    "src/compositor.js~compositor#_canvas",
+    "class/src/Compositor.js~Compositor.html#instance-member-_canvas",
+    "src/Compositor.js~Compositor#_canvas",
+    "member"
+  ],
+  [
+    "src/compositor.js~compositor#_context",
+    "class/src/Compositor.js~Compositor.html#instance-member-_context",
+    "src/Compositor.js~Compositor#_context",
+    "member"
+  ],
+  [
+    "src/compositor.js~compositor#_currenttime",
+    "class/src/Compositor.js~Compositor.html#instance-member-_currentTime",
+    "src/Compositor.js~Compositor#_currentTime",
+    "member"
+  ],
+  [
+    "src/compositor.js~compositor#_framerate",
+    "class/src/Compositor.js~Compositor.html#instance-member-_framerate",
+    "src/Compositor.js~Compositor#_framerate",
+    "member"
+  ],
+  [
+    "src/compositor.js~compositor#_handleclick",
+    "class/src/Compositor.js~Compositor.html#instance-method-_handleClick",
+    "src/Compositor.js~Compositor#_handleClick",
+    "method"
+  ],
+  [
+    "src/compositor.js~compositor#_handlemousedown",
+    "class/src/Compositor.js~Compositor.html#instance-method-_handleMouseDown",
+    "src/Compositor.js~Compositor#_handleMouseDown",
+    "method"
+  ],
+  [
+    "src/compositor.js~compositor#_handlemousemove",
+    "class/src/Compositor.js~Compositor.html#instance-method-_handleMouseMove",
+    "src/Compositor.js~Compositor#_handleMouseMove",
+    "method"
+  ],
+  [
+    "src/compositor.js~compositor#_handlemouseout",
+    "class/src/Compositor.js~Compositor.html#instance-method-_handleMouseOut",
+    "src/Compositor.js~Compositor#_handleMouseOut",
+    "method"
+  ],
+  [
+    "src/compositor.js~compositor#_handlemouseup",
+    "class/src/Compositor.js~Compositor.html#instance-method-_handleMouseUp",
+    "src/Compositor.js~Compositor#_handleMouseUp",
+    "method"
+  ],
+  [
+    "src/compositor.js~compositor#_lastframetimestamp",
+    "class/src/Compositor.js~Compositor.html#instance-member-_lastFrameTimestamp",
+    "src/Compositor.js~Compositor#_lastFrameTimestamp",
+    "member"
+  ],
+  [
+    "src/compositor.js~compositor#_leftpadding",
+    "class/src/Compositor.js~Compositor.html#instance-member-_leftPadding",
+    "src/Compositor.js~Compositor#_leftPadding",
+    "member"
+  ],
+  [
+    "src/compositor.js~compositor#_mousex",
+    "class/src/Compositor.js~Compositor.html#instance-member-_mouseX",
+    "src/Compositor.js~Compositor#_mouseX",
+    "member"
+  ],
+  [
+    "src/compositor.js~compositor#_mousey",
+    "class/src/Compositor.js~Compositor.html#instance-member-_mouseY",
+    "src/Compositor.js~Compositor#_mouseY",
+    "member"
+  ],
+  [
+    "src/compositor.js~compositor#_scene",
+    "class/src/Compositor.js~Compositor.html#instance-member-_scene",
+    "src/Compositor.js~Compositor#_scene",
+    "member"
+  ],
+  [
+    "src/compositor.js~compositor#_targetobject",
+    "class/src/Compositor.js~Compositor.html#instance-member-_targetObject",
+    "src/Compositor.js~Compositor#_targetObject",
+    "member"
+  ],
+  [
+    "src/compositor.js~compositor#_toppadding",
+    "class/src/Compositor.js~Compositor.html#instance-member-_topPadding",
+    "src/Compositor.js~Compositor#_topPadding",
+    "member"
+  ],
+  [
+    "src/compositor.js~compositor#constructor",
+    "class/src/Compositor.js~Compositor.html#instance-constructor-constructor",
+    "src/Compositor.js~Compositor#constructor",
+    "method"
+  ],
+  [
+    "src/compositor.js~compositor#framerate",
+    "class/src/Compositor.js~Compositor.html#instance-get-framerate",
+    "src/Compositor.js~Compositor#framerate",
+    "member"
+  ],
+  [
+    "src/compositor.js~compositor#mousex",
+    "class/src/Compositor.js~Compositor.html#instance-get-mouseX",
+    "src/Compositor.js~Compositor#mouseX",
+    "member"
+  ],
+  [
+    "src/compositor.js~compositor#mousey",
+    "class/src/Compositor.js~Compositor.html#instance-get-mouseY",
+    "src/Compositor.js~Compositor#mouseY",
+    "member"
+  ],
+  [
+    "src/compositor.js~compositor#scene",
+    "class/src/Compositor.js~Compositor.html#instance-get-scene",
+    "src/Compositor.js~Compositor#scene",
+    "member"
+  ],
+  [
+    "src/compositor.js~compositor#targetobject",
+    "class/src/Compositor.js~Compositor.html#instance-set-targetObject",
+    "src/Compositor.js~Compositor#targetObject",
+    "member"
+  ],
+  [
+    "src/compositor.js~compositor#targetobject",
+    "class/src/Compositor.js~Compositor.html#instance-get-targetObject",
+    "src/Compositor.js~Compositor#targetObject",
+    "member"
+  ],
+  [
+    "src/defaults.js",
+    "file/src/Defaults.js.html",
+    "src/Defaults.js",
+    "file"
   ],
   [
     "src/ellipse.js",
@@ -720,12 +1026,6 @@ window.esdocSearchIndex = [
     "member"
   ],
   [
-    "src/primitivecomponent.js~primitivecomponent#_flags",
-    "class/src/PrimitiveComponent.js~PrimitiveComponent.html#instance-member-_flags",
-    "src/PrimitiveComponent.js~PrimitiveComponent#_flags",
-    "member"
-  ],
-  [
     "src/primitivecomponent.js~primitivecomponent#_needsdraw",
     "class/src/PrimitiveComponent.js~PrimitiveComponent.html#instance-member-_needsDraw",
     "src/PrimitiveComponent.js~PrimitiveComponent#_needsDraw",
@@ -853,13 +1153,13 @@ window.esdocSearchIndex = [
   ],
   [
     "src/primitivecomponent.js~primitivecomponent#parent",
-    "class/src/PrimitiveComponent.js~PrimitiveComponent.html#instance-set-parent",
+    "class/src/PrimitiveComponent.js~PrimitiveComponent.html#instance-get-parent",
     "src/PrimitiveComponent.js~PrimitiveComponent#parent",
     "member"
   ],
   [
     "src/primitivecomponent.js~primitivecomponent#parent",
-    "class/src/PrimitiveComponent.js~PrimitiveComponent.html#instance-get-parent",
+    "class/src/PrimitiveComponent.js~PrimitiveComponent.html#instance-set-parent",
     "src/PrimitiveComponent.js~PrimitiveComponent#parent",
     "member"
   ],
@@ -883,13 +1183,13 @@ window.esdocSearchIndex = [
   ],
   [
     "src/primitivecomponent.js~primitivecomponent#scale",
-    "class/src/PrimitiveComponent.js~PrimitiveComponent.html#instance-get-scale",
+    "class/src/PrimitiveComponent.js~PrimitiveComponent.html#instance-set-scale",
     "src/PrimitiveComponent.js~PrimitiveComponent#scale",
     "member"
   ],
   [
     "src/primitivecomponent.js~primitivecomponent#scale",
-    "class/src/PrimitiveComponent.js~PrimitiveComponent.html#instance-set-scale",
+    "class/src/PrimitiveComponent.js~PrimitiveComponent.html#instance-get-scale",
     "src/PrimitiveComponent.js~PrimitiveComponent#scale",
     "member"
   ],
@@ -907,13 +1207,13 @@ window.esdocSearchIndex = [
   ],
   [
     "src/primitivecomponent.js~primitivecomponent#scalewidth",
-    "class/src/PrimitiveComponent.js~PrimitiveComponent.html#instance-set-scaleWidth",
+    "class/src/PrimitiveComponent.js~PrimitiveComponent.html#instance-get-scaleWidth",
     "src/PrimitiveComponent.js~PrimitiveComponent#scaleWidth",
     "member"
   ],
   [
     "src/primitivecomponent.js~primitivecomponent#scalewidth",
-    "class/src/PrimitiveComponent.js~PrimitiveComponent.html#instance-get-scaleWidth",
+    "class/src/PrimitiveComponent.js~PrimitiveComponent.html#instance-set-scaleWidth",
     "src/PrimitiveComponent.js~PrimitiveComponent#scaleWidth",
     "member"
   ],
@@ -966,66 +1266,6 @@ window.esdocSearchIndex = [
     "file"
   ],
   [
-    "src/renderer.js~renderer.clearrect",
-    "class/src/Renderer.js~Renderer.html#static-method-clearRect",
-    "src/Renderer.js~Renderer.clearRect",
-    "method"
-  ],
-  [
-    "src/renderer.js~renderer.drawbezier",
-    "class/src/Renderer.js~Renderer.html#static-method-drawBezier",
-    "src/Renderer.js~Renderer.drawBezier",
-    "method"
-  ],
-  [
-    "src/renderer.js~renderer.drawcircle",
-    "class/src/Renderer.js~Renderer.html#static-method-drawCircle",
-    "src/Renderer.js~Renderer.drawCircle",
-    "method"
-  ],
-  [
-    "src/renderer.js~renderer.drawellipse",
-    "class/src/Renderer.js~Renderer.html#static-method-drawEllipse",
-    "src/Renderer.js~Renderer.drawEllipse",
-    "method"
-  ],
-  [
-    "src/renderer.js~renderer.drawimage",
-    "class/src/Renderer.js~Renderer.html#static-method-drawImage",
-    "src/Renderer.js~Renderer.drawImage",
-    "method"
-  ],
-  [
-    "src/renderer.js~renderer.drawpath",
-    "class/src/Renderer.js~Renderer.html#static-method-drawPath",
-    "src/Renderer.js~Renderer.drawPath",
-    "method"
-  ],
-  [
-    "src/renderer.js~renderer.drawpolygon",
-    "class/src/Renderer.js~Renderer.html#static-method-drawPolygon",
-    "src/Renderer.js~Renderer.drawPolygon",
-    "method"
-  ],
-  [
-    "src/renderer.js~renderer.drawrectangle",
-    "class/src/Renderer.js~Renderer.html#static-method-drawRectangle",
-    "src/Renderer.js~Renderer.drawRectangle",
-    "method"
-  ],
-  [
-    "src/renderer.js~renderer.drawtext",
-    "class/src/Renderer.js~Renderer.html#static-method-drawText",
-    "src/Renderer.js~Renderer.drawText",
-    "method"
-  ],
-  [
-    "src/renderer.js~renderer.measuretext",
-    "class/src/Renderer.js~Renderer.html#static-method-measureText",
-    "src/Renderer.js~Renderer.measureText",
-    "method"
-  ],
-  [
     "src/text.js",
     "file/src/Text.js.html",
     "src/Text.js",
@@ -1071,6 +1311,12 @@ window.esdocSearchIndex = [
     "src/text.js~text#fontsize",
     "class/src/Text.js~Text.html#instance-member-fontSize",
     "src/Text.js~Text#fontSize",
+    "member"
+  ],
+  [
+    "src/text.js~text#fontstring",
+    "class/src/Text.js~Text.html#instance-get-fontString",
+    "src/Text.js~Text#fontString",
     "member"
   ],
   [
@@ -1128,6 +1374,18 @@ window.esdocSearchIndex = [
     "member"
   ],
   [
+    "src/textdefaults.js",
+    "file/src/TextDefaults.js.html",
+    "src/TextDefaults.js",
+    "file"
+  ],
+  [
+    "src/textutilities.js",
+    "file/src/TextUtilities.js.html",
+    "src/TextUtilities.js",
+    "file"
+  ],
+  [
     "src/vectorpath.js",
     "file/src/VectorPath.js.html",
     "src/VectorPath.js",
@@ -1143,18 +1401,6 @@ window.esdocSearchIndex = [
     "src/vectorpath.js~vectorpath#_left",
     "class/src/VectorPath.js~VectorPath.html#instance-member-_left",
     "src/VectorPath.js~VectorPath#_left",
-    "member"
-  ],
-  [
-    "src/vectorpath.js~vectorpath#_normalizedboundingbox",
-    "class/src/VectorPath.js~VectorPath.html#instance-member-_normalizedBoundingBox",
-    "src/VectorPath.js~VectorPath#_normalizedBoundingBox",
-    "member"
-  ],
-  [
-    "src/vectorpath.js~vectorpath#_normalizedvertices",
-    "class/src/VectorPath.js~VectorPath.html#instance-member-_normalizedVertices",
-    "src/VectorPath.js~VectorPath#_normalizedVertices",
     "member"
   ],
   [
@@ -1176,6 +1422,18 @@ window.esdocSearchIndex = [
     "member"
   ],
   [
+    "src/vectorpath.js~vectorpath#_zeroedboundingbox",
+    "class/src/VectorPath.js~VectorPath.html#instance-member-_zeroedBoundingBox",
+    "src/VectorPath.js~VectorPath#_zeroedBoundingBox",
+    "member"
+  ],
+  [
+    "src/vectorpath.js~vectorpath#_zeroedvertices",
+    "class/src/VectorPath.js~VectorPath.html#instance-member-_zeroedVertices",
+    "src/VectorPath.js~VectorPath#_zeroedVertices",
+    "member"
+  ],
+  [
     "src/vectorpath.js~vectorpath#boundingbox",
     "class/src/VectorPath.js~VectorPath.html#instance-get-boundingBox",
     "src/VectorPath.js~VectorPath#boundingBox",
@@ -1186,18 +1444,6 @@ window.esdocSearchIndex = [
     "class/src/VectorPath.js~VectorPath.html#instance-constructor-constructor",
     "src/VectorPath.js~VectorPath#constructor",
     "method"
-  ],
-  [
-    "src/vectorpath.js~vectorpath#needsdraw",
-    "class/src/VectorPath.js~VectorPath.html#instance-member-needsDraw",
-    "src/VectorPath.js~VectorPath#needsDraw",
-    "member"
-  ],
-  [
-    "src/vectorpath.js~vectorpath#needsrender",
-    "class/src/VectorPath.js~VectorPath.html#instance-member-needsRender",
-    "src/VectorPath.js~VectorPath#needsRender",
-    "member"
   ],
   [
     "src/vectorpath.js~vectorpath#pointisinobject",

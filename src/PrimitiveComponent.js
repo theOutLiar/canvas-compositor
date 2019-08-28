@@ -1,14 +1,36 @@
 import {
     Vector
 } from 'vectorious';
+
 import {
-    DEFAULTS,
-    Renderer
+    drawImage,
+    clearRect
 } from './Renderer';
 
 import {
     EventEmitter
 } from 'micro-mvc';
+
+import * as Defaults from './Defaults';
+
+//assign default values to an object so that the Object.assign function can be used
+/**
+ * The default values to be passed to the renderer and overridden by any given object
+ */
+let defaults = {
+    //direction: 'inherit',
+    fillStyle: Defaults.FILL_STYLE,
+    //filter: 'none',
+    strokeStyle: Defaults.STROKE_STYLE,
+    lineCap: Defaults.LINE_CAP,
+    lineWidth: Defaults.LINE_WIDTH,
+    lineJoin: Defaults.LINE_JOIN,
+    miterLimit: Defaults.MITER_LIMIT,
+    font: Defaults.FONT,
+    textAlign: Defaults.TEXT_ALIGN,
+    textBaseline: Defaults.TEXT_BASELINE,
+    lineDash: []
+};
 
 /**
  * The base class of things that may be drawn on the canvas.
@@ -19,6 +41,7 @@ import {
  */
 export class PrimitiveComponent extends EventEmitter {
     /**
+     * construct a primitive component
      * @param {object} options
      */
     constructor(options) {
@@ -26,8 +49,9 @@ export class PrimitiveComponent extends EventEmitter {
 
         options = options || {};
 
-        this._flags = {};
-        this._flags.DEBUG = options.debug || false;
+        //TODO: reimplement any flags for debug data
+        //this._flags = {};
+        //this._flags.DEBUG = options.debug || false;
 
         /**
          * does the object need to be redrawn?
@@ -64,7 +88,7 @@ export class PrimitiveComponent extends EventEmitter {
          * style options for this particular object. these are standard context styles
          * @type {object} style
          */
-        this.style = Object.assign({}, DEFAULTS, options.style);
+        this.style = Object.assign({}, defaults, options.style);
 
         //TODO: determine whether this is the best place to implement click passthrough -
         //it might be better left implemented by consuming modules
@@ -306,7 +330,7 @@ export class PrimitiveComponent extends EventEmitter {
             this._prerenderingCanvas.width = boundingBox.right - boundingBox.left;
             this._prerenderingCanvas.height = boundingBox.bottom - boundingBox.top;
             //clear any old rendering artifacts - they are no longer viable
-            Renderer.clearRect(0, 0, this._prerenderingCanvas.width, this._prerenderingCanvas.height, this._prerenderingContext);
+            clearRect(0, 0, this._prerenderingCanvas.width, this._prerenderingCanvas.height, this._prerenderingContext);
 
             this.render();
             this.needsRender = false;
@@ -327,10 +351,9 @@ export class PrimitiveComponent extends EventEmitter {
         //offsets are for prerendering contexts of compositions
         let x = boundingBox.left + (offset && offset.left ? offset.left : 0);
         let y = boundingBox.top + (offset && offset.top ? offset.top : 0);
-        Renderer.drawImage(x, y, this._prerenderingCanvas, context, this.style);
+        drawImage(x, y, this._prerenderingCanvas, context, this.style);
     }
 
-    //TODO: provide more doc details around this
     /**
      * this method must be overridden by a subclass.
      *
