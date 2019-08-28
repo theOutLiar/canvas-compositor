@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../">
+  <title data-ice="title">src/Compositor.js | canvas-compositor</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+<meta name="description" content="a light and performant canvas compositing engine"><meta property="twitter:card" content="summary"><meta property="twitter:title" content="canvas-compositor"><meta property="twitter:description" content="a light and performant canvas compositing engine"></head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+<a style="position:relative; top:3px;" href="https://github.com/christophergorexyz/canvas-compositor"><img width="20px" src="./image/github.png"></a></header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Bezier.js~Bezier.html">Bezier</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Circle.js~Circle.html">Circle</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Composition.js~Composition.html">Composition</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Compositor.js~Compositor.html">Compositor</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Ellipse.js~Ellipse.html">Ellipse</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Image.js~Image.html">Image</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Line.js~Line.html">Line</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/PrimitiveComponent.js~PrimitiveComponent.html">PrimitiveComponent</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Rectangle.js~Rectangle.html">Rectangle</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Text.js~Text.html">Text</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/VectorPath.js~VectorPath.html">VectorPath</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-clearRect">clearRect</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-drawBezier">drawBezier</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-drawCircle">drawCircle</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-drawEllipse">drawEllipse</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-drawImage">drawImage</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-drawPath">drawPath</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-drawPolygon">drawPolygon</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-drawRectangle">drawRectangle</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-drawText">drawText</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-formatFontString">formatFontString</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getTextHeight">getTextHeight</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-measureText">measureText</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-FILL_STYLE">FILL_STYLE</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-FONT">FONT</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-LINE_CAP">LINE_CAP</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-LINE_JOIN">LINE_JOIN</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-LINE_WIDTH">LINE_WIDTH</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-MITER_LIMIT">MITER_LIMIT</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-STROKE_STYLE">STROKE_STYLE</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-TEXT_ALIGN">TEXT_ALIGN</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-TEXT_BASELINE">TEXT_BASELINE</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-CLICK">CLICK</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-KEYDOWN">KEYDOWN</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-KEYPRESS">KEYPRESS</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-KEYUP">KEYUP</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-MOUSEDOWN">MOUSEDOWN</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-MOUSEMOVE">MOUSEMOVE</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-MOUSEOUT">MOUSEOUT</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-MOUSEUP">MOUSEUP</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-FONT_FAMILY">FONT_FAMILY</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-FONT_SIZE">FONT_SIZE</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-FONT_STYLE">FONT_STYLE</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-FONT_VARIANT">FONT_VARIANT</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-FONT_WEIGHT">FONT_WEIGHT</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-LINE_HEIGHT">LINE_HEIGHT</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-TEXT_ALIGN">TEXT_ALIGN</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-TEXT_BASELINE">TEXT_BASELINE</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">src/Compositor.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import * as Renderer from &apos;./Renderer&apos;;
+import {
+    Composition
+} from &apos;./Composition&apos;;
+import {
+    PrimitiveComponent
+} from &apos;./PrimitiveComponent&apos;;
+import {
+    Circle
+} from &apos;./Circle&apos;;
+import {
+    Ellipse
+} from &apos;./Ellipse&apos;;
+import {
+    Rectangle
+} from &apos;./Rectangle&apos;;
+import {
+    Line
+} from &apos;./Line&apos;;
+import {
+    VectorPath
+} from &apos;./VectorPath&apos;;
+import {
+    Bezier
+} from &apos;./Bezier&apos;;
+import {
+    Image
+} from &apos;./Image&apos;;
+import {
+    Text
+} from &apos;./Text&apos;;
+
+import * as Defaults from &apos;./Defaults&apos;;
+
+import {
+    EventEmitter
+} from &apos;micro-mvc&apos;;
+
+import * as Events from &apos;./Events&apos;;
+
+//const FPS_EPSILON = 10; // +/- 10ms for animation loop to determine if enough time has passed to render
+//const DEFAULT_TARGET_FPS = 1000 / 60; //amount of time that must pass before rendering
+
+/**
+ * The Compositor class is the entry-point to usage of the `canvas-compositor`.
+ * The application programmer is expected to hand over low-level control of the canvas
+ * context to the high-level classes and methods exposed by CanvasCompositor.
+ *
+ * The Compositor class establishes an event dispatcher, animation loop, and scene graph for
+ * compositions.
+ */
+class Compositor extends EventEmitter {
+    /**
+     * The Compositor class establishes an event dispatcher, animation loop, and scene graph for
+     * compositions
+     *
+     * @param {object} canvas This should be a canvas, either from the DOM or an equivalent API
+     *
+     * @example
+     * let cc = new Compositor(document.getElementById(&apos;myCanvas&apos;));
+     */
+    constructor(canvas) {
+        super();
+        /**
+         * The canvas used by the compositor
+         */
+        this._canvas = canvas;
+        /**
+         * The context used by the compositor
+         */
+        this._context = this._canvas.getContext(&apos;2d&apos;);
+
+        //acquire the padding on the canvas &#x2013; this is necessary to properly
+        //locate the mouse position
+        //TODO: determine if border-box affects this, and adjust accordingly
+        let style = window.getComputedStyle(this._canvas);
+
+        /**
+         * The x coordinate of the mouse position within the canvas
+         * @type {number}
+         */
+        this._mouseX = null;
+
+        /**
+         * The y coordinate of the mouse position within the canvas
+         * @type {number}
+         */
+        this._mouseY = null;
+
+        let borderLeft = style.getPropertyValue(&apos;border-left&apos;) ? parseFloat(style.getPropertyValue(&apos;border-left&apos;)) : 0;
+        let paddingLeft = style.getPropertyValue(&apos;padding-left&apos;) ? parseFloat(style.getPropertyValue(&apos;padding-left&apos;)) : 0;
+
+        /**
+         * Any left padding and border added to the canvas must be known to calculate mouse position
+         * @type {number}
+         */
+        this._leftPadding = borderLeft + paddingLeft;
+
+        let borderTop = style.getPropertyValue(&apos;border-top&apos;) ? parseFloat(style.getPropertyValue(&apos;border-top&apos;)) : 0;
+        let paddingTop = style.getPropertyValue(&apos;padding-top&apos;) ? parseFloat(style.getPropertyValue(&apos;padding-top&apos;)) : 0;
+
+        /**
+         * Any top padding and border added to the canvas must be known to calculate mouse position
+         * @type {number}
+         */
+        this._topPadding = borderTop + paddingTop;
+
+        /**
+         * The timestamp of the current loop of animation
+         * @type {number}
+         */
+        this._currentTime = 0;
+
+        /**
+         * The timestamp of the last frame drawn by the animation loop
+         * @type {number}
+         */
+        this._lastFrameTimestamp = 0;
+
+        /**
+         * The timestamp of the last render performed by the animation loop
+         * @type {number}
+         */
+        //this._lastRenderTime = 0;
+
+        /**
+         * The object last granted &quot;focus&quot;
+         * @type {object}
+         */
+        this._targetObject = null;
+
+        /**
+         * The scene composition. This is the root object to be rendered, everything else rendered must be a child of the scene
+         * @type {object}
+         */
+        this._scene = new Composition(this.canvas);
+
+        this._bindEvents();
+
+        this._animationLoop();
+
+        /**
+         * The framerate of the animation loop
+         * @type {number}
+         */
+        this._framerate = 0;
+    }
+
+    /**
+     * retrieve the current framerate
+     * @type {number}
+     */
+    get framerate() {
+        //var framerateUpdatedEvent = new Event();
+        return this._framerate;
+    }
+
+    //TODO: multiple target objects? in reverse order of render? in order of composition?
+    /**
+     * the object currently selected for interaction
+     * @type {object}
+     */
+    get targetObject() {
+        return this._targetObject;
+    }
+    /**
+     * the object currently selected for interaction
+     * @param {object} val
+     * @type {object}
+     */
+    set targetObject(val) {
+        this._targetObject = val;
+    }
+
+    /**
+     * the root of the scene graph. add primitives to this to compose an image
+     * @type {object}
+     */
+    get scene() {
+        return this._scene;
+    }
+
+    /**
+     * get the X position of the mouse on the canvas
+     * @type {number}
+     */
+    get mouseX() {
+        return this._mouseX;
+    }
+
+    /**
+     * get the Y position of the mouse on the canvas
+     * @type {number}
+     */
+    get mouseY() {
+        return this._mouseY;
+    }
+
+    /**
+     * The animation loop for this instance of Compositor.
+     * Upon receipt of the animation frame from `requestAnimationFrame`, the loop will check
+     * whether enough time has passed to redraw for the target framerate.
+     * It will only draw if somewhere along the scene graph, an object needs updating.
+     * There is no need to invoke this directly, the constructor will do it.
+     */
+    _animationLoop() {
+        window.requestAnimationFrame(this._animationLoop.bind(this));
+        this._currentTime = +new Date();
+        //set maximum of 60 fps and only redraw if necessary
+        if ( /*this._currentTime - this._lastFrameTimestamp &gt;= this._targetFPS &amp;&amp;*/ this.scene.needsDraw) {
+            //this._lastRenderTime = +new Date();
+            Renderer.clearRect(0, 0, this._canvas.width, this._canvas.height, this._context);
+            this.scene.draw(this._context);
+        }
+        this._framerate = parseInt(1000 / (this._currentTime - this._lastFrameTimestamp));
+        this._lastFrameTimestamp = +new Date();
+
+    }
+
+    /**
+     * attach interaction events to the canvas. the canvas compositor dispatches
+     * events to relevant objects through bridges to the scene graph
+     */
+    _bindEvents() {
+        //must bind to `this` to retain reference
+
+        let _cc = this;
+        this._canvas.addEventListener(Events.MOUSEDOWN, (e) =&gt; {
+            _cc.dispatchEvent(e);
+        });
+
+        this._canvas.addEventListener(Events.MOUSEMOVE, (e) =&gt; {
+            _cc.dispatchEvent(e);
+        });
+        this._canvas.addEventListener(Events.MOUSEUP, (e) =&gt; {
+            _cc.dispatchEvent(e);
+        });
+        this._canvas.addEventListener(Events.MOUSEOUT, (e) =&gt; {
+            _cc.dispatchEvent(e);
+        });
+        this._canvas.addEventListener(Events.CLICK, (e) =&gt; {
+            _cc.dispatchEvent(e);
+        });
+
+        this.addEventListener(Events.MOUSEDOWN, this._handleMouseDown);
+        this.addEventListener(Events.MOUSEMOVE, this._handleMouseMove);
+        this.addEventListener(Events.MOUSEUP, this._handleMouseUp);
+        this.addEventListener(Events.MOUSEOUT, this._handleMouseOut);
+        this.addEventListener(Events.CLICK, this._handleClick);
+    }
+
+    /**
+     * bridge the mouse down event on the canvas to the
+     * the objects in the scene graph
+     */
+    _handleMouseDown(e) {
+        e.preventDefault();
+
+        let x = e.offsetX - this._leftPadding;
+        let y = e.offsetY - this._topPadding;
+
+        //pass through x and y to propagated events
+        e.canvasX = x;
+        e.canvasY = y;
+
+        let clickedObject = this.scene.childAt(x, y);
+
+        if (clickedObject) {
+            clickedObject.dispatchEvent(e);
+        }
+    }
+
+    /**
+     * bridge the mouse up event on the canvas to the
+     * the objects in the scene graph
+     */
+    _handleMouseUp(e) {
+        e.preventDefault();
+
+        let x = e.offsetX - this._leftPadding;
+        let y = e.offsetY - this._topPadding;
+
+        //pass through x and y to propagated events
+        e.canvasX = x;
+        e.canvasY = y;
+
+        for (let c of this.scene.children) {
+            c.dispatchEvent(e);
+        }
+
+        let clickedObject = this.scene.childAt(x, y);
+
+        if (clickedObject) {
+            clickedObject.dispatchEvent(e);
+        }
+    };
+
+    /**
+     * bridge the mouse move event on the canvas to the
+     * the objects in the scene graph
+     */
+    _handleMouseMove(e) {
+        e.preventDefault();
+        this._mouseX = e.offsetX - this._leftPadding;
+        this._mouseY = e.offsetY - this._topPadding;
+
+        for (let c of this.scene.children) {
+            c.dispatchEvent(e)
+        }
+    };
+
+    /**
+     * bridge the click event on the canvas to the
+     * the objects in the scene graph
+     */
+    _handleClick(e) {
+        e.preventDefault();
+
+        let x = e.offsetX - this._leftPadding;
+        let y = e.offsetY - this._topPadding;
+
+        //pass through x and y to propagated events
+        e.canvasX = x;
+        e.canvasY = y;
+
+        let clickedObject = this.scene.childAt(x, y);
+        if (clickedObject) {
+            clickedObject.dispatchEvent(e);
+        }
+    };
+
+    /**
+     * bridge the mouse out event on the canvas to the
+     * the objects in the scene graph
+     */
+    _handleMouseOut(e) {
+        e.preventDefault();
+
+        for (let c of this.scene.children) {
+            c.dispatchEvent(e);
+        };
+    };
+}
+
+export {
+    Renderer,
+    PrimitiveComponent,
+    Composition,
+    Circle,
+    Ellipse,
+    Rectangle,
+    Line,
+    VectorPath,
+    Bezier,
+    Image,
+    Text,
+    Defaults,
+    Events,
+    Compositor
+};
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.1.0)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>
