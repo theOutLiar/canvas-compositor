@@ -1,7 +1,7 @@
 {
   "type": "File",
   "start": 0,
-  "end": 582,
+  "end": 622,
   "loc": {
     "start": {
       "line": 1,
@@ -15,7 +15,7 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 582,
+    "end": 622,
     "loc": {
       "start": {
         "line": 1,
@@ -30,8 +30,8 @@
     "body": [
       {
         "type": "ExportNamedDeclaration",
-        "start": 38,
-        "end": 71,
+        "start": 42,
+        "end": 75,
         "loc": {
           "start": {
             "line": 5,
@@ -46,8 +46,8 @@
         "source": null,
         "declaration": {
           "type": "VariableDeclaration",
-          "start": 45,
-          "end": 71,
+          "start": 49,
+          "end": 75,
           "loc": {
             "start": {
               "line": 5,
@@ -61,8 +61,8 @@
           "declarations": [
             {
               "type": "VariableDeclarator",
-              "start": 51,
-              "end": 70,
+              "start": 55,
+              "end": 74,
               "loc": {
                 "start": {
                   "line": 5,
@@ -75,8 +75,8 @@
               },
               "id": {
                 "type": "Identifier",
-                "start": 51,
-                "end": 58,
+                "start": 55,
+                "end": 62,
                 "loc": {
                   "start": {
                     "line": 5,
@@ -93,8 +93,8 @@
               },
               "init": {
                 "type": "StringLiteral",
-                "start": 61,
-                "end": 70,
+                "start": 65,
+                "end": 74,
                 "loc": {
                   "start": {
                     "line": 5,
@@ -118,9 +118,9 @@
           "leadingComments": [
             {
               "type": "CommentBlock",
-              "value": "*\n * The `mouseup` event label\n ",
-              "start": 1,
-              "end": 37,
+              "value": "*\r\n * The `mouseup` event label\r\n ",
+              "start": 2,
+              "end": 40,
               "loc": {
                 "start": {
                   "line": 2,
@@ -136,9 +136,9 @@
           "trailingComments": [
             {
               "type": "CommentBlock",
-              "value": "*\n * The `mousedown` event label\n ",
-              "start": 73,
-              "end": 111,
+              "value": "*\r\n * The `mousedown` event label\r\n ",
+              "start": 79,
+              "end": 119,
               "loc": {
                 "start": {
                   "line": 7,
@@ -155,9 +155,9 @@
         "leadingComments": [
           {
             "type": "CommentBlock",
-            "value": "*\n * The `mouseup` event label\n ",
-            "start": 1,
-            "end": 37,
+            "value": "*\r\n * The `mouseup` event label\r\n ",
+            "start": 2,
+            "end": 40,
             "loc": {
               "start": {
                 "line": 2,
@@ -173,9 +173,9 @@
         "trailingComments": [
           {
             "type": "CommentBlock",
-            "value": "*\n * The `mousedown` event label\n ",
-            "start": 73,
-            "end": 111,
+            "value": "*\r\n * The `mousedown` event label\r\n ",
+            "start": 79,
+            "end": 119,
             "loc": {
               "start": {
                 "line": 7,
@@ -191,8 +191,8 @@
       },
       {
         "type": "ExportNamedDeclaration",
-        "start": 112,
-        "end": 149,
+        "start": 121,
+        "end": 158,
         "loc": {
           "start": {
             "line": 10,
@@ -207,8 +207,8 @@
         "source": null,
         "declaration": {
           "type": "VariableDeclaration",
-          "start": 119,
-          "end": 149,
+          "start": 128,
+          "end": 158,
           "loc": {
             "start": {
               "line": 10,
@@ -222,8 +222,8 @@
           "declarations": [
             {
               "type": "VariableDeclarator",
-              "start": 125,
-              "end": 148,
+              "start": 134,
+              "end": 157,
               "loc": {
                 "start": {
                   "line": 10,
@@ -236,8 +236,8 @@
               },
               "id": {
                 "type": "Identifier",
-                "start": 125,
-                "end": 134,
+                "start": 134,
+                "end": 143,
                 "loc": {
                   "start": {
                     "line": 10,
@@ -254,8 +254,8 @@
               },
               "init": {
                 "type": "StringLiteral",
-                "start": 137,
-                "end": 148,
+                "start": 146,
+                "end": 157,
                 "loc": {
                   "start": {
                     "line": 10,
@@ -279,9 +279,9 @@
           "leadingComments": [
             {
               "type": "CommentBlock",
-              "value": "*\n * The `mousedown` event label\n ",
-              "start": 73,
-              "end": 111,
+              "value": "*\r\n * The `mousedown` event label\r\n ",
+              "start": 79,
+              "end": 119,
               "loc": {
                 "start": {
                   "line": 7,
@@ -297,9 +297,9 @@
           "trailingComments": [
             {
               "type": "CommentBlock",
-              "value": "*\n * The `mousemove` event label\n ",
-              "start": 151,
-              "end": 189,
+              "value": "*\r\n * The `mousemove` event label\r\n ",
+              "start": 162,
+              "end": 202,
               "loc": {
                 "start": {
                   "line": 12,
@@ -316,9 +316,9 @@
         "leadingComments": [
           {
             "type": "CommentBlock",
-            "value": "*\n * The `mousedown` event label\n ",
-            "start": 73,
-            "end": 111,
+            "value": "*\r\n * The `mousedown` event label\r\n ",
+            "start": 79,
+            "end": 119,
             "loc": {
               "start": {
                 "line": 7,
@@ -334,9 +334,9 @@
         "trailingComments": [
           {
             "type": "CommentBlock",
-            "value": "*\n * The `mousemove` event label\n ",
-            "start": 151,
-            "end": 189,
+            "value": "*\r\n * The `mousemove` event label\r\n ",
+            "start": 162,
+            "end": 202,
             "loc": {
               "start": {
                 "line": 12,
@@ -352,8 +352,8 @@
       },
       {
         "type": "ExportNamedDeclaration",
-        "start": 190,
-        "end": 227,
+        "start": 204,
+        "end": 241,
         "loc": {
           "start": {
             "line": 15,
@@ -368,8 +368,8 @@
         "source": null,
         "declaration": {
           "type": "VariableDeclaration",
-          "start": 197,
-          "end": 227,
+          "start": 211,
+          "end": 241,
           "loc": {
             "start": {
               "line": 15,
@@ -383,8 +383,8 @@
           "declarations": [
             {
               "type": "VariableDeclarator",
-              "start": 203,
-              "end": 226,
+              "start": 217,
+              "end": 240,
               "loc": {
                 "start": {
                   "line": 15,
@@ -397,8 +397,8 @@
               },
               "id": {
                 "type": "Identifier",
-                "start": 203,
-                "end": 212,
+                "start": 217,
+                "end": 226,
                 "loc": {
                   "start": {
                     "line": 15,
@@ -415,8 +415,8 @@
               },
               "init": {
                 "type": "StringLiteral",
-                "start": 215,
-                "end": 226,
+                "start": 229,
+                "end": 240,
                 "loc": {
                   "start": {
                     "line": 15,
@@ -440,9 +440,9 @@
           "leadingComments": [
             {
               "type": "CommentBlock",
-              "value": "*\n * The `mousemove` event label\n ",
-              "start": 151,
-              "end": 189,
+              "value": "*\r\n * The `mousemove` event label\r\n ",
+              "start": 162,
+              "end": 202,
               "loc": {
                 "start": {
                   "line": 12,
@@ -458,9 +458,9 @@
           "trailingComments": [
             {
               "type": "CommentBlock",
-              "value": "*\n * The `mouseout` event label\n ",
-              "start": 229,
-              "end": 266,
+              "value": "*\r\n * The `mouseout` event label\r\n ",
+              "start": 245,
+              "end": 284,
               "loc": {
                 "start": {
                   "line": 17,
@@ -477,9 +477,9 @@
         "leadingComments": [
           {
             "type": "CommentBlock",
-            "value": "*\n * The `mousemove` event label\n ",
-            "start": 151,
-            "end": 189,
+            "value": "*\r\n * The `mousemove` event label\r\n ",
+            "start": 162,
+            "end": 202,
             "loc": {
               "start": {
                 "line": 12,
@@ -495,9 +495,9 @@
         "trailingComments": [
           {
             "type": "CommentBlock",
-            "value": "*\n * The `mouseout` event label\n ",
-            "start": 229,
-            "end": 266,
+            "value": "*\r\n * The `mouseout` event label\r\n ",
+            "start": 245,
+            "end": 284,
             "loc": {
               "start": {
                 "line": 17,
@@ -513,8 +513,8 @@
       },
       {
         "type": "ExportNamedDeclaration",
-        "start": 267,
-        "end": 302,
+        "start": 286,
+        "end": 321,
         "loc": {
           "start": {
             "line": 20,
@@ -529,8 +529,8 @@
         "source": null,
         "declaration": {
           "type": "VariableDeclaration",
-          "start": 274,
-          "end": 302,
+          "start": 293,
+          "end": 321,
           "loc": {
             "start": {
               "line": 20,
@@ -544,8 +544,8 @@
           "declarations": [
             {
               "type": "VariableDeclarator",
-              "start": 280,
-              "end": 301,
+              "start": 299,
+              "end": 320,
               "loc": {
                 "start": {
                   "line": 20,
@@ -558,8 +558,8 @@
               },
               "id": {
                 "type": "Identifier",
-                "start": 280,
-                "end": 288,
+                "start": 299,
+                "end": 307,
                 "loc": {
                   "start": {
                     "line": 20,
@@ -576,8 +576,8 @@
               },
               "init": {
                 "type": "StringLiteral",
-                "start": 291,
-                "end": 301,
+                "start": 310,
+                "end": 320,
                 "loc": {
                   "start": {
                     "line": 20,
@@ -601,9 +601,9 @@
           "leadingComments": [
             {
               "type": "CommentBlock",
-              "value": "*\n * The `mouseout` event label\n ",
-              "start": 229,
-              "end": 266,
+              "value": "*\r\n * The `mouseout` event label\r\n ",
+              "start": 245,
+              "end": 284,
               "loc": {
                 "start": {
                   "line": 17,
@@ -619,9 +619,9 @@
           "trailingComments": [
             {
               "type": "CommentBlock",
-              "value": "*\n * The `click` event label\n ",
-              "start": 304,
-              "end": 338,
+              "value": "*\r\n * The `click` event label\r\n ",
+              "start": 325,
+              "end": 361,
               "loc": {
                 "start": {
                   "line": 22,
@@ -638,9 +638,9 @@
         "leadingComments": [
           {
             "type": "CommentBlock",
-            "value": "*\n * The `mouseout` event label\n ",
-            "start": 229,
-            "end": 266,
+            "value": "*\r\n * The `mouseout` event label\r\n ",
+            "start": 245,
+            "end": 284,
             "loc": {
               "start": {
                 "line": 17,
@@ -656,9 +656,9 @@
         "trailingComments": [
           {
             "type": "CommentBlock",
-            "value": "*\n * The `click` event label\n ",
-            "start": 304,
-            "end": 338,
+            "value": "*\r\n * The `click` event label\r\n ",
+            "start": 325,
+            "end": 361,
             "loc": {
               "start": {
                 "line": 22,
@@ -674,8 +674,8 @@
       },
       {
         "type": "ExportNamedDeclaration",
-        "start": 339,
-        "end": 368,
+        "start": 363,
+        "end": 392,
         "loc": {
           "start": {
             "line": 25,
@@ -690,8 +690,8 @@
         "source": null,
         "declaration": {
           "type": "VariableDeclaration",
-          "start": 346,
-          "end": 368,
+          "start": 370,
+          "end": 392,
           "loc": {
             "start": {
               "line": 25,
@@ -705,8 +705,8 @@
           "declarations": [
             {
               "type": "VariableDeclarator",
-              "start": 352,
-              "end": 367,
+              "start": 376,
+              "end": 391,
               "loc": {
                 "start": {
                   "line": 25,
@@ -719,8 +719,8 @@
               },
               "id": {
                 "type": "Identifier",
-                "start": 352,
-                "end": 357,
+                "start": 376,
+                "end": 381,
                 "loc": {
                   "start": {
                     "line": 25,
@@ -737,8 +737,8 @@
               },
               "init": {
                 "type": "StringLiteral",
-                "start": 360,
-                "end": 367,
+                "start": 384,
+                "end": 391,
                 "loc": {
                   "start": {
                     "line": 25,
@@ -762,9 +762,9 @@
           "leadingComments": [
             {
               "type": "CommentBlock",
-              "value": "*\n * The `click` event label\n ",
-              "start": 304,
-              "end": 338,
+              "value": "*\r\n * The `click` event label\r\n ",
+              "start": 325,
+              "end": 361,
               "loc": {
                 "start": {
                   "line": 22,
@@ -780,9 +780,9 @@
           "trailingComments": [
             {
               "type": "CommentBlock",
-              "value": "*\n * The `keydown` event label\n ",
-              "start": 370,
-              "end": 406,
+              "value": "*\r\n * The `keydown` event label\r\n ",
+              "start": 396,
+              "end": 434,
               "loc": {
                 "start": {
                   "line": 27,
@@ -799,9 +799,9 @@
         "leadingComments": [
           {
             "type": "CommentBlock",
-            "value": "*\n * The `click` event label\n ",
-            "start": 304,
-            "end": 338,
+            "value": "*\r\n * The `click` event label\r\n ",
+            "start": 325,
+            "end": 361,
             "loc": {
               "start": {
                 "line": 22,
@@ -817,9 +817,9 @@
         "trailingComments": [
           {
             "type": "CommentBlock",
-            "value": "*\n * The `keydown` event label\n ",
-            "start": 370,
-            "end": 406,
+            "value": "*\r\n * The `keydown` event label\r\n ",
+            "start": 396,
+            "end": 434,
             "loc": {
               "start": {
                 "line": 27,
@@ -835,8 +835,8 @@
       },
       {
         "type": "ExportNamedDeclaration",
-        "start": 407,
-        "end": 440,
+        "start": 436,
+        "end": 469,
         "loc": {
           "start": {
             "line": 30,
@@ -851,8 +851,8 @@
         "source": null,
         "declaration": {
           "type": "VariableDeclaration",
-          "start": 414,
-          "end": 440,
+          "start": 443,
+          "end": 469,
           "loc": {
             "start": {
               "line": 30,
@@ -866,8 +866,8 @@
           "declarations": [
             {
               "type": "VariableDeclarator",
-              "start": 420,
-              "end": 439,
+              "start": 449,
+              "end": 468,
               "loc": {
                 "start": {
                   "line": 30,
@@ -880,8 +880,8 @@
               },
               "id": {
                 "type": "Identifier",
-                "start": 420,
-                "end": 427,
+                "start": 449,
+                "end": 456,
                 "loc": {
                   "start": {
                     "line": 30,
@@ -898,8 +898,8 @@
               },
               "init": {
                 "type": "StringLiteral",
-                "start": 430,
-                "end": 439,
+                "start": 459,
+                "end": 468,
                 "loc": {
                   "start": {
                     "line": 30,
@@ -923,9 +923,9 @@
           "leadingComments": [
             {
               "type": "CommentBlock",
-              "value": "*\n * The `keydown` event label\n ",
-              "start": 370,
-              "end": 406,
+              "value": "*\r\n * The `keydown` event label\r\n ",
+              "start": 396,
+              "end": 434,
               "loc": {
                 "start": {
                   "line": 27,
@@ -941,9 +941,9 @@
           "trailingComments": [
             {
               "type": "CommentBlock",
-              "value": "*\n * The `keyup` event label\n ",
-              "start": 442,
-              "end": 476,
+              "value": "*\r\n * The `keyup` event label\r\n ",
+              "start": 473,
+              "end": 509,
               "loc": {
                 "start": {
                   "line": 32,
@@ -960,9 +960,9 @@
         "leadingComments": [
           {
             "type": "CommentBlock",
-            "value": "*\n * The `keydown` event label\n ",
-            "start": 370,
-            "end": 406,
+            "value": "*\r\n * The `keydown` event label\r\n ",
+            "start": 396,
+            "end": 434,
             "loc": {
               "start": {
                 "line": 27,
@@ -978,9 +978,9 @@
         "trailingComments": [
           {
             "type": "CommentBlock",
-            "value": "*\n * The `keyup` event label\n ",
-            "start": 442,
-            "end": 476,
+            "value": "*\r\n * The `keyup` event label\r\n ",
+            "start": 473,
+            "end": 509,
             "loc": {
               "start": {
                 "line": 32,
@@ -996,8 +996,8 @@
       },
       {
         "type": "ExportNamedDeclaration",
-        "start": 477,
-        "end": 506,
+        "start": 511,
+        "end": 540,
         "loc": {
           "start": {
             "line": 35,
@@ -1012,8 +1012,8 @@
         "source": null,
         "declaration": {
           "type": "VariableDeclaration",
-          "start": 484,
-          "end": 506,
+          "start": 518,
+          "end": 540,
           "loc": {
             "start": {
               "line": 35,
@@ -1027,8 +1027,8 @@
           "declarations": [
             {
               "type": "VariableDeclarator",
-              "start": 490,
-              "end": 505,
+              "start": 524,
+              "end": 539,
               "loc": {
                 "start": {
                   "line": 35,
@@ -1041,8 +1041,8 @@
               },
               "id": {
                 "type": "Identifier",
-                "start": 490,
-                "end": 495,
+                "start": 524,
+                "end": 529,
                 "loc": {
                   "start": {
                     "line": 35,
@@ -1059,8 +1059,8 @@
               },
               "init": {
                 "type": "StringLiteral",
-                "start": 498,
-                "end": 505,
+                "start": 532,
+                "end": 539,
                 "loc": {
                   "start": {
                     "line": 35,
@@ -1084,9 +1084,9 @@
           "leadingComments": [
             {
               "type": "CommentBlock",
-              "value": "*\n * The `keyup` event label\n ",
-              "start": 442,
-              "end": 476,
+              "value": "*\r\n * The `keyup` event label\r\n ",
+              "start": 473,
+              "end": 509,
               "loc": {
                 "start": {
                   "line": 32,
@@ -1102,9 +1102,9 @@
           "trailingComments": [
             {
               "type": "CommentBlock",
-              "value": "*\n * The `keypress` event label\n ",
-              "start": 508,
-              "end": 545,
+              "value": "*\r\n * The `keypress` event label\r\n ",
+              "start": 544,
+              "end": 583,
               "loc": {
                 "start": {
                   "line": 37,
@@ -1121,9 +1121,9 @@
         "leadingComments": [
           {
             "type": "CommentBlock",
-            "value": "*\n * The `keyup` event label\n ",
-            "start": 442,
-            "end": 476,
+            "value": "*\r\n * The `keyup` event label\r\n ",
+            "start": 473,
+            "end": 509,
             "loc": {
               "start": {
                 "line": 32,
@@ -1139,9 +1139,9 @@
         "trailingComments": [
           {
             "type": "CommentBlock",
-            "value": "*\n * The `keypress` event label\n ",
-            "start": 508,
-            "end": 545,
+            "value": "*\r\n * The `keypress` event label\r\n ",
+            "start": 544,
+            "end": 583,
             "loc": {
               "start": {
                 "line": 37,
@@ -1157,8 +1157,8 @@
       },
       {
         "type": "ExportNamedDeclaration",
-        "start": 546,
-        "end": 581,
+        "start": 585,
+        "end": 620,
         "loc": {
           "start": {
             "line": 40,
@@ -1173,8 +1173,8 @@
         "source": null,
         "declaration": {
           "type": "VariableDeclaration",
-          "start": 553,
-          "end": 581,
+          "start": 592,
+          "end": 620,
           "loc": {
             "start": {
               "line": 40,
@@ -1188,8 +1188,8 @@
           "declarations": [
             {
               "type": "VariableDeclarator",
-              "start": 559,
-              "end": 580,
+              "start": 598,
+              "end": 619,
               "loc": {
                 "start": {
                   "line": 40,
@@ -1202,8 +1202,8 @@
               },
               "id": {
                 "type": "Identifier",
-                "start": 559,
-                "end": 567,
+                "start": 598,
+                "end": 606,
                 "loc": {
                   "start": {
                     "line": 40,
@@ -1220,8 +1220,8 @@
               },
               "init": {
                 "type": "StringLiteral",
-                "start": 570,
-                "end": 580,
+                "start": 609,
+                "end": 619,
                 "loc": {
                   "start": {
                     "line": 40,
@@ -1245,9 +1245,9 @@
           "leadingComments": [
             {
               "type": "CommentBlock",
-              "value": "*\n * The `keypress` event label\n ",
-              "start": 508,
-              "end": 545,
+              "value": "*\r\n * The `keypress` event label\r\n ",
+              "start": 544,
+              "end": 583,
               "loc": {
                 "start": {
                   "line": 37,
@@ -1265,9 +1265,9 @@
         "leadingComments": [
           {
             "type": "CommentBlock",
-            "value": "*\n * The `keypress` event label\n ",
-            "start": 508,
-            "end": 545,
+            "value": "*\r\n * The `keypress` event label\r\n ",
+            "start": 544,
+            "end": 583,
             "loc": {
               "start": {
                 "line": 37,
@@ -1287,9 +1287,9 @@
   "comments": [
     {
       "type": "CommentBlock",
-      "value": "*\n * The `mouseup` event label\n ",
-      "start": 1,
-      "end": 37,
+      "value": "*\r\n * The `mouseup` event label\r\n ",
+      "start": 2,
+      "end": 40,
       "loc": {
         "start": {
           "line": 2,
@@ -1303,9 +1303,9 @@
     },
     {
       "type": "CommentBlock",
-      "value": "*\n * The `mousedown` event label\n ",
-      "start": 73,
-      "end": 111,
+      "value": "*\r\n * The `mousedown` event label\r\n ",
+      "start": 79,
+      "end": 119,
       "loc": {
         "start": {
           "line": 7,
@@ -1319,9 +1319,9 @@
     },
     {
       "type": "CommentBlock",
-      "value": "*\n * The `mousemove` event label\n ",
-      "start": 151,
-      "end": 189,
+      "value": "*\r\n * The `mousemove` event label\r\n ",
+      "start": 162,
+      "end": 202,
       "loc": {
         "start": {
           "line": 12,
@@ -1335,9 +1335,9 @@
     },
     {
       "type": "CommentBlock",
-      "value": "*\n * The `mouseout` event label\n ",
-      "start": 229,
-      "end": 266,
+      "value": "*\r\n * The `mouseout` event label\r\n ",
+      "start": 245,
+      "end": 284,
       "loc": {
         "start": {
           "line": 17,
@@ -1351,9 +1351,9 @@
     },
     {
       "type": "CommentBlock",
-      "value": "*\n * The `click` event label\n ",
-      "start": 304,
-      "end": 338,
+      "value": "*\r\n * The `click` event label\r\n ",
+      "start": 325,
+      "end": 361,
       "loc": {
         "start": {
           "line": 22,
@@ -1367,9 +1367,9 @@
     },
     {
       "type": "CommentBlock",
-      "value": "*\n * The `keydown` event label\n ",
-      "start": 370,
-      "end": 406,
+      "value": "*\r\n * The `keydown` event label\r\n ",
+      "start": 396,
+      "end": 434,
       "loc": {
         "start": {
           "line": 27,
@@ -1383,9 +1383,9 @@
     },
     {
       "type": "CommentBlock",
-      "value": "*\n * The `keyup` event label\n ",
-      "start": 442,
-      "end": 476,
+      "value": "*\r\n * The `keyup` event label\r\n ",
+      "start": 473,
+      "end": 509,
       "loc": {
         "start": {
           "line": 32,
@@ -1399,9 +1399,9 @@
     },
     {
       "type": "CommentBlock",
-      "value": "*\n * The `keypress` event label\n ",
-      "start": 508,
-      "end": 545,
+      "value": "*\r\n * The `keypress` event label\r\n ",
+      "start": 544,
+      "end": 583,
       "loc": {
         "start": {
           "line": 37,
@@ -1417,9 +1417,9 @@
   "tokens": [
     {
       "type": "CommentBlock",
-      "value": "*\n * The `mouseup` event label\n ",
-      "start": 1,
-      "end": 37,
+      "value": "*\r\n * The `mouseup` event label\r\n ",
+      "start": 2,
+      "end": 40,
       "loc": {
         "start": {
           "line": 2,
@@ -1446,8 +1446,8 @@
         "updateContext": null
       },
       "value": "export",
-      "start": 38,
-      "end": 44,
+      "start": 42,
+      "end": 48,
       "loc": {
         "start": {
           "line": 5,
@@ -1474,8 +1474,8 @@
         "updateContext": null
       },
       "value": "const",
-      "start": 45,
-      "end": 50,
+      "start": 49,
+      "end": 54,
       "loc": {
         "start": {
           "line": 5,
@@ -1500,8 +1500,8 @@
         "binop": null
       },
       "value": "MOUSEUP",
-      "start": 51,
-      "end": 58,
+      "start": 55,
+      "end": 62,
       "loc": {
         "start": {
           "line": 5,
@@ -1527,8 +1527,8 @@
         "updateContext": null
       },
       "value": "=",
-      "start": 59,
-      "end": 60,
+      "start": 63,
+      "end": 64,
       "loc": {
         "start": {
           "line": 5,
@@ -1554,8 +1554,8 @@
         "updateContext": null
       },
       "value": "mouseup",
-      "start": 61,
-      "end": 70,
+      "start": 65,
+      "end": 74,
       "loc": {
         "start": {
           "line": 5,
@@ -1580,8 +1580,8 @@
         "binop": null,
         "updateContext": null
       },
-      "start": 70,
-      "end": 71,
+      "start": 74,
+      "end": 75,
       "loc": {
         "start": {
           "line": 5,
@@ -1595,9 +1595,9 @@
     },
     {
       "type": "CommentBlock",
-      "value": "*\n * The `mousedown` event label\n ",
-      "start": 73,
-      "end": 111,
+      "value": "*\r\n * The `mousedown` event label\r\n ",
+      "start": 79,
+      "end": 119,
       "loc": {
         "start": {
           "line": 7,
@@ -1624,8 +1624,8 @@
         "updateContext": null
       },
       "value": "export",
-      "start": 112,
-      "end": 118,
+      "start": 121,
+      "end": 127,
       "loc": {
         "start": {
           "line": 10,
@@ -1652,8 +1652,8 @@
         "updateContext": null
       },
       "value": "const",
-      "start": 119,
-      "end": 124,
+      "start": 128,
+      "end": 133,
       "loc": {
         "start": {
           "line": 10,
@@ -1678,8 +1678,8 @@
         "binop": null
       },
       "value": "MOUSEDOWN",
-      "start": 125,
-      "end": 134,
+      "start": 134,
+      "end": 143,
       "loc": {
         "start": {
           "line": 10,
@@ -1705,8 +1705,8 @@
         "updateContext": null
       },
       "value": "=",
-      "start": 135,
-      "end": 136,
+      "start": 144,
+      "end": 145,
       "loc": {
         "start": {
           "line": 10,
@@ -1732,8 +1732,8 @@
         "updateContext": null
       },
       "value": "mousedown",
-      "start": 137,
-      "end": 148,
+      "start": 146,
+      "end": 157,
       "loc": {
         "start": {
           "line": 10,
@@ -1758,8 +1758,8 @@
         "binop": null,
         "updateContext": null
       },
-      "start": 148,
-      "end": 149,
+      "start": 157,
+      "end": 158,
       "loc": {
         "start": {
           "line": 10,
@@ -1773,9 +1773,9 @@
     },
     {
       "type": "CommentBlock",
-      "value": "*\n * The `mousemove` event label\n ",
-      "start": 151,
-      "end": 189,
+      "value": "*\r\n * The `mousemove` event label\r\n ",
+      "start": 162,
+      "end": 202,
       "loc": {
         "start": {
           "line": 12,
@@ -1802,8 +1802,8 @@
         "updateContext": null
       },
       "value": "export",
-      "start": 190,
-      "end": 196,
+      "start": 204,
+      "end": 210,
       "loc": {
         "start": {
           "line": 15,
@@ -1830,8 +1830,8 @@
         "updateContext": null
       },
       "value": "const",
-      "start": 197,
-      "end": 202,
+      "start": 211,
+      "end": 216,
       "loc": {
         "start": {
           "line": 15,
@@ -1856,8 +1856,8 @@
         "binop": null
       },
       "value": "MOUSEMOVE",
-      "start": 203,
-      "end": 212,
+      "start": 217,
+      "end": 226,
       "loc": {
         "start": {
           "line": 15,
@@ -1883,8 +1883,8 @@
         "updateContext": null
       },
       "value": "=",
-      "start": 213,
-      "end": 214,
+      "start": 227,
+      "end": 228,
       "loc": {
         "start": {
           "line": 15,
@@ -1910,8 +1910,8 @@
         "updateContext": null
       },
       "value": "mousemove",
-      "start": 215,
-      "end": 226,
+      "start": 229,
+      "end": 240,
       "loc": {
         "start": {
           "line": 15,
@@ -1936,8 +1936,8 @@
         "binop": null,
         "updateContext": null
       },
-      "start": 226,
-      "end": 227,
+      "start": 240,
+      "end": 241,
       "loc": {
         "start": {
           "line": 15,
@@ -1951,9 +1951,9 @@
     },
     {
       "type": "CommentBlock",
-      "value": "*\n * The `mouseout` event label\n ",
-      "start": 229,
-      "end": 266,
+      "value": "*\r\n * The `mouseout` event label\r\n ",
+      "start": 245,
+      "end": 284,
       "loc": {
         "start": {
           "line": 17,
@@ -1980,8 +1980,8 @@
         "updateContext": null
       },
       "value": "export",
-      "start": 267,
-      "end": 273,
+      "start": 286,
+      "end": 292,
       "loc": {
         "start": {
           "line": 20,
@@ -2008,8 +2008,8 @@
         "updateContext": null
       },
       "value": "const",
-      "start": 274,
-      "end": 279,
+      "start": 293,
+      "end": 298,
       "loc": {
         "start": {
           "line": 20,
@@ -2034,8 +2034,8 @@
         "binop": null
       },
       "value": "MOUSEOUT",
-      "start": 280,
-      "end": 288,
+      "start": 299,
+      "end": 307,
       "loc": {
         "start": {
           "line": 20,
@@ -2061,8 +2061,8 @@
         "updateContext": null
       },
       "value": "=",
-      "start": 289,
-      "end": 290,
+      "start": 308,
+      "end": 309,
       "loc": {
         "start": {
           "line": 20,
@@ -2088,8 +2088,8 @@
         "updateContext": null
       },
       "value": "mouseout",
-      "start": 291,
-      "end": 301,
+      "start": 310,
+      "end": 320,
       "loc": {
         "start": {
           "line": 20,
@@ -2114,8 +2114,8 @@
         "binop": null,
         "updateContext": null
       },
-      "start": 301,
-      "end": 302,
+      "start": 320,
+      "end": 321,
       "loc": {
         "start": {
           "line": 20,
@@ -2129,9 +2129,9 @@
     },
     {
       "type": "CommentBlock",
-      "value": "*\n * The `click` event label\n ",
-      "start": 304,
-      "end": 338,
+      "value": "*\r\n * The `click` event label\r\n ",
+      "start": 325,
+      "end": 361,
       "loc": {
         "start": {
           "line": 22,
@@ -2158,8 +2158,8 @@
         "updateContext": null
       },
       "value": "export",
-      "start": 339,
-      "end": 345,
+      "start": 363,
+      "end": 369,
       "loc": {
         "start": {
           "line": 25,
@@ -2186,8 +2186,8 @@
         "updateContext": null
       },
       "value": "const",
-      "start": 346,
-      "end": 351,
+      "start": 370,
+      "end": 375,
       "loc": {
         "start": {
           "line": 25,
@@ -2212,8 +2212,8 @@
         "binop": null
       },
       "value": "CLICK",
-      "start": 352,
-      "end": 357,
+      "start": 376,
+      "end": 381,
       "loc": {
         "start": {
           "line": 25,
@@ -2239,8 +2239,8 @@
         "updateContext": null
       },
       "value": "=",
-      "start": 358,
-      "end": 359,
+      "start": 382,
+      "end": 383,
       "loc": {
         "start": {
           "line": 25,
@@ -2266,8 +2266,8 @@
         "updateContext": null
       },
       "value": "click",
-      "start": 360,
-      "end": 367,
+      "start": 384,
+      "end": 391,
       "loc": {
         "start": {
           "line": 25,
@@ -2292,8 +2292,8 @@
         "binop": null,
         "updateContext": null
       },
-      "start": 367,
-      "end": 368,
+      "start": 391,
+      "end": 392,
       "loc": {
         "start": {
           "line": 25,
@@ -2307,9 +2307,9 @@
     },
     {
       "type": "CommentBlock",
-      "value": "*\n * The `keydown` event label\n ",
-      "start": 370,
-      "end": 406,
+      "value": "*\r\n * The `keydown` event label\r\n ",
+      "start": 396,
+      "end": 434,
       "loc": {
         "start": {
           "line": 27,
@@ -2336,8 +2336,8 @@
         "updateContext": null
       },
       "value": "export",
-      "start": 407,
-      "end": 413,
+      "start": 436,
+      "end": 442,
       "loc": {
         "start": {
           "line": 30,
@@ -2364,8 +2364,8 @@
         "updateContext": null
       },
       "value": "const",
-      "start": 414,
-      "end": 419,
+      "start": 443,
+      "end": 448,
       "loc": {
         "start": {
           "line": 30,
@@ -2390,8 +2390,8 @@
         "binop": null
       },
       "value": "KEYDOWN",
-      "start": 420,
-      "end": 427,
+      "start": 449,
+      "end": 456,
       "loc": {
         "start": {
           "line": 30,
@@ -2417,8 +2417,8 @@
         "updateContext": null
       },
       "value": "=",
-      "start": 428,
-      "end": 429,
+      "start": 457,
+      "end": 458,
       "loc": {
         "start": {
           "line": 30,
@@ -2444,8 +2444,8 @@
         "updateContext": null
       },
       "value": "keydown",
-      "start": 430,
-      "end": 439,
+      "start": 459,
+      "end": 468,
       "loc": {
         "start": {
           "line": 30,
@@ -2470,8 +2470,8 @@
         "binop": null,
         "updateContext": null
       },
-      "start": 439,
-      "end": 440,
+      "start": 468,
+      "end": 469,
       "loc": {
         "start": {
           "line": 30,
@@ -2485,9 +2485,9 @@
     },
     {
       "type": "CommentBlock",
-      "value": "*\n * The `keyup` event label\n ",
-      "start": 442,
-      "end": 476,
+      "value": "*\r\n * The `keyup` event label\r\n ",
+      "start": 473,
+      "end": 509,
       "loc": {
         "start": {
           "line": 32,
@@ -2514,8 +2514,8 @@
         "updateContext": null
       },
       "value": "export",
-      "start": 477,
-      "end": 483,
+      "start": 511,
+      "end": 517,
       "loc": {
         "start": {
           "line": 35,
@@ -2542,8 +2542,8 @@
         "updateContext": null
       },
       "value": "const",
-      "start": 484,
-      "end": 489,
+      "start": 518,
+      "end": 523,
       "loc": {
         "start": {
           "line": 35,
@@ -2568,8 +2568,8 @@
         "binop": null
       },
       "value": "KEYUP",
-      "start": 490,
-      "end": 495,
+      "start": 524,
+      "end": 529,
       "loc": {
         "start": {
           "line": 35,
@@ -2595,8 +2595,8 @@
         "updateContext": null
       },
       "value": "=",
-      "start": 496,
-      "end": 497,
+      "start": 530,
+      "end": 531,
       "loc": {
         "start": {
           "line": 35,
@@ -2622,8 +2622,8 @@
         "updateContext": null
       },
       "value": "keyup",
-      "start": 498,
-      "end": 505,
+      "start": 532,
+      "end": 539,
       "loc": {
         "start": {
           "line": 35,
@@ -2648,8 +2648,8 @@
         "binop": null,
         "updateContext": null
       },
-      "start": 505,
-      "end": 506,
+      "start": 539,
+      "end": 540,
       "loc": {
         "start": {
           "line": 35,
@@ -2663,9 +2663,9 @@
     },
     {
       "type": "CommentBlock",
-      "value": "*\n * The `keypress` event label\n ",
-      "start": 508,
-      "end": 545,
+      "value": "*\r\n * The `keypress` event label\r\n ",
+      "start": 544,
+      "end": 583,
       "loc": {
         "start": {
           "line": 37,
@@ -2692,8 +2692,8 @@
         "updateContext": null
       },
       "value": "export",
-      "start": 546,
-      "end": 552,
+      "start": 585,
+      "end": 591,
       "loc": {
         "start": {
           "line": 40,
@@ -2720,8 +2720,8 @@
         "updateContext": null
       },
       "value": "const",
-      "start": 553,
-      "end": 558,
+      "start": 592,
+      "end": 597,
       "loc": {
         "start": {
           "line": 40,
@@ -2746,8 +2746,8 @@
         "binop": null
       },
       "value": "KEYPRESS",
-      "start": 559,
-      "end": 567,
+      "start": 598,
+      "end": 606,
       "loc": {
         "start": {
           "line": 40,
@@ -2773,8 +2773,8 @@
         "updateContext": null
       },
       "value": "=",
-      "start": 568,
-      "end": 569,
+      "start": 607,
+      "end": 608,
       "loc": {
         "start": {
           "line": 40,
@@ -2800,8 +2800,8 @@
         "updateContext": null
       },
       "value": "keypress",
-      "start": 570,
-      "end": 580,
+      "start": 609,
+      "end": 619,
       "loc": {
         "start": {
           "line": 40,
@@ -2826,8 +2826,8 @@
         "binop": null,
         "updateContext": null
       },
-      "start": 580,
-      "end": 581,
+      "start": 619,
+      "end": 620,
       "loc": {
         "start": {
           "line": 40,
@@ -2852,8 +2852,8 @@
         "binop": null,
         "updateContext": null
       },
-      "start": 582,
-      "end": 582,
+      "start": 622,
+      "end": 622,
       "loc": {
         "start": {
           "line": 41,

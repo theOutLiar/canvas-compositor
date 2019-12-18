@@ -877,13 +877,13 @@ window.esdocSearchIndex = [
   ],
   [
     "src/compositor.js~compositor#targetobject",
-    "class/src/Compositor.js~Compositor.html#instance-set-targetObject",
+    "class/src/Compositor.js~Compositor.html#instance-get-targetObject",
     "src/Compositor.js~Compositor#targetObject",
     "member"
   ],
   [
     "src/compositor.js~compositor#targetobject",
-    "class/src/Compositor.js~Compositor.html#instance-get-targetObject",
+    "class/src/Compositor.js~Compositor.html#instance-set-targetObject",
     "src/Compositor.js~Compositor#targetObject",
     "member"
   ],
@@ -1081,13 +1081,13 @@ window.esdocSearchIndex = [
   ],
   [
     "src/primitivecomponent.js~primitivecomponent#d",
-    "class/src/PrimitiveComponent.js~PrimitiveComponent.html#instance-set-d",
+    "class/src/PrimitiveComponent.js~PrimitiveComponent.html#instance-get-d",
     "src/PrimitiveComponent.js~PrimitiveComponent#d",
     "member"
   ],
   [
     "src/primitivecomponent.js~primitivecomponent#d",
-    "class/src/PrimitiveComponent.js~PrimitiveComponent.html#instance-get-d",
+    "class/src/PrimitiveComponent.js~PrimitiveComponent.html#instance-set-d",
     "src/PrimitiveComponent.js~PrimitiveComponent#d",
     "member"
   ],
@@ -1123,13 +1123,13 @@ window.esdocSearchIndex = [
   ],
   [
     "src/primitivecomponent.js~primitivecomponent#needsdraw",
-    "class/src/PrimitiveComponent.js~PrimitiveComponent.html#instance-set-needsDraw",
+    "class/src/PrimitiveComponent.js~PrimitiveComponent.html#instance-get-needsDraw",
     "src/PrimitiveComponent.js~PrimitiveComponent#needsDraw",
     "member"
   ],
   [
     "src/primitivecomponent.js~primitivecomponent#needsdraw",
-    "class/src/PrimitiveComponent.js~PrimitiveComponent.html#instance-get-needsDraw",
+    "class/src/PrimitiveComponent.js~PrimitiveComponent.html#instance-set-needsDraw",
     "src/PrimitiveComponent.js~PrimitiveComponent#needsDraw",
     "member"
   ],
@@ -1183,25 +1183,25 @@ window.esdocSearchIndex = [
   ],
   [
     "src/primitivecomponent.js~primitivecomponent#scale",
-    "class/src/PrimitiveComponent.js~PrimitiveComponent.html#instance-set-scale",
-    "src/PrimitiveComponent.js~PrimitiveComponent#scale",
-    "member"
-  ],
-  [
-    "src/primitivecomponent.js~primitivecomponent#scale",
     "class/src/PrimitiveComponent.js~PrimitiveComponent.html#instance-get-scale",
     "src/PrimitiveComponent.js~PrimitiveComponent#scale",
     "member"
   ],
   [
-    "src/primitivecomponent.js~primitivecomponent#scaleheight",
-    "class/src/PrimitiveComponent.js~PrimitiveComponent.html#instance-set-scaleHeight",
-    "src/PrimitiveComponent.js~PrimitiveComponent#scaleHeight",
+    "src/primitivecomponent.js~primitivecomponent#scale",
+    "class/src/PrimitiveComponent.js~PrimitiveComponent.html#instance-set-scale",
+    "src/PrimitiveComponent.js~PrimitiveComponent#scale",
     "member"
   ],
   [
     "src/primitivecomponent.js~primitivecomponent#scaleheight",
     "class/src/PrimitiveComponent.js~PrimitiveComponent.html#instance-get-scaleHeight",
+    "src/PrimitiveComponent.js~PrimitiveComponent#scaleHeight",
+    "member"
+  ],
+  [
+    "src/primitivecomponent.js~primitivecomponent#scaleheight",
+    "class/src/PrimitiveComponent.js~PrimitiveComponent.html#instance-set-scaleHeight",
     "src/PrimitiveComponent.js~PrimitiveComponent#scaleHeight",
     "member"
   ],
@@ -1459,13 +1459,13 @@ window.esdocSearchIndex = [
   ],
   [
     "src/vectorpath.js~vectorpath#vertices",
-    "class/src/VectorPath.js~VectorPath.html#instance-set-vertices",
+    "class/src/VectorPath.js~VectorPath.html#instance-get-vertices",
     "src/VectorPath.js~VectorPath#vertices",
     "member"
   ],
   [
     "src/vectorpath.js~vectorpath#vertices",
-    "class/src/VectorPath.js~VectorPath.html#instance-get-vertices",
+    "class/src/VectorPath.js~VectorPath.html#instance-set-vertices",
     "src/VectorPath.js~VectorPath#vertices",
     "member"
   ]
