@@ -1,7 +1,7 @@
 {
   "type": "File",
   "start": 0,
-  "end": 749,
+  "end": 702,
   "loc": {
     "start": {
       "line": 1,
@@ -15,7 +15,7 @@
   "program": {
     "type": "Program",
     "start": 0,
-    "end": 749,
+    "end": 702,
     "loc": {
       "start": {
         "line": 1,
@@ -30,8 +30,8 @@
     "body": [
       {
         "type": "ExportNamedDeclaration",
-        "start": 51,
-        "end": 83,
+        "start": 47,
+        "end": 79,
         "loc": {
           "start": {
             "line": 5,
@@ -46,8 +46,8 @@
         "source": null,
         "declaration": {
           "type": "VariableDeclaration",
-          "start": 58,
-          "end": 83,
+          "start": 54,
+          "end": 79,
           "loc": {
             "start": {
               "line": 5,
@@ -61,8 +61,8 @@
           "declarations": [
             {
               "type": "VariableDeclarator",
-              "start": 64,
-              "end": 82,
+              "start": 60,
+              "end": 78,
               "loc": {
                 "start": {
                   "line": 5,
@@ -75,8 +75,8 @@
               },
               "id": {
                 "type": "Identifier",
-                "start": 64,
-                "end": 73,
+                "start": 60,
+                "end": 69,
                 "loc": {
                   "start": {
                     "line": 5,
@@ -93,8 +93,8 @@
               },
               "init": {
                 "type": "StringLiteral",
-                "start": 76,
-                "end": 82,
+                "start": 72,
+                "end": 78,
                 "loc": {
                   "start": {
                     "line": 5,
@@ -118,9 +118,9 @@
           "leadingComments": [
             {
               "type": "CommentBlock",
-              "value": "*\r\n * Default font size\r\n * @type {string}\r\n ",
+              "value": "*\n * Default font size\n * @type {string}\n ",
               "start": 0,
-              "end": 49,
+              "end": 46,
               "loc": {
                 "start": {
                   "line": 1,
@@ -136,9 +136,9 @@
           "trailingComments": [
             {
               "type": "CommentBlock",
-              "value": "*\r\n * Default font family\r\n * @type {string}\r\n ",
-              "start": 87,
-              "end": 138,
+              "value": "*\n * Default font family\n * @type {string}\n ",
+              "start": 81,
+              "end": 129,
               "loc": {
                 "start": {
                   "line": 7,
@@ -155,9 +155,9 @@
         "leadingComments": [
           {
             "type": "CommentBlock",
-            "value": "*\r\n * Default font size\r\n * @type {string}\r\n ",
+            "value": "*\n * Default font size\n * @type {string}\n ",
             "start": 0,
-            "end": 49,
+            "end": 46,
             "loc": {
               "start": {
                 "line": 1,
@@ -173,9 +173,9 @@
         "trailingComments": [
           {
             "type": "CommentBlock",
-            "value": "*\r\n * Default font family\r\n * @type {string}\r\n ",
-            "start": 87,
-            "end": 138,
+            "value": "*\n * Default font family\n * @type {string}\n ",
+            "start": 81,
+            "end": 129,
             "loc": {
               "start": {
                 "line": 7,
@@ -191,8 +191,8 @@
       },
       {
         "type": "ExportNamedDeclaration",
-        "start": 140,
-        "end": 180,
+        "start": 130,
+        "end": 170,
         "loc": {
           "start": {
             "line": 11,
@@ -207,8 +207,8 @@
         "source": null,
         "declaration": {
           "type": "VariableDeclaration",
-          "start": 147,
-          "end": 180,
+          "start": 137,
+          "end": 170,
           "loc": {
             "start": {
               "line": 11,
@@ -222,8 +222,8 @@
           "declarations": [
             {
               "type": "VariableDeclarator",
-              "start": 153,
-              "end": 179,
+              "start": 143,
+              "end": 169,
               "loc": {
                 "start": {
                   "line": 11,
@@ -236,8 +236,8 @@
               },
               "id": {
                 "type": "Identifier",
-                "start": 153,
-                "end": 164,
+                "start": 143,
+                "end": 154,
                 "loc": {
                   "start": {
                     "line": 11,
@@ -254,8 +254,8 @@
               },
               "init": {
                 "type": "StringLiteral",
-                "start": 167,
-                "end": 179,
+                "start": 157,
+                "end": 169,
                 "loc": {
                   "start": {
                     "line": 11,
@@ -279,9 +279,9 @@
           "leadingComments": [
             {
               "type": "CommentBlock",
-              "value": "*\r\n * Default font family\r\n * @type {string}\r\n ",
-              "start": 87,
-              "end": 138,
+              "value": "*\n * Default font family\n * @type {string}\n ",
+              "start": 81,
+              "end": 129,
               "loc": {
                 "start": {
                   "line": 7,
@@ -297,9 +297,9 @@
           "trailingComments": [
             {
               "type": "CommentBlock",
-              "value": "*\r\n * Default font style\r\n * @type {string}\r\n ",
-              "start": 184,
-              "end": 234,
+              "value": "*\n * Default font style\n * @type {string}\n ",
+              "start": 172,
+              "end": 219,
               "loc": {
                 "start": {
                   "line": 13,
@@ -316,9 +316,9 @@
         "leadingComments": [
           {
             "type": "CommentBlock",
-            "value": "*\r\n * Default font family\r\n * @type {string}\r\n ",
-            "start": 87,
-            "end": 138,
+            "value": "*\n * Default font family\n * @type {string}\n ",
+            "start": 81,
+            "end": 129,
             "loc": {
               "start": {
                 "line": 7,
@@ -334,9 +334,9 @@
         "trailingComments": [
           {
             "type": "CommentBlock",
-            "value": "*\r\n * Default font style\r\n * @type {string}\r\n ",
-            "start": 184,
-            "end": 234,
+            "value": "*\n * Default font style\n * @type {string}\n ",
+            "start": 172,
+            "end": 219,
             "loc": {
               "start": {
                 "line": 13,
@@ -352,8 +352,8 @@
       },
       {
         "type": "ExportNamedDeclaration",
-        "start": 236,
-        "end": 271,
+        "start": 220,
+        "end": 255,
         "loc": {
           "start": {
             "line": 17,
@@ -368,8 +368,8 @@
         "source": null,
         "declaration": {
           "type": "VariableDeclaration",
-          "start": 243,
-          "end": 271,
+          "start": 227,
+          "end": 255,
           "loc": {
             "start": {
               "line": 17,
@@ -383,8 +383,8 @@
           "declarations": [
             {
               "type": "VariableDeclarator",
-              "start": 249,
-              "end": 270,
+              "start": 233,
+              "end": 254,
               "loc": {
                 "start": {
                   "line": 17,
@@ -397,8 +397,8 @@
               },
               "id": {
                 "type": "Identifier",
-                "start": 249,
-                "end": 259,
+                "start": 233,
+                "end": 243,
                 "loc": {
                   "start": {
                     "line": 17,
@@ -415,8 +415,8 @@
               },
               "init": {
                 "type": "StringLiteral",
-                "start": 262,
-                "end": 270,
+                "start": 246,
+                "end": 254,
                 "loc": {
                   "start": {
                     "line": 17,
@@ -440,9 +440,9 @@
           "leadingComments": [
             {
               "type": "CommentBlock",
-              "value": "*\r\n * Default font style\r\n * @type {string}\r\n ",
-              "start": 184,
-              "end": 234,
+              "value": "*\n * Default font style\n * @type {string}\n ",
+              "start": 172,
+              "end": 219,
               "loc": {
                 "start": {
                   "line": 13,
@@ -458,9 +458,9 @@
           "trailingComments": [
             {
               "type": "CommentBlock",
-              "value": "*\r\n * Default font variant\r\n * @type {string}\r\n ",
-              "start": 275,
-              "end": 327,
+              "value": "*\n * Default font variant\n * @type {string}\n ",
+              "start": 257,
+              "end": 306,
               "loc": {
                 "start": {
                   "line": 19,
@@ -477,9 +477,9 @@
         "leadingComments": [
           {
             "type": "CommentBlock",
-            "value": "*\r\n * Default font style\r\n * @type {string}\r\n ",
-            "start": 184,
-            "end": 234,
+            "value": "*\n * Default font style\n * @type {string}\n ",
+            "start": 172,
+            "end": 219,
             "loc": {
               "start": {
                 "line": 13,
@@ -495,9 +495,9 @@
         "trailingComments": [
           {
             "type": "CommentBlock",
-            "value": "*\r\n * Default font variant\r\n * @type {string}\r\n ",
-            "start": 275,
-            "end": 327,
+            "value": "*\n * Default font variant\n * @type {string}\n ",
+            "start": 257,
+            "end": 306,
             "loc": {
               "start": {
                 "line": 19,
@@ -513,8 +513,8 @@
       },
       {
         "type": "ExportNamedDeclaration",
-        "start": 329,
-        "end": 366,
+        "start": 307,
+        "end": 344,
         "loc": {
           "start": {
             "line": 23,
@@ -529,8 +529,8 @@
         "source": null,
         "declaration": {
           "type": "VariableDeclaration",
-          "start": 336,
-          "end": 366,
+          "start": 314,
+          "end": 344,
           "loc": {
             "start": {
               "line": 23,
@@ -544,8 +544,8 @@
           "declarations": [
             {
               "type": "VariableDeclarator",
-              "start": 342,
-              "end": 365,
+              "start": 320,
+              "end": 343,
               "loc": {
                 "start": {
                   "line": 23,
@@ -558,8 +558,8 @@
               },
               "id": {
                 "type": "Identifier",
-                "start": 342,
-                "end": 354,
+                "start": 320,
+                "end": 332,
                 "loc": {
                   "start": {
                     "line": 23,
@@ -576,8 +576,8 @@
               },
               "init": {
                 "type": "StringLiteral",
-                "start": 357,
-                "end": 365,
+                "start": 335,
+                "end": 343,
                 "loc": {
                   "start": {
                     "line": 23,
@@ -601,9 +601,9 @@
           "leadingComments": [
             {
               "type": "CommentBlock",
-              "value": "*\r\n * Default font variant\r\n * @type {string}\r\n ",
-              "start": 275,
-              "end": 327,
+              "value": "*\n * Default font variant\n * @type {string}\n ",
+              "start": 257,
+              "end": 306,
               "loc": {
                 "start": {
                   "line": 19,
@@ -619,9 +619,9 @@
           "trailingComments": [
             {
               "type": "CommentBlock",
-              "value": "*\r\n * Default font weight\r\n * @type {string}\r\n ",
-              "start": 370,
-              "end": 421,
+              "value": "*\n * Default font weight\n * @type {string}\n ",
+              "start": 346,
+              "end": 394,
               "loc": {
                 "start": {
                   "line": 25,
@@ -638,9 +638,9 @@
         "leadingComments": [
           {
             "type": "CommentBlock",
-            "value": "*\r\n * Default font variant\r\n * @type {string}\r\n ",
-            "start": 275,
-            "end": 327,
+            "value": "*\n * Default font variant\n * @type {string}\n ",
+            "start": 257,
+            "end": 306,
             "loc": {
               "start": {
                 "line": 19,
@@ -656,9 +656,9 @@
         "trailingComments": [
           {
             "type": "CommentBlock",
-            "value": "*\r\n * Default font weight\r\n * @type {string}\r\n ",
-            "start": 370,
-            "end": 421,
+            "value": "*\n * Default font weight\n * @type {string}\n ",
+            "start": 346,
+            "end": 394,
             "loc": {
               "start": {
                 "line": 25,
@@ -674,8 +674,8 @@
       },
       {
         "type": "ExportNamedDeclaration",
-        "start": 423,
-        "end": 459,
+        "start": 395,
+        "end": 431,
         "loc": {
           "start": {
             "line": 29,
@@ -690,8 +690,8 @@
         "source": null,
         "declaration": {
           "type": "VariableDeclaration",
-          "start": 430,
-          "end": 459,
+          "start": 402,
+          "end": 431,
           "loc": {
             "start": {
               "line": 29,
@@ -705,8 +705,8 @@
           "declarations": [
             {
               "type": "VariableDeclarator",
-              "start": 436,
-              "end": 458,
+              "start": 408,
+              "end": 430,
               "loc": {
                 "start": {
                   "line": 29,
@@ -719,8 +719,8 @@
               },
               "id": {
                 "type": "Identifier",
-                "start": 436,
-                "end": 447,
+                "start": 408,
+                "end": 419,
                 "loc": {
                   "start": {
                     "line": 29,
@@ -737,8 +737,8 @@
               },
               "init": {
                 "type": "StringLiteral",
-                "start": 450,
-                "end": 458,
+                "start": 422,
+                "end": 430,
                 "loc": {
                   "start": {
                     "line": 29,
@@ -762,9 +762,9 @@
           "leadingComments": [
             {
               "type": "CommentBlock",
-              "value": "*\r\n * Default font weight\r\n * @type {string}\r\n ",
-              "start": 370,
-              "end": 421,
+              "value": "*\n * Default font weight\n * @type {string}\n ",
+              "start": 346,
+              "end": 394,
               "loc": {
                 "start": {
                   "line": 25,
@@ -780,9 +780,9 @@
           "trailingComments": [
             {
               "type": "CommentBlock",
-              "value": "*\r\n * Default line height\r\n * @type {string}\r\n ",
-              "start": 463,
-              "end": 514,
+              "value": "*\n * Default line height\n * @type {string}\n ",
+              "start": 433,
+              "end": 481,
               "loc": {
                 "start": {
                   "line": 31,
@@ -799,9 +799,9 @@
         "leadingComments": [
           {
             "type": "CommentBlock",
-            "value": "*\r\n * Default font weight\r\n * @type {string}\r\n ",
-            "start": 370,
-            "end": 421,
+            "value": "*\n * Default font weight\n * @type {string}\n ",
+            "start": 346,
+            "end": 394,
             "loc": {
               "start": {
                 "line": 25,
@@ -817,9 +817,9 @@
         "trailingComments": [
           {
             "type": "CommentBlock",
-            "value": "*\r\n * Default line height\r\n * @type {string}\r\n ",
-            "start": 463,
-            "end": 514,
+            "value": "*\n * Default line height\n * @type {string}\n ",
+            "start": 433,
+            "end": 481,
             "loc": {
               "start": {
                 "line": 31,
@@ -835,8 +835,8 @@
       },
       {
         "type": "ExportNamedDeclaration",
-        "start": 516,
-        "end": 552,
+        "start": 482,
+        "end": 518,
         "loc": {
           "start": {
             "line": 35,
@@ -851,8 +851,8 @@
         "source": null,
         "declaration": {
           "type": "VariableDeclaration",
-          "start": 523,
-          "end": 552,
+          "start": 489,
+          "end": 518,
           "loc": {
             "start": {
               "line": 35,
@@ -866,8 +866,8 @@
           "declarations": [
             {
               "type": "VariableDeclarator",
-              "start": 529,
-              "end": 551,
+              "start": 495,
+              "end": 517,
               "loc": {
                 "start": {
                   "line": 35,
@@ -880,8 +880,8 @@
               },
               "id": {
                 "type": "Identifier",
-                "start": 529,
-                "end": 540,
+                "start": 495,
+                "end": 506,
                 "loc": {
                   "start": {
                     "line": 35,
@@ -898,8 +898,8 @@
               },
               "init": {
                 "type": "StringLiteral",
-                "start": 543,
-                "end": 551,
+                "start": 509,
+                "end": 517,
                 "loc": {
                   "start": {
                     "line": 35,
@@ -923,9 +923,9 @@
           "leadingComments": [
             {
               "type": "CommentBlock",
-              "value": "*\r\n * Default line height\r\n * @type {string}\r\n ",
-              "start": 463,
-              "end": 514,
+              "value": "*\n * Default line height\n * @type {string}\n ",
+              "start": 433,
+              "end": 481,
               "loc": {
                 "start": {
                   "line": 31,
@@ -941,9 +941,9 @@
           "trailingComments": [
             {
               "type": "CommentBlock",
-              "value": "*\r\n * Default text alignment\r\n * @type {string}\r\n ",
-              "start": 556,
-              "end": 610,
+              "value": "*\n * Default text alignment\n * @type {string}\n ",
+              "start": 520,
+              "end": 571,
               "loc": {
                 "start": {
                   "line": 37,
@@ -960,9 +960,9 @@
         "leadingComments": [
           {
             "type": "CommentBlock",
-            "value": "*\r\n * Default line height\r\n * @type {string}\r\n ",
-            "start": 463,
-            "end": 514,
+            "value": "*\n * Default line height\n * @type {string}\n ",
+            "start": 433,
+            "end": 481,
             "loc": {
               "start": {
                 "line": 31,
@@ -978,9 +978,9 @@
         "trailingComments": [
           {
             "type": "CommentBlock",
-            "value": "*\r\n * Default text alignment\r\n * @type {string}\r\n ",
-            "start": 556,
-            "end": 610,
+            "value": "*\n * Default text alignment\n * @type {string}\n ",
+            "start": 520,
+            "end": 571,
             "loc": {
               "start": {
                 "line": 37,
@@ -996,8 +996,8 @@
       },
       {
         "type": "ExportNamedDeclaration",
-        "start": 612,
-        "end": 646,
+        "start": 572,
+        "end": 606,
         "loc": {
           "start": {
             "line": 41,
@@ -1012,8 +1012,8 @@
         "source": null,
         "declaration": {
           "type": "VariableDeclaration",
-          "start": 619,
-          "end": 646,
+          "start": 579,
+          "end": 606,
           "loc": {
             "start": {
               "line": 41,
@@ -1027,8 +1027,8 @@
           "declarations": [
             {
               "type": "VariableDeclarator",
-              "start": 625,
-              "end": 645,
+              "start": 585,
+              "end": 605,
               "loc": {
                 "start": {
                   "line": 41,
@@ -1041,8 +1041,8 @@
               },
               "id": {
                 "type": "Identifier",
-                "start": 625,
-                "end": 635,
+                "start": 585,
+                "end": 595,
                 "loc": {
                   "start": {
                     "line": 41,
@@ -1059,8 +1059,8 @@
               },
               "init": {
                 "type": "StringLiteral",
-                "start": 638,
-                "end": 645,
+                "start": 598,
+                "end": 605,
                 "loc": {
                   "start": {
                     "line": 41,
@@ -1084,9 +1084,9 @@
           "leadingComments": [
             {
               "type": "CommentBlock",
-              "value": "*\r\n * Default text alignment\r\n * @type {string}\r\n ",
-              "start": 556,
-              "end": 610,
+              "value": "*\n * Default text alignment\n * @type {string}\n ",
+              "start": 520,
+              "end": 571,
               "loc": {
                 "start": {
                   "line": 37,
@@ -1102,9 +1102,9 @@
           "trailingComments": [
             {
               "type": "CommentBlock",
-              "value": "*\r\n * Default text baseline\r\n * @type {string}\r\n ",
-              "start": 650,
-              "end": 703,
+              "value": "*\n * Default text baseline\n * @type {string}\n ",
+              "start": 608,
+              "end": 658,
               "loc": {
                 "start": {
                   "line": 43,
@@ -1121,9 +1121,9 @@
         "leadingComments": [
           {
             "type": "CommentBlock",
-            "value": "*\r\n * Default text alignment\r\n * @type {string}\r\n ",
-            "start": 556,
-            "end": 610,
+            "value": "*\n * Default text alignment\n * @type {string}\n ",
+            "start": 520,
+            "end": 571,
             "loc": {
               "start": {
                 "line": 37,
@@ -1139,9 +1139,9 @@
         "trailingComments": [
           {
             "type": "CommentBlock",
-            "value": "*\r\n * Default text baseline\r\n * @type {string}\r\n ",
-            "start": 650,
-            "end": 703,
+            "value": "*\n * Default text baseline\n * @type {string}\n ",
+            "start": 608,
+            "end": 658,
             "loc": {
               "start": {
                 "line": 43,
@@ -1157,8 +1157,8 @@
       },
       {
         "type": "ExportNamedDeclaration",
-        "start": 705,
-        "end": 747,
+        "start": 659,
+        "end": 701,
         "loc": {
           "start": {
             "line": 47,
@@ -1173,8 +1173,8 @@
         "source": null,
         "declaration": {
           "type": "VariableDeclaration",
-          "start": 712,
-          "end": 747,
+          "start": 666,
+          "end": 701,
           "loc": {
             "start": {
               "line": 47,
@@ -1188,8 +1188,8 @@
           "declarations": [
             {
               "type": "VariableDeclarator",
-              "start": 718,
-              "end": 746,
+              "start": 672,
+              "end": 700,
               "loc": {
                 "start": {
                   "line": 47,
@@ -1202,8 +1202,8 @@
               },
               "id": {
                 "type": "Identifier",
-                "start": 718,
-                "end": 731,
+                "start": 672,
+                "end": 685,
                 "loc": {
                   "start": {
                     "line": 47,
@@ -1220,8 +1220,8 @@
               },
               "init": {
                 "type": "StringLiteral",
-                "start": 734,
-                "end": 746,
+                "start": 688,
+                "end": 700,
                 "loc": {
                   "start": {
                     "line": 47,
@@ -1245,9 +1245,9 @@
           "leadingComments": [
             {
               "type": "CommentBlock",
-              "value": "*\r\n * Default text baseline\r\n * @type {string}\r\n ",
-              "start": 650,
-              "end": 703,
+              "value": "*\n * Default text baseline\n * @type {string}\n ",
+              "start": 608,
+              "end": 658,
               "loc": {
                 "start": {
                   "line": 43,
@@ -1265,9 +1265,9 @@
         "leadingComments": [
           {
             "type": "CommentBlock",
-            "value": "*\r\n * Default text baseline\r\n * @type {string}\r\n ",
-            "start": 650,
-            "end": 703,
+            "value": "*\n * Default text baseline\n * @type {string}\n ",
+            "start": 608,
+            "end": 658,
             "loc": {
               "start": {
                 "line": 43,
@@ -1287,9 +1287,9 @@
   "comments": [
     {
       "type": "CommentBlock",
-      "value": "*\r\n * Default font size\r\n * @type {string}\r\n ",
+      "value": "*\n * Default font size\n * @type {string}\n ",
       "start": 0,
-      "end": 49,
+      "end": 46,
       "loc": {
         "start": {
           "line": 1,
@@ -1303,9 +1303,9 @@
     },
     {
       "type": "CommentBlock",
-      "value": "*\r\n * Default font family\r\n * @type {string}\r\n ",
-      "start": 87,
-      "end": 138,
+      "value": "*\n * Default font family\n * @type {string}\n ",
+      "start": 81,
+      "end": 129,
       "loc": {
         "start": {
           "line": 7,
@@ -1319,9 +1319,9 @@
     },
     {
       "type": "CommentBlock",
-      "value": "*\r\n * Default font style\r\n * @type {string}\r\n ",
-      "start": 184,
-      "end": 234,
+      "value": "*\n * Default font style\n * @type {string}\n ",
+      "start": 172,
+      "end": 219,
       "loc": {
         "start": {
           "line": 13,
@@ -1335,9 +1335,9 @@
     },
     {
       "type": "CommentBlock",
-      "value": "*\r\n * Default font variant\r\n * @type {string}\r\n ",
-      "start": 275,
-      "end": 327,
+      "value": "*\n * Default font variant\n * @type {string}\n ",
+      "start": 257,
+      "end": 306,
       "loc": {
         "start": {
           "line": 19,
@@ -1351,9 +1351,9 @@
     },
     {
       "type": "CommentBlock",
-      "value": "*\r\n * Default font weight\r\n * @type {string}\r\n ",
-      "start": 370,
-      "end": 421,
+      "value": "*\n * Default font weight\n * @type {string}\n ",
+      "start": 346,
+      "end": 394,
       "loc": {
         "start": {
           "line": 25,
@@ -1367,9 +1367,9 @@
     },
     {
       "type": "CommentBlock",
-      "value": "*\r\n * Default line height\r\n * @type {string}\r\n ",
-      "start": 463,
-      "end": 514,
+      "value": "*\n * Default line height\n * @type {string}\n ",
+      "start": 433,
+      "end": 481,
       "loc": {
         "start": {
           "line": 31,
@@ -1383,9 +1383,9 @@
     },
     {
       "type": "CommentBlock",
-      "value": "*\r\n * Default text alignment\r\n * @type {string}\r\n ",
-      "start": 556,
-      "end": 610,
+      "value": "*\n * Default text alignment\n * @type {string}\n ",
+      "start": 520,
+      "end": 571,
       "loc": {
         "start": {
           "line": 37,
@@ -1399,9 +1399,9 @@
     },
     {
       "type": "CommentBlock",
-      "value": "*\r\n * Default text baseline\r\n * @type {string}\r\n ",
-      "start": 650,
-      "end": 703,
+      "value": "*\n * Default text baseline\n * @type {string}\n ",
+      "start": 608,
+      "end": 658,
       "loc": {
         "start": {
           "line": 43,
@@ -1417,9 +1417,9 @@
   "tokens": [
     {
       "type": "CommentBlock",
-      "value": "*\r\n * Default font size\r\n * @type {string}\r\n ",
+      "value": "*\n * Default font size\n * @type {string}\n ",
       "start": 0,
-      "end": 49,
+      "end": 46,
       "loc": {
         "start": {
           "line": 1,
@@ -1446,8 +1446,8 @@
         "updateContext": null
       },
       "value": "export",
-      "start": 51,
-      "end": 57,
+      "start": 47,
+      "end": 53,
       "loc": {
         "start": {
           "line": 5,
@@ -1474,8 +1474,8 @@
         "updateContext": null
       },
       "value": "const",
-      "start": 58,
-      "end": 63,
+      "start": 54,
+      "end": 59,
       "loc": {
         "start": {
           "line": 5,
@@ -1500,8 +1500,8 @@
         "binop": null
       },
       "value": "FONT_SIZE",
-      "start": 64,
-      "end": 73,
+      "start": 60,
+      "end": 69,
       "loc": {
         "start": {
           "line": 5,
@@ -1527,8 +1527,8 @@
         "updateContext": null
       },
       "value": "=",
-      "start": 74,
-      "end": 75,
+      "start": 70,
+      "end": 71,
       "loc": {
         "start": {
           "line": 5,
@@ -1554,8 +1554,8 @@
         "updateContext": null
       },
       "value": "16px",
-      "start": 76,
-      "end": 82,
+      "start": 72,
+      "end": 78,
       "loc": {
         "start": {
           "line": 5,
@@ -1580,8 +1580,8 @@
         "binop": null,
         "updateContext": null
       },
-      "start": 82,
-      "end": 83,
+      "start": 78,
+      "end": 79,
       "loc": {
         "start": {
           "line": 5,
@@ -1595,9 +1595,9 @@
     },
     {
       "type": "CommentBlock",
-      "value": "*\r\n * Default font family\r\n * @type {string}\r\n ",
-      "start": 87,
-      "end": 138,
+      "value": "*\n * Default font family\n * @type {string}\n ",
+      "start": 81,
+      "end": 129,
       "loc": {
         "start": {
           "line": 7,
@@ -1624,8 +1624,8 @@
         "updateContext": null
       },
       "value": "export",
-      "start": 140,
-      "end": 146,
+      "start": 130,
+      "end": 136,
       "loc": {
         "start": {
           "line": 11,
@@ -1652,8 +1652,8 @@
         "updateContext": null
       },
       "value": "const",
-      "start": 147,
-      "end": 152,
+      "start": 137,
+      "end": 142,
       "loc": {
         "start": {
           "line": 11,
@@ -1678,8 +1678,8 @@
         "binop": null
       },
       "value": "FONT_FAMILY",
-      "start": 153,
-      "end": 164,
+      "start": 143,
+      "end": 154,
       "loc": {
         "start": {
           "line": 11,
@@ -1705,8 +1705,8 @@
         "updateContext": null
       },
       "value": "=",
-      "start": 165,
-      "end": 166,
+      "start": 155,
+      "end": 156,
       "loc": {
         "start": {
           "line": 11,
@@ -1732,8 +1732,8 @@
         "updateContext": null
       },
       "value": "sans-serif",
-      "start": 167,
-      "end": 179,
+      "start": 157,
+      "end": 169,
       "loc": {
         "start": {
           "line": 11,
@@ -1758,8 +1758,8 @@
         "binop": null,
         "updateContext": null
       },
-      "start": 179,
-      "end": 180,
+      "start": 169,
+      "end": 170,
       "loc": {
         "start": {
           "line": 11,
@@ -1773,9 +1773,9 @@
     },
     {
       "type": "CommentBlock",
-      "value": "*\r\n * Default font style\r\n * @type {string}\r\n ",
-      "start": 184,
-      "end": 234,
+      "value": "*\n * Default font style\n * @type {string}\n ",
+      "start": 172,
+      "end": 219,
       "loc": {
         "start": {
           "line": 13,
@@ -1802,8 +1802,8 @@
         "updateContext": null
       },
       "value": "export",
-      "start": 236,
-      "end": 242,
+      "start": 220,
+      "end": 226,
       "loc": {
         "start": {
           "line": 17,
@@ -1830,8 +1830,8 @@
         "updateContext": null
       },
       "value": "const",
-      "start": 243,
-      "end": 248,
+      "start": 227,
+      "end": 232,
       "loc": {
         "start": {
           "line": 17,
@@ -1856,8 +1856,8 @@
         "binop": null
       },
       "value": "FONT_STYLE",
-      "start": 249,
-      "end": 259,
+      "start": 233,
+      "end": 243,
       "loc": {
         "start": {
           "line": 17,
@@ -1883,8 +1883,8 @@
         "updateContext": null
       },
       "value": "=",
-      "start": 260,
-      "end": 261,
+      "start": 244,
+      "end": 245,
       "loc": {
         "start": {
           "line": 17,
@@ -1910,8 +1910,8 @@
         "updateContext": null
       },
       "value": "normal",
-      "start": 262,
-      "end": 270,
+      "start": 246,
+      "end": 254,
       "loc": {
         "start": {
           "line": 17,
@@ -1936,8 +1936,8 @@
         "binop": null,
         "updateContext": null
       },
-      "start": 270,
-      "end": 271,
+      "start": 254,
+      "end": 255,
       "loc": {
         "start": {
           "line": 17,
@@ -1951,9 +1951,9 @@
     },
     {
       "type": "CommentBlock",
-      "value": "*\r\n * Default font variant\r\n * @type {string}\r\n ",
-      "start": 275,
-      "end": 327,
+      "value": "*\n * Default font variant\n * @type {string}\n ",
+      "start": 257,
+      "end": 306,
       "loc": {
         "start": {
           "line": 19,
@@ -1980,8 +1980,8 @@
         "updateContext": null
       },
       "value": "export",
-      "start": 329,
-      "end": 335,
+      "start": 307,
+      "end": 313,
       "loc": {
         "start": {
           "line": 23,
@@ -2008,8 +2008,8 @@
         "updateContext": null
       },
       "value": "const",
-      "start": 336,
-      "end": 341,
+      "start": 314,
+      "end": 319,
       "loc": {
         "start": {
           "line": 23,
@@ -2034,8 +2034,8 @@
         "binop": null
       },
       "value": "FONT_VARIANT",
-      "start": 342,
-      "end": 354,
+      "start": 320,
+      "end": 332,
       "loc": {
         "start": {
           "line": 23,
@@ -2061,8 +2061,8 @@
         "updateContext": null
       },
       "value": "=",
-      "start": 355,
-      "end": 356,
+      "start": 333,
+      "end": 334,
       "loc": {
         "start": {
           "line": 23,
@@ -2088,8 +2088,8 @@
         "updateContext": null
       },
       "value": "normal",
-      "start": 357,
-      "end": 365,
+      "start": 335,
+      "end": 343,
       "loc": {
         "start": {
           "line": 23,
@@ -2114,8 +2114,8 @@
         "binop": null,
         "updateContext": null
       },
-      "start": 365,
-      "end": 366,
+      "start": 343,
+      "end": 344,
       "loc": {
         "start": {
           "line": 23,
@@ -2129,9 +2129,9 @@
     },
     {
       "type": "CommentBlock",
-      "value": "*\r\n * Default font weight\r\n * @type {string}\r\n ",
-      "start": 370,
-      "end": 421,
+      "value": "*\n * Default font weight\n * @type {string}\n ",
+      "start": 346,
+      "end": 394,
       "loc": {
         "start": {
           "line": 25,
@@ -2158,8 +2158,8 @@
         "updateContext": null
       },
       "value": "export",
-      "start": 423,
-      "end": 429,
+      "start": 395,
+      "end": 401,
       "loc": {
         "start": {
           "line": 29,
@@ -2186,8 +2186,8 @@
         "updateContext": null
       },
       "value": "const",
-      "start": 430,
-      "end": 435,
+      "start": 402,
+      "end": 407,
       "loc": {
         "start": {
           "line": 29,
@@ -2212,8 +2212,8 @@
         "binop": null
       },
       "value": "FONT_WEIGHT",
-      "start": 436,
-      "end": 447,
+      "start": 408,
+      "end": 419,
       "loc": {
         "start": {
           "line": 29,
@@ -2239,8 +2239,8 @@
         "updateContext": null
       },
       "value": "=",
-      "start": 448,
-      "end": 449,
+      "start": 420,
+      "end": 421,
       "loc": {
         "start": {
           "line": 29,
@@ -2266,8 +2266,8 @@
         "updateContext": null
       },
       "value": "normal",
-      "start": 450,
-      "end": 458,
+      "start": 422,
+      "end": 430,
       "loc": {
         "start": {
           "line": 29,
@@ -2292,8 +2292,8 @@
         "binop": null,
         "updateContext": null
       },
-      "start": 458,
-      "end": 459,
+      "start": 430,
+      "end": 431,
       "loc": {
         "start": {
           "line": 29,
@@ -2307,9 +2307,9 @@
     },
     {
       "type": "CommentBlock",
-      "value": "*\r\n * Default line height\r\n * @type {string}\r\n ",
-      "start": 463,
-      "end": 514,
+      "value": "*\n * Default line height\n * @type {string}\n ",
+      "start": 433,
+      "end": 481,
       "loc": {
         "start": {
           "line": 31,
@@ -2336,8 +2336,8 @@
         "updateContext": null
       },
       "value": "export",
-      "start": 516,
-      "end": 522,
+      "start": 482,
+      "end": 488,
       "loc": {
         "start": {
           "line": 35,
@@ -2364,8 +2364,8 @@
         "updateContext": null
       },
       "value": "const",
-      "start": 523,
-      "end": 528,
+      "start": 489,
+      "end": 494,
       "loc": {
         "start": {
           "line": 35,
@@ -2390,8 +2390,8 @@
         "binop": null
       },
       "value": "LINE_HEIGHT",
-      "start": 529,
-      "end": 540,
+      "start": 495,
+      "end": 506,
       "loc": {
         "start": {
           "line": 35,
@@ -2417,8 +2417,8 @@
         "updateContext": null
       },
       "value": "=",
-      "start": 541,
-      "end": 542,
+      "start": 507,
+      "end": 508,
       "loc": {
         "start": {
           "line": 35,
@@ -2444,8 +2444,8 @@
         "updateContext": null
       },
       "value": "normal",
-      "start": 543,
-      "end": 551,
+      "start": 509,
+      "end": 517,
       "loc": {
         "start": {
           "line": 35,
@@ -2470,8 +2470,8 @@
         "binop": null,
         "updateContext": null
       },
-      "start": 551,
-      "end": 552,
+      "start": 517,
+      "end": 518,
       "loc": {
         "start": {
           "line": 35,
@@ -2485,9 +2485,9 @@
     },
     {
       "type": "CommentBlock",
-      "value": "*\r\n * Default text alignment\r\n * @type {string}\r\n ",
-      "start": 556,
-      "end": 610,
+      "value": "*\n * Default text alignment\n * @type {string}\n ",
+      "start": 520,
+      "end": 571,
       "loc": {
         "start": {
           "line": 37,
@@ -2514,8 +2514,8 @@
         "updateContext": null
       },
       "value": "export",
-      "start": 612,
-      "end": 618,
+      "start": 572,
+      "end": 578,
       "loc": {
         "start": {
           "line": 41,
@@ -2542,8 +2542,8 @@
         "updateContext": null
       },
       "value": "const",
-      "start": 619,
-      "end": 624,
+      "start": 579,
+      "end": 584,
       "loc": {
         "start": {
           "line": 41,
@@ -2568,8 +2568,8 @@
         "binop": null
       },
       "value": "TEXT_ALIGN",
-      "start": 625,
-      "end": 635,
+      "start": 585,
+      "end": 595,
       "loc": {
         "start": {
           "line": 41,
@@ -2595,8 +2595,8 @@
         "updateContext": null
       },
       "value": "=",
-      "start": 636,
-      "end": 637,
+      "start": 596,
+      "end": 597,
       "loc": {
         "start": {
           "line": 41,
@@ -2622,8 +2622,8 @@
         "updateContext": null
       },
       "value": "start",
-      "start": 638,
-      "end": 645,
+      "start": 598,
+      "end": 605,
       "loc": {
         "start": {
           "line": 41,
@@ -2648,8 +2648,8 @@
         "binop": null,
         "updateContext": null
       },
-      "start": 645,
-      "end": 646,
+      "start": 605,
+      "end": 606,
       "loc": {
         "start": {
           "line": 41,
@@ -2663,9 +2663,9 @@
     },
     {
       "type": "CommentBlock",
-      "value": "*\r\n * Default text baseline\r\n * @type {string}\r\n ",
-      "start": 650,
-      "end": 703,
+      "value": "*\n * Default text baseline\n * @type {string}\n ",
+      "start": 608,
+      "end": 658,
       "loc": {
         "start": {
           "line": 43,
@@ -2692,8 +2692,8 @@
         "updateContext": null
       },
       "value": "export",
-      "start": 705,
-      "end": 711,
+      "start": 659,
+      "end": 665,
       "loc": {
         "start": {
           "line": 47,
@@ -2720,8 +2720,8 @@
         "updateContext": null
       },
       "value": "const",
-      "start": 712,
-      "end": 717,
+      "start": 666,
+      "end": 671,
       "loc": {
         "start": {
           "line": 47,
@@ -2746,8 +2746,8 @@
         "binop": null
       },
       "value": "TEXT_BASELINE",
-      "start": 718,
-      "end": 731,
+      "start": 672,
+      "end": 685,
       "loc": {
         "start": {
           "line": 47,
@@ -2773,8 +2773,8 @@
         "updateContext": null
       },
       "value": "=",
-      "start": 732,
-      "end": 733,
+      "start": 686,
+      "end": 687,
       "loc": {
         "start": {
           "line": 47,
@@ -2800,8 +2800,8 @@
         "updateContext": null
       },
       "value": "alphabetic",
-      "start": 734,
-      "end": 746,
+      "start": 688,
+      "end": 700,
       "loc": {
         "start": {
           "line": 47,
@@ -2826,8 +2826,8 @@
         "binop": null,
         "updateContext": null
       },
-      "start": 746,
-      "end": 747,
+      "start": 700,
+      "end": 701,
       "loc": {
         "start": {
           "line": 47,
@@ -2852,8 +2852,8 @@
         "binop": null,
         "updateContext": null
       },
-      "start": 749,
-      "end": 749,
+      "start": 702,
+      "end": 702,
       "loc": {
         "start": {
           "line": 48,
