@@ -35,7 +35,7 @@ export class Text extends PrimitiveComponent {
          * the font family in which to render the text
          * @type {string}
          */
-        this.fontFamily = options.fontFamily || TextDefaults.fontFamily;
+        this.fontFamily = options.fontFamily || TextDefaults.FONT_FAMILY;
 
         /**
          * the font style with which to render the text
