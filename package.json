@@ -1,61 +1,54 @@
 {
-    "name": "canvas-compositor",
-    "version": "3.0.2",
-    "description": "a light and performant canvas compositing engine",
-    "main": "lib/CanvasCompositor.js",
-    "scripts": {
-        "prepare": "npm run build",
-        "build": "esdoc && babel src/ -d lib/ -D -s && browserify src/Compositor.js -s CanvasCompositor -d -t [ babelify ] | uglifyjs > dist/canvas-compositor.min.js"
-    },
-    "keywords": [
-        "2d",
-        "canvas",
-        "compositing"
-    ],
-    "author": "Christopher J Gore",
-    "repository": {
-        "type": "git",
-        "url": "git@github.com:christophergorexyz/canvas-compositor.git"
-    },
-    "license": "MIT",
-    "devDependencies": {
-        "@babel/cli": "^7.7.7",
-        "@babel/core": "^7.7.7",
-        "@babel/preset-env": "^7.7.7",
-        "@babel/runtime": "^7.7.7",
-        "babelify": "^10.0.0",
-        "browserify": "^16.5.0",
-        "esdoc": "^1.1.0",
-        "esdoc-ecmascript-proposal-plugin": "^1.0.0",
-        "esdoc-standard-plugin": "^1.0.0",
-        "mocha": "^6.2.2",
-        "uglify-js": "^3.7.2"
-    },
-    "dependencies": {
-        "micro-mvc": "^1.3.2",
-        "vectorious": "^5.5.0"
-    },
-    "babel": {
-        "presets": [
-            "@babel/env"
-        ]
-    },
-    "esdoc": {
-        "source": "./src",
-        "destination": "./docs",
-        "plugins": [
-            {
-                "name": "esdoc-ecmascript-proposal-plugin",
-                "option": {
-                    "all": true
-                }
-            },
-            {
-                "name": "esdoc-standard-plugin",
-                "option": {
-                    "all": true
-                }
-            }
-        ]
-    }
+  "name": "canvas-compositor",
+  "version": "3.0.2",
+  "description": "a light and performant canvas compositing engine",
+  "main": "lib/index.js",
+  "watch": {
+    "build": "./src/"
+  },
+  "scripts": {
+    "prepare": "npm run build",
+    "build": "npm run build-lib && npm run build-dist",
+    "build-lib": "babel src/ -d lib/ -D -s",
+    "build-dist": "browserify src/index.js -s CanvasCompositor -d -t [ babelify tinyify ] | uglifyjs > dist/canvas-compositor.min.js",
+    "dev": "concurrently --kill-others \"npm-watch\" \"browser-sync -s -w --no-ui --port=8080\""
+  },
+  "keywords": [
+    "2d",
+    "canvas",
+    "compositing"
+  ],
+  "author": "Christopher J Gore",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:christophergorexyz/canvas-compositor.git"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/cli": "^7.14.3",
+    "@babel/core": "^7.14.3",
+    "@babel/preset-env": "^7.14.2",
+    "@babel/runtime": "^7.14.0",
+    "babelify": "^10.0.0",
+    "browser-sync": "^2.27.1",
+    "browserify": "^16.5.2",
+    "concurrently": "^6.2.0",
+    "jsdoc": "^3.6.7",
+    "jshint": "^2.13.0",
+    "mocha": "^6.2.3",
+    "npm-watch": "^0.10.0",
+    "terser": "^5.7.0",
+    "tinyify": "^3.0.0",
+    "uglify-js": "^3.13.7"
+  },
+  "dependencies": {
+    "nblas": "^2.1.9",
+    "nlapack": "^2.0.4",
+    "vectorious": "^5.5.0"
+  },
+  "babel": {
+    "presets": [
+      "@babel/env"
+    ]
+  }
 }

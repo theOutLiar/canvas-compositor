@@ -1,10 +1,10 @@
+import PrimitiveComponent from './PrimitiveComponent';
 import { drawEllipse } from './Renderer';
-import { PrimitiveComponent } from './PrimitiveComponent';
 
 /**
  * An ellipse
  */
-export class Ellipse extends PrimitiveComponent {
+export default class Ellipse extends PrimitiveComponent {
     /**
      * @param {object} options options for the ellipse
      * @param {number} options.radius the major (horizontal) radius of the ellipse
