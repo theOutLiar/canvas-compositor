@@ -19,14 +19,14 @@
     FPS <span id="fps"></span> X: <span id="mousex"></span> Y: <span id="mousey"></span>
   </div>
   <script>
-    let cc = CanvasCompositor;
+    let { Application, Circle, Ellipse, Rectangle, Bezier, Image, VectorPath, Text } = CanvasCompositor;
     let fpsDebug = document.getElementById('fps');
     let mousexDebug = document.getElementById('mousex');
     let mouseyDebug = document.getElementById('mousey');
 
-    let _myCC = new cc.Compositor(document.getElementById('test-canvas'));
+    let _myCC = new Application(document.getElementById('test-canvas'));
 
-    let _circ = new cc.Circle({
+    let _circ = new Circle({
       radius: 50,
       x: 100,
       y: 100,
@@ -36,7 +36,7 @@
       }
     });
 
-    let _elip = new cc.Ellipse({
+    let _elip = new Ellipse({
       x: 200,
       y: 200,
       radius: 50,
@@ -49,7 +49,7 @@
       }
     });
 
-    let _rect = new cc.Rectangle({
+    let _rect = new Rectangle({
       width: 100,
       height: 50,
       x: 300,
@@ -60,7 +60,7 @@
       }
     })
 
-    let _path = new cc.VectorPath({
+    let _path = new VectorPath({
       vertices: [{
         x: 200,
         y: 100
@@ -80,7 +80,7 @@
       }
     });
 
-    var _text = new cc.Text({
+    var _text = new Text({
       x: 100,
       y: 400,
       text: 'The quick red fox jumps over the lazy brown dog.',
@@ -90,7 +90,7 @@
       }
     });
 
-    var _bezi = new cc.Bezier({
+    var _bezi = new Bezier({
       start: {
         x: 50,
         y: 50
@@ -101,7 +101,7 @@
       },
       control1: {
         x: 50,
-        y: 201
+        y: 200
       },
       control2: {
         x: 300,
@@ -117,7 +117,7 @@
     let i = new window.Image();
     i.src = '../demo.png';
     i.onload = function (e) {
-      _image = new cc.Image({
+      _image = new Image({
         image: i,
         x: 100,
         y: 100,

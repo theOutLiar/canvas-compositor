@@ -1,5 +1,5 @@
 
-export { default as Compositor } from './Compositor';
+export { default as Application } from './Application';
 export * as Events from './Events';
 export * as Renderer from './Renderer';
 export { default as PrimitiveComponent } from './PrimitiveComponent';

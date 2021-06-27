@@ -14,7 +14,7 @@ import { clearRect } from './Renderer';
  * The Compositor class establishes an event dispatcher, animation loop, and scene graph for
  * compositions.
  */
-export default class Compositor extends EventEmitter {
+export default class Application extends EventEmitter {
   /**
    * The Compositor class establishes an event dispatcher, animation loop, and scene graph for
    * compositions
@@ -57,6 +57,7 @@ export default class Compositor extends EventEmitter {
 
     /**
      * Any left padding and border added to the canvas must be known to calculate mouse position
+     * @todo determine if this is affected by borderbox
      * @type {number}
      */
     this._leftPadding = borderLeft + paddingLeft;
