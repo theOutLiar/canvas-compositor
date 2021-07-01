@@ -7,11 +7,12 @@
     "build": "./src/"
   },
   "scripts": {
+    "clean": "rm -rf lib dist",
     "prepare": "npm run build",
-    "build": "npm run build-lib && npm run build-dist",
-    "build-lib": "babel src/ -d lib/ -D -s",
-    "build-dist": "browserify src/index.js -s CanvasCompositor -d -t [ babelify tinyify ] | uglifyjs > dist/canvas-compositor.min.js",
-    "dev": "concurrently --kill-others \"npm-watch\" \"browser-sync -s -w --no-ui --port=8080\""
+    "build": "npm run clean && concurrently 'npm run build-lib' 'npm run build-dist'",
+    "build-lib": "mkdir -p lib && babel src/ -d lib/ -D -s",
+    "build-dist": "mkdir -p dist && browserify src/index.js -s CanvasCompositor -d -t [ babelify tinyify ] | uglifyjs > dist/canvas-compositor.min.js",
+    "dev": "concurrently --kill-others 'npm-watch' 'browser-sync -s -w --no-ui --port=8080'"
   },
   "keywords": [
     "2d",
