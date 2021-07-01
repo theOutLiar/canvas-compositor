@@ -50,17 +50,18 @@ export default class EventEmitter {
 
   /**
    * Dispatch an event. Upon dispatching an event, all listeners are called
-   * @param {object} event The `Event` that needs to be dispatched.
+   * @param {Event} event The `Event` that needs to be dispatched.
+   * @param {Object} payload An optional `Object` which can be used to transmit data
    * @return {boolean} returns the inverse of `event.defaultPrevented`
    */
-  dispatchEvent(event) {
+  dispatchEvent(event, payload) {
     if (!(event.type in this._listeners)) {
       return true;
     }
     var stack = this._listeners[event.type].slice();
 
     for (var i = 0, l = stack.length; i < l; i++) {
-      stack[i].call(this, event);
+      stack[i].call(this, event, payload);
     }
     return !event.defaultPrevented;
   }
@@ -92,5 +93,7 @@ export default class EventEmitter {
 
   }
 }
+
 EventEmitter.prototype.on = EventEmitter.prototype.addEventListener;
 EventEmitter.prototype.off = EventEmitter.prototype.removeEventListener;
+EventEmitter.prototype.emit = EventEmitter.prototype.dispatchEvent;

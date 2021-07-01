@@ -67,6 +67,7 @@ function _getExtremes(start, c1, c2, end) {
 export default class Bezier extends Component {
 
   /**
+   * Bezier constructor
    * @param {object} options the options for the bezier curve
    */
   constructor(options) {
@@ -121,10 +122,10 @@ export default class Bezier extends Component {
     let lineWidth = this.style.lineWidth;
 
     let offset = this.offset;
-    let start = Vector.add(this._start, this.offset);
-    let control1 = Vector.add(this._control1, this.offset);
-    let control2 = Vector.add(this._control2, this.offset);
-    let end = Vector.add(this._end, this.offset);
+    let start = Vector.add(this._start, offset);
+    let control1 = Vector.add(this._control1, offset);
+    let control2 = Vector.add(this._control2, offset);
+    let end = Vector.add(this._end, offset);
 
     let xExtrema = _getExtremes(start.x, control1.x, control2, end.x);
     let yExtrema = _getExtremes(start.y, control1.y, control2.y, end.y);
@@ -148,7 +149,7 @@ export default class Bezier extends Component {
       this._end,
       this._control1,
       this._control2,
-      this._prerenderingContext,
+      this.prerenderingContext,
       this.style
     );
   }

@@ -1,4 +1,4 @@
-let { Application, Circle, Ellipse, Rectangle, Bezier, Image, VectorPath, Text } = CanvasCompositor;
+let { Application, Circle, Ellipse, Rectangle, Bezier, Image, VectorPath, Text, Events } = CanvasCompositor;
 let fpsDebug = document.getElementById('fps');
 let mousexDebug = document.getElementById('mousex');
 let mouseyDebug = document.getElementById('mousey');
@@ -115,6 +115,10 @@ class DraggableDemo extends Application {
 
     let sceneObjects = [_circ, _elip, _rect, _path, _bezi, _text];
 
+    this.scene.addEventListener(Events.CHILD_ADDED, (event, payload) => {
+      console.log(Events.CHILD_ADDED, event, payload);
+    })
+
     this.scene.addChildren(sceneObjects);
 
     this.addEventListener('mousemove', () => {
@@ -137,9 +141,6 @@ class DraggableDemo extends Application {
       //this.removeEventListener('mousedown', dragStart);
       this.addEventListener('mousemove', drag);
       this.addEventListener('mouseup', dragEnd);
-
-      //TODO: not sure how to handle mouse out with the new event system
-      //this.onmouseout = this.dragEnd;
     }
 
     /**

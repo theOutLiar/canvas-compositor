@@ -171,8 +171,6 @@ export default class VectorPath extends Component {
           continue;
         }
 
-        //TODO: should replace 0s with epsilons, where epsilon is
-        //the threshhold for considering two things as touching/intersecting
         let intersectToTheRight = intersection.x - x >= Number.EPSILON;
 
         //if the intersection is not to the right, no need to count
@@ -212,12 +210,12 @@ export default class VectorPath extends Component {
   render() {
     let boundingBox = this.boundingBox;
     let offset = this.offset;
-    let compoundScale = this.compoundScale;
+    //let compoundScale = this.compoundScale;
     //zero the vertices (left- and top-most x/y-values should be 0 and 0)
     //TODO: reimplement scaling
     let pathToDraw = this._zeroedVertices.map(vertex =>
       vertex.subtract(new Vector([boundingBox.left, boundingBox.top])).add(offset));
-    drawPath(pathToDraw, this._prerenderingContext, this.style);
+    drawPath(pathToDraw, this.prerenderingContext, this.style);
   };
 }
 

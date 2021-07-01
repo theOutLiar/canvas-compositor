@@ -56,7 +56,7 @@ export default class Ellipse extends Component {
             (this.minorRadius * scale.scaleHeight) + lineWidth,
             (this.radius * scale.scaleWidth),
             (this.minorRadius * scale.scaleHeight),
-            this._prerenderingContext,
+            this.prerenderingContext,
             this.style
         );
     }

@@ -5,9 +5,9 @@ import { drawCircle } from '../graphics/Renderer';
  * A circle
  */
 export default class Circle extends Component {
-  //TODO: provide details about options for docs - link to a separate page
+
   /**
-   * PrimitiveComponent constructor
+   * Circle constructor
    * @param {object} options object settings
    */
   constructor(options) {
@@ -62,7 +62,7 @@ export default class Circle extends Component {
       (this.radius * scale.scaleWidth) + lineWidth,
       (this.radius * scale.scaleHeight) + lineWidth,
       (this.radius * scale.scaleWidth),
-      this._prerenderingContext,
+      this.prerenderingContext,
       this.style
     );
   }

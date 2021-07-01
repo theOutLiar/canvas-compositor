@@ -99,7 +99,7 @@ export default class Text extends Component {
   get textMetrics() {
     if (this._textMetricsNeedUpdate || this._textMetrics === null) {
       this._updateStyle();
-      this._textMetrics = TextUtils.measureText(this.text, this._prerenderingContext, this.style);
+      this._textMetrics = TextUtils.measureText(this.text, this.prerenderingContext, this.style);
       Object.assign(this._textMetrics, TextUtils.getTextHeight(this.style.font));
       this._textMetricsNeedUpdate = false;
     }
@@ -139,10 +139,10 @@ export default class Text extends Component {
   render() {
     this._textMetricsNeedUpdate = true;
     this._updateStyle();
-    drawText(0, this.textMetrics.ascent, this.text, this._prerenderingContext, this.style);
+    drawText(0, this.textMetrics.ascent, this.text, this.prerenderingContext, this.style);
 
     /*if (this.flags.DEBUG) {
-        Renderer.drawPath(this._prerenderingContext, [{
+        Renderer.drawPath(this.prerenderingContext, [{
             x: 0,
             y: this.textMetrics.ascent
         }, {
@@ -151,7 +151,7 @@ export default class Text extends Component {
         }], {
             strokeStyle: 'Blue'
         });
-        Renderer.drawCircle(this._prerenderingContext, 0, this.textMetrics.ascent, 3, {
+        Renderer.drawCircle(this.prerenderingContext, 0, this.textMetrics.ascent, 3, {
             strokeStyle: 'Blue',
             fillStyle: 'Blue'
         });

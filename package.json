@@ -4,14 +4,15 @@
   "description": "a light and performant canvas compositing engine",
   "main": "lib/index.js",
   "watch": {
-    "build": "./src/"
+    "build-dev": "./src/"
   },
   "scripts": {
     "clean": "rm -rf lib dist",
     "prepare": "npm run build",
     "build": "npm run clean && concurrently 'npm run build-lib' 'npm run build-dist'",
     "build-lib": "mkdir -p lib && babel src/ -d lib/ -D -s",
-    "build-dist": "mkdir -p dist && browserify src/index.js -s CanvasCompositor -d -t [ babelify tinyify ] | uglifyjs > dist/canvas-compositor.min.js",
+    "build-dist": "mkdir -p dist && browserify src/index.js -s CanvasCompositor -t [ babelify tinyify ] | uglifyjs > dist/canvas-compositor.min.js",
+    "build-dev": "npm run clean && mkdir -p dist && browserify src/index.js -s CanvasCompositor -d -t [ babelify tinyify ] > dist/canvas-compositor.min.js",
     "dev": "concurrently --kill-others 'npm-watch' 'browser-sync -s -w --no-ui --port=8080'"
   },
   "keywords": [

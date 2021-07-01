@@ -1,3 +1,4 @@
+import { CHILD_ADDED } from '../events/Events';
 import Component from './Component';
 
 /**
@@ -35,27 +36,25 @@ export default class Composition extends Component {
    * @type {{top:number, left:number, right:number, bottom:number}} boundingBox
    */
   get boundingBox() {
-    let top = Infinity,
-      left = Infinity,
-      bottom = -Infinity,
-      right = -Infinity;
+    // TODO: determine how to handle dimension changes
+    // will need to be updated if d, scale, x, or y have changed,
+    // or any such properties of the children have changed,
+    // or if children are aadded or removed
+    //if (this._boundingBox) return this._boundingBox;
 
-    for (let c of this.children) {
-      let boundingBox = c.boundingBox;
-      top = Math.min(boundingBox.top, top);
-      left = Math.min(boundingBox.left, left);
-      bottom = Math.max(boundingBox.bottom, bottom);
-      right = Math.max(boundingBox.right, right);
-    };
+    this._boundingBox = this.children.reduce((acc, c) => {
+      return {
+        ...acc, ...{
+          top: Math.min(c.boundingBox.top, acc.top),
+          left: Math.min(c.boundingBox.left, acc.left),
+          bottom: Math.max(c.boundingBox.bottom, acc.bottom),
+          right: Math.max(c.boundingBox.right, acc.right)
+        }
+      }
+    }, { top: Infinity, left: Infinity, bottom: -Infinity, right: -Infinity })
 
-    return {
-      top: top,
-      left: left,
-      bottom: bottom,
-      right: right
-    };
+    return this._boundingBox;
   }
-
 
   /**
    * the an array of children that are found at (x, y)
@@ -91,11 +90,8 @@ export default class Composition extends Component {
     this.children.push(child);
     super.needsRender = true;
     super.needsDraw = true;
-    //TODO: make this hook more generic
-    //by using a registry
-    //if (this.onchildadded) {
-    //  this.onchildadded();
-    //}
+
+    this.dispatchEvent(new Event(CHILD_ADDED), child);
   }
 
   /**
@@ -139,11 +135,11 @@ export default class Composition extends Component {
     };
 
     for (let c of this.children) {
-      c.draw(this._prerenderingContext, offset);
+      c.draw(this.prerenderingContext, offset);
     };
 
     // `destination-out` will erase things
-    //this._prerenderingContext.globalCompositeOperation = 'destination-out';
+    //this.prerenderingContext.globalCompositeOperation = 'destination-out';
     //_.each(this.masks, function (m) {
     //m.draw(renderContext, contextOffset);
     //});

@@ -38,3 +38,8 @@ export const KEYUP = 'keyup';
  * The `keypress` event label
  */
 export const KEYPRESS = 'keypress';
+
+/**
+ * Dispatched when a child is added to a
+ */
+export const CHILD_ADDED = 'childadded'

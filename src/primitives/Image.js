@@ -41,6 +41,6 @@ export default class Image extends Component {
     image.src = this.unscaledImage.src;
     image.width = this.unscaledImage.width * scale.scaleWidth;
     image.height = this.unscaledImage.height * scale.scaleHeight;
-    drawImage(0, 0, image, this._prerenderingContext, this.style);
+    drawImage(0, 0, image, this.prerenderingContext, this.style);
   };
 }

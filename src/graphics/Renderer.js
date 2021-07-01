@@ -95,7 +95,6 @@ export function drawRectangle(x, y, width, height, context, style) {
  */
 export function drawEllipse(x, y, radius, minorRadius, context, style) {
   Object.assign(context, style);
-  //TODO: 2017-05-22 this is currently not supported by IE
   context.ellipse(x, y, radius, minorRadius, 0, 0, 2 * Math.PI);
   context.fill();
   context.setLineDash(style.lineDash);
@@ -113,8 +112,6 @@ export function drawEllipse(x, y, radius, minorRadius, context, style) {
 export function drawCircle(x, y, radius, context, style) {
   Object.assign(context, style);
   context.arc(x, y, radius, 0, 2 * Math.PI);
-  //TODO: 2015-03-12 this is currently only supported by chrome & opera
-  //context.ellipse(x, y, radius, radius, 0, 0, 2 * Math.PI);
   context.fill();
   context.setLineDash(style.lineDash);
   context.stroke();

@@ -48,7 +48,7 @@ export default class Rectangle extends Component {
             (this.style.lineWidth),
             this.width * compoundScale.scaleWidth,
             this.height * compoundScale.scaleHeight,
-            this._prerenderingContext,
+            this.prerenderingContext,
             this.style);
     }
 }

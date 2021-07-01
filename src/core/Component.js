@@ -31,30 +31,21 @@ let defaults = {
  * classes with it.
  */
 export default class Component extends EventEmitter {
+  //TODO: provide details about options for docs - link to a separate page
   /**
    * construct a primitive component
    * @param {object} options
    */
-  constructor(options) {
+  constructor(options = {}) {
     super();
-
-    options = options || {};
 
     //TODO: reimplement any flags for debug data
     //this._flags = {};
     //this._flags.DEBUG = options.debug || false;
 
-    /**
-     * does the object need to be redrawn?
-     * @type {boolean} _needsDraw
-     */
-    this._needsDraw = true;
-
-    /**
-     * does the object need to be rendered?
-     * @type {boolean} _needsRender
-     */
-    this._needsRender = true;
+    this.needsDraw = true;
+    this.needsRender = true;
+    this.d = new Vector([options.x || 0, options.y || 0]);
 
     /**
      * the horizontal scale of the object. defaults to 1
@@ -68,12 +59,6 @@ export default class Component extends EventEmitter {
      */
     this._scaleHeight = 1;
 
-    /**
-     * d is for "displacement": a 2D Vector object representing cartesian coordinate
-     * position relative to its parent composition (or [0,0] if this is the scene composition)
-     * @type {object} d
-     */
-    this._d = new Vector([options.x || 0, options.y || 0]);
 
     /**
      * style options for this particular object. these are standard context styles
@@ -81,36 +66,31 @@ export default class Component extends EventEmitter {
      */
     this.style = Object.assign({}, defaults, options.style);
 
-    //TODO: determine whether this is the best place to implement click passthrough -
-    //it might be better left implemented by consuming modules
-    /**
-     * objects with pressPassThrough set to true will allow mouse clicks to pass
-     * through to objects behind them
-     * @type {boolean} pressPassThrough
-     */
-    //this.pressPassThrough = options.pressPassThrough || false;
-
-    /**
-     * the prerendering canvas is used to avoid performing mutliple draw operations on the
-     * visible, main canvas. this minimizes the time needed to render by prerendering on a
-     * canvas only as large as necessary for the object
-     * @type {object} _prerenderingCanvas
-     */
-    this._prerenderingCanvas = document.createElement('canvas');
-
-    //TODO: enable alternative rendering contexts for WebGL and 3d
-    /**
-     * the 2D context of the prerendering canvas.
-     * @type {object} _prerenderingCanvas
-     */
-    this._prerenderingContext = this._prerenderingCanvas.getContext('2d');
-
     /**
      * the parent object of this object. with the exception of the scene composition itself,
      * the root of all objects ancestry should be the scene composition
      * @type {object} parent
      */
     this._parent = options.parent || null;
+  }
+
+  /**
+   * the prerendering canvas is used to avoid performing mutliple draw operations on the
+   * visible, main canvas. this minimizes the time needed to render by prerendering on a
+   * canvas only as large as necessary for the object
+   * @type {object} _prerenderingCanvas
+   */
+  get prerenderingCanvas() {
+    return this._prerenderingCanvas || (this._prerenderingCanvas = document.createElement('canvas'));
+  }
+
+  //TODO: enable alternative rendering contexts for WebGL and 3d
+  /**
+   * the 2D context of the prerendering canvas.
+   * @type {object} _prerenderingCanvas
+   */
+  get prerenderingContext() {
+    return this._prerenderingContext || (this._prerenderingContext = this.prerenderingCanvas.getContext('2d'));
   }
 
   /**
@@ -148,6 +128,9 @@ export default class Component extends EventEmitter {
    * @type {boolean} needsDraw
    */
   set needsDraw(val) {
+    //TODO: this could probably be handled better,
+    //possibly by using events to direct animation to
+    //draw specific components
     if (this.parent && val) {
       this.parent.needsDraw = val;
       this.parent.needsRender = true; // if this needs to be redrawn, then the parent needs a full rerender
@@ -193,6 +176,7 @@ export default class Component extends EventEmitter {
   get scaleWidth() {
     return this._scaleWidth;
   }
+
   /**
    * set the horizontal scale of the object - defaults to 1
    * @type {number} scaleWidth
@@ -285,14 +269,19 @@ export default class Component extends EventEmitter {
   get parent() {
     return this._parent;
   }
-  //TODO: provide links to things
+
   /**
    * set the parent of the object. all objects except the scene graph should have a parent
+   * see https://en.wikipedia.org/wiki/Composite_pattern
    * @type {object} parent
    * @param {object} val a composition
    */
   set parent(val) {
     this._parent = val;
+  }
+
+  set boundingBox(val) {
+    this._boundingBox = val;
   }
 
   /**
@@ -305,7 +294,7 @@ export default class Component extends EventEmitter {
 
     this.needsDraw = false;
 
-    if (this.needsRender && this.render) {
+    if (this.needsRender) {
       /*
           TODO: AB-test this,
           it may be faster than clearRect
@@ -313,15 +302,11 @@ export default class Component extends EventEmitter {
       //delete this._prerenderingCanvas;
       //delete this._prerenderingContext;
 
-      //create a new canvas and context for rendering
-      //this._prerenderingCanvas = document.createElement('canvas');
-      //this._prerenderingContext = this._prerenderingCanvas.getContext('2d'); //text needs prerendering context defined for boundingBox measurements
-
       //make sure the new canvas has the appropriate dimensions
-      this._prerenderingCanvas.width = boundingBox.right - boundingBox.left;
-      this._prerenderingCanvas.height = boundingBox.bottom - boundingBox.top;
+      this.prerenderingCanvas.width = boundingBox.right - boundingBox.left;
+      this.prerenderingCanvas.height = boundingBox.bottom - boundingBox.top;
       //clear any old rendering artifacts - they are no longer viable
-      clearRect(0, 0, this._prerenderingCanvas.width, this._prerenderingCanvas.height, this._prerenderingContext);
+      clearRect(0, 0, this.prerenderingCanvas.width, this.prerenderingCanvas.height, this.prerenderingContext);
 
       this.render();
       this.needsRender = false;
@@ -330,19 +315,19 @@ export default class Component extends EventEmitter {
     //TODO: handle debug options
     //draw bounding boxes
     /*if (this._flags.DEBUG) {
-        this._prerenderingContext.beginPath();
-        this._prerenderingContext.setLineDash([5, 15]);
-        this._prerenderingContext.lineWidth = 2.0;
-        this._prerenderingContext.strokeStyle = '#FF0000';
-        this._prerenderingContext.strokeStyle = '#FF0000';
-        this._prerenderingContext.strokeRect(0, 0, this._prerenderingCanvas.width, this._prerenderingCanvas.height);
-        this._prerenderingContext.closePath();
+        this.prerenderingContext.beginPath();
+        this.prerenderingContext.setLineDash([5, 15]);
+        this.prerenderingContext.lineWidth = 2.0;
+        this.prerenderingContext.strokeStyle = '#FF0000';
+        this.prerenderingContext.strokeStyle = '#FF0000';
+        this.prerenderingContext.strokeRect(0, 0, this.prerenderingCanvas.width, this.prerenderingCanvas.height);
+        this.prerenderingContext.closePath();
     }*/
 
     //offsets are for prerendering contexts of compositions
     let x = boundingBox.left + (offset && offset.left ? offset.left : 0);
     let y = boundingBox.top + (offset && offset.top ? offset.top : 0);
-    drawImage(x, y, this._prerenderingCanvas, context, this.style);
+    drawImage(x, y, this.prerenderingCanvas, context, this.style);
   }
 
   /**
